@@ -1,0 +1,7 @@
+<library path="lib/libfranka_reactive_controller">
+    <class name="franka_reactive_controller/CartesianVelocityNodeController" type="franka_reactive_controller::CartesianVelocityNodeController" base_class_type="controller_interface::ControllerBase">
+        <description>
+            A Cartesian velocity controller that takes commands from a ROS subscriber.
+        </description>
+    </class>
+</library>
