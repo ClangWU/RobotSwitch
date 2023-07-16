@@ -124,7 +124,6 @@ namespace franka_reactive_controller
     velocity_command[1] = msg->linear.y;
     velocity_command[2] = msg->linear.z;
 
-    
     velocity_command[3] = msg->angular.x;
     velocity_command[4] = msg->angular.y;
     velocity_command[5] = msg->angular.z;
@@ -166,9 +165,9 @@ namespace franka_reactive_controller
         max_velocity_angular,
         max_acceleration_angular,
         max_jerk_angular,
-        velocity_command,
-        state.O_dP_EE_c,
-        state.O_ddP_EE_c);
+        velocity_command,//Commanded end effector twist of the current time step. 
+        state.O_dP_EE_c,//Last commanded end effector twist in base frame. 
+        state.O_ddP_EE_c);//Last commanded end effector acceleration in base frame. 
 
     velocity_cartesian_handle_->setCommand(last_sent_velocity);
   }
