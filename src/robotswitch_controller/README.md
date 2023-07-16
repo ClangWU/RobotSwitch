@@ -10,7 +10,7 @@ sudo apt install ros-melodic-serial
 ahrs_driver.launch
 ```
 <launch>
-  <node pkg="imu_cmd" name="ahrs_driver" type="ahrs_driver" output="screen" >
+  <node pkg="robotswitch_controller" name="ahrs_driver" type="ahrs_driver" output="screen" >
     <!-- 是否输出debug信息 -->
     <param name="debug"  value="false"/>
     

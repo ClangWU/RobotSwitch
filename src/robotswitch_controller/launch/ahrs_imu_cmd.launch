@@ -1,9 +1,9 @@
 <launch>
-  <node pkg="imu_cmd" name="ahrs_driver" type="ahrs_driver" output="screen" >
+  <node pkg="robotswitch_controller" name="ahrs_driver" type="ahrs_driver" output="screen" >
     <!-- 是否输出debug信息 -->
     <param name="debug"  value="false"/>
 
-    <!-- <param name="port"  value="/dev/imu_cmd"/> -->
+    <!-- <param name="port"  value="/dev/robotswitch_controller"/> -->
     <param name="port"  value="/dev/ttyUSB0"/>
     <!-- 波特率 -->
     <param name="baud"  value="921600"/>

@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 
-project(imu_cmd)
+project(robotswitch_controller)
 
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")  
 
