@@ -48,6 +48,7 @@ public:
   bool ahrs_checkCS16(int len);
   void ahrs_checkSN(int type);
   void ahrs_magCalculateYaw(double roll, double pitch, double &magyaw, double magx, double magy, double magz);
+  void serial_init(serial::Serial *serial_, std::string _port_, int _baud_, int _timeout_);
   ros::NodeHandle nh_;
 
 private:
@@ -60,10 +61,30 @@ private:
   int device_type_ = 1;
 
   //4 serial
+  //imu
   serial::Serial ahrs_serial_; //声明串口对象
   std::string ahrs_serial_port_;
   int ahrs_serial_baud_;
-  int serial_timeout_;
+  int ahrs_serial_timeout_;
+
+  //interact dof
+  serial::Serial interact_dof_serial_; //声明串口对象
+  std::string interact_dof_serial_port_;
+  int interact_dof_serial_baud_;
+  int interact_dof_serial_timeout_;
+
+  //move dof
+  serial::Serial move_dof_serial_; //声明串口对象
+  std::string move_dof_serial_port_;
+  int move_dof_serial_baud_;
+  int move_dof_serial_timeout_;
+
+  //force dof
+  serial::Serial force_dof_serial_; //声明串口对象
+  std::string force_dof_serial_port_;
+  int force_dof_serial_baud_;
+  int force_dof_serial_timeout_;
+
   //data
   FDILink::imu_frame_read  imu_frame_;
   FDILink::ahrs_frame_read ahrs_frame_;

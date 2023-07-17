@@ -2,7 +2,7 @@
 #include <Eigen/Eigen>
 namespace RobotSwitch
 {
-RobotSwitchBringup::RobotSwitchBringup() :frist_sn_(false), serial_timeout_(20)
+RobotSwitchBringup::RobotSwitchBringup() :frist_sn_(false)
 {
   ros::NodeHandle pravite_nh("~");
 
@@ -34,15 +34,11 @@ RobotSwitchBringup::RobotSwitchBringup() :frist_sn_(false), serial_timeout_(20)
   //setp up serial  设置串口参数并打开串口
   try
   {
-    ahrs_serial_.setPort(ahrs_serial_port_);
-    ahrs_serial_.setBaudrate(ahrs_serial_baud_);
-    ahrs_serial_.setFlowcontrol(serial::flowcontrol_none);
-    ahrs_serial_.setParity(serial::parity_none); //default is parity_none
-    ahrs_serial_.setStopbits(serial::stopbits_one);
-    ahrs_serial_.setBytesize(serial::eightbits);
-    serial::Timeout time_out = serial::Timeout::simpleTimeout(serial_timeout_);
-    ahrs_serial_.setTimeout(time_out);
-    ahrs_serial_.open();
+    serial_init(&ahrs_serial_, ahrs_serial_port_, ahrs_serial_baud_, ahrs_serial_timeout_);
+    // serial_init(&move_dof_serial_, move_dof_serial_port_, move_dof_serial_baud_, move_dof_serial_timeout_);
+    // serial_init(&force_dof_serial_, force_dof_serial_port_, force_dof_serial_baud_, force_dof_serial_timeout_);
+    // serial_init(&interact_dof_serial_, interact_dof_serial_port_, interact_dof_serial_baud_, interact_dof_serial_timeout_);
+
   }
   catch (serial::IOException &e)  // 抓取异常
   {
@@ -631,6 +627,18 @@ void RobotSwitchBringup::ahrs_checkSN(int type)
   default:
     break;
   }
+}
+
+void RobotSwitchBringup::serial_init(serial::Serial *serial_, std::string _port_, int _baud_, int _timeout_){
+    serial_->setPort(_port_);
+    serial_->setBaudrate(_baud_);
+    serial_->setFlowcontrol(serial::flowcontrol_none);
+    serial_->setParity(serial::parity_none); //default is parity_none
+    serial_->setStopbits(serial::stopbits_one);
+    serial_->setBytesize(serial::eightbits);
+    serial::Timeout time_out = serial::Timeout::simpleTimeout(_timeout_);
+    serial_->setTimeout(time_out);
+    serial_->open();
 }
 
 } //namespace RobotSwitch
