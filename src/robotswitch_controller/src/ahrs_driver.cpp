@@ -1,8 +1,8 @@
 ﻿#include <ahrs_driver.h>
 #include <Eigen/Eigen>
-namespace FDILink
+namespace RobotSwitch
 {
-ahrsBringup::ahrsBringup() :frist_sn_(false), serial_timeout_(20)
+RobotSwitchBringup::RobotSwitchBringup() :frist_sn_(false), serial_timeout_(20)
 {
   ros::NodeHandle pravite_nh("~");
 
@@ -19,8 +19,8 @@ ahrsBringup::ahrsBringup() :frist_sn_(false), serial_timeout_(20)
   pravite_nh.param("NED_odom_topic_", NED_odom_topic_, std::string("/NED_odometry")); 
 
   //serial                                                 
-  pravite_nh.param("port", serial_port_, std::string("/dev/ttyTHS1")); 
-  pravite_nh.param("baud", serial_baud_, 115200);
+  pravite_nh.param("port", ahrs_serial_port_, std::string("/dev/ttyTHS1")); 
+  pravite_nh.param("baud", ahrs_serial_baud_, 115200);
 
   //publisher  创建发布对象
   imu_pub_ = nh_.advertise<sensor_msgs::Imu>(imu_topic_.c_str(), 10);
@@ -34,22 +34,22 @@ ahrsBringup::ahrsBringup() :frist_sn_(false), serial_timeout_(20)
   //setp up serial  设置串口参数并打开串口
   try
   {
-    serial_.setPort(serial_port_);
-    serial_.setBaudrate(serial_baud_);
-    serial_.setFlowcontrol(serial::flowcontrol_none);
-    serial_.setParity(serial::parity_none); //default is parity_none
-    serial_.setStopbits(serial::stopbits_one);
-    serial_.setBytesize(serial::eightbits);
+    ahrs_serial_.setPort(ahrs_serial_port_);
+    ahrs_serial_.setBaudrate(ahrs_serial_baud_);
+    ahrs_serial_.setFlowcontrol(serial::flowcontrol_none);
+    ahrs_serial_.setParity(serial::parity_none); //default is parity_none
+    ahrs_serial_.setStopbits(serial::stopbits_one);
+    ahrs_serial_.setBytesize(serial::eightbits);
     serial::Timeout time_out = serial::Timeout::simpleTimeout(serial_timeout_);
-    serial_.setTimeout(time_out);
-    serial_.open();
+    ahrs_serial_.setTimeout(time_out);
+    ahrs_serial_.open();
   }
   catch (serial::IOException &e)  // 抓取异常
   {
     ROS_ERROR_STREAM("Unable to open port ");
     exit(0);
   }
-  if (serial_.isOpen())
+  if (ahrs_serial_.isOpen())
   {
     ROS_INFO_STREAM("Serial Port initialized");
   }
@@ -61,24 +61,24 @@ ahrsBringup::ahrsBringup() :frist_sn_(false), serial_timeout_(20)
   processLoop();
 }
 
-ahrsBringup::~ahrsBringup()  // 析构函数关闭串口通道
+RobotSwitchBringup::~RobotSwitchBringup()  // 析构函数关闭串口通道
 {
-  if (serial_.isOpen())
-    serial_.close();
+  if (ahrs_serial_.isOpen())
+    ahrs_serial_.close();
 }
 
-void ahrsBringup::processLoop()   // 数据处理过程
+void RobotSwitchBringup::processLoop()   // 数据处理过程
 {
-  ROS_INFO("ahrsBringup::processLoop: start");
+  ROS_INFO("RobotSwitchBringup::processLoop: start");
   while (ros::ok())
   {
-    if (!serial_.isOpen())
+    if (!ahrs_serial_.isOpen())
     {
       ROS_WARN("serial unopen");
     }
     //check head start  检查起始 数据帧头
     uint8_t check_head[1] = {0xff};
-    size_t head_s = serial_.read(check_head, 1);
+    size_t head_s = ahrs_serial_.read(check_head, 1);
     if (if_debug_){
       if (head_s != 1)
       {
@@ -93,7 +93,7 @@ void ahrsBringup::processLoop()   // 数据处理过程
     }
     // check head type   检查数据类型
     uint8_t head_type[1] = {0xff};
-    size_t type_s = serial_.read(head_type, 1);
+    size_t type_s = ahrs_serial_.read(head_type, 1);
     if (if_debug_){
       std::cout << "head_type:  " << std::hex << (int)head_type[0] << std::dec << std::endl;
     }
@@ -104,7 +104,7 @@ void ahrsBringup::processLoop()   // 数据处理过程
     }
     //check head length  检查对应数据类型的长度是否符合
     uint8_t check_len[1] = {0xff};
-    size_t len_s = serial_.read(check_len, 1);
+    size_t len_s = ahrs_serial_.read(check_len, 1);
     if (if_debug_){
       std::cout << "check_len: "<< std::dec << (int)check_len[0]  << std::endl;
     }
@@ -128,7 +128,7 @@ void ahrsBringup::processLoop()   // 数据处理过程
     else if (head_type[0] == TYPE_GROUND || head_type[0] == 0x50) // 未知数据，防止记录失败
     {
       uint8_t ground_sn[1];
-      size_t ground_sn_s = serial_.read(ground_sn, 1);
+      size_t ground_sn_s = ahrs_serial_.read(ground_sn, 1);
       if (++read_sn_ != ground_sn[0])
       {
         if ( ground_sn[0] < read_sn_)
@@ -151,20 +151,20 @@ void ahrsBringup::processLoop()   // 数据处理过程
         }
       }
       uint8_t ground_ignore[500];
-      size_t ground_ignore_s = serial_.read(ground_ignore, (check_len[0]+4));
+      size_t ground_ignore_s = ahrs_serial_.read(ground_ignore, (check_len[0]+4));
       continue;
     }
     //read head sn  检查sn 流水序号
     uint8_t check_sn[1] = {0xff};
-    size_t sn_s = serial_.read(check_sn, 1);
+    size_t sn_s = ahrs_serial_.read(check_sn, 1);
 
     uint8_t head_crc8[1] = {0xff};
-    size_t crc8_s = serial_.read(head_crc8, 1);
+    size_t crc8_s = ahrs_serial_.read(head_crc8, 1);
 
     uint8_t head_crc16_H[1] = {0xff};
     uint8_t head_crc16_L[1] = {0xff};
-    size_t crc16_H_s = serial_.read(head_crc16_H, 1);
-    size_t crc16_L_s = serial_.read(head_crc16_L, 1);
+    size_t crc16_H_s = ahrs_serial_.read(head_crc16_H, 1);
+    size_t crc16_L_s = ahrs_serial_.read(head_crc16_L, 1);
 
     if (if_debug_){
       std::cout << "check_sn: "     << std::hex << (int)check_sn[0]     << std::dec << std::endl;
@@ -195,7 +195,7 @@ void ahrsBringup::processLoop()   // 数据处理过程
         frist_sn_ = true;
       }
       //check sn 
-      ahrsBringup::checkSN(TYPE_IMU);
+      RobotSwitchBringup::ahrs_checkSN(TYPE_IMU);
     }
     else if (head_type[0] == TYPE_AHRS)
     {
@@ -217,7 +217,7 @@ void ahrsBringup::processLoop()   // 数据处理过程
         frist_sn_ = true;
       }
       //check sn 
-      ahrsBringup::checkSN(TYPE_AHRS);
+      RobotSwitchBringup::ahrs_checkSN(TYPE_AHRS);
     }
     else if (head_type[0] == TYPE_INSGPS)
     {
@@ -239,7 +239,7 @@ void ahrsBringup::processLoop()   // 数据处理过程
         std::cout << "header_crc8 matched." << std::endl;
       }
       
-      ahrsBringup::checkSN(TYPE_INSGPS);
+      RobotSwitchBringup::ahrs_checkSN(TYPE_INSGPS);
     }
     else if (head_type[0] == TYPE_GEODETIC_POS)
     {
@@ -261,7 +261,7 @@ void ahrsBringup::processLoop()   // 数据处理过程
         frist_sn_ = true;
       }
       
-      ahrsBringup::checkSN(TYPE_GEODETIC_POS);
+      RobotSwitchBringup::ahrs_checkSN(TYPE_GEODETIC_POS);
     }
     // check crc16 进行crc16数据校验
     if (head_type[0] == TYPE_IMU)
@@ -269,7 +269,7 @@ void ahrsBringup::processLoop()   // 数据处理过程
       uint16_t head_crc16_l = imu_frame_.frame.header.header_crc16_l;
       uint16_t head_crc16_h = imu_frame_.frame.header.header_crc16_h;
       uint16_t head_crc16 = head_crc16_l + (head_crc16_h << 8);
-      size_t data_s = serial_.read(imu_frame_.read_buf.read_msg, (IMU_LEN + 1)); //48+1
+      size_t data_s = ahrs_serial_.read(imu_frame_.read_buf.read_msg, (IMU_LEN + 1)); //48+1
       // if (if_debug_){
       //   for (size_t i = 0; i < (IMU_LEN + 1); i++)
       //   {
@@ -305,7 +305,7 @@ void ahrsBringup::processLoop()   // 数据处理过程
       uint16_t head_crc16_l = ahrs_frame_.frame.header.header_crc16_l;
       uint16_t head_crc16_h = ahrs_frame_.frame.header.header_crc16_h;
       uint16_t head_crc16 = head_crc16_l + (head_crc16_h << 8);
-      size_t data_s = serial_.read(ahrs_frame_.read_buf.read_msg, (AHRS_LEN + 1)); //48+1
+      size_t data_s = ahrs_serial_.read(ahrs_frame_.read_buf.read_msg, (AHRS_LEN + 1)); //48+1
       // if (if_debug_){
       //   for (size_t i = 0; i < (AHRS_LEN + 1); i++)
       //   {
@@ -339,7 +339,7 @@ void ahrsBringup::processLoop()   // 数据处理过程
       uint16_t head_crc16_l = insgps_frame_.frame.header.header_crc16_l;
       uint16_t head_crc16_h = insgps_frame_.frame.header.header_crc16_h;
       uint16_t head_crc16 = head_crc16_l + (head_crc16_h << 8);
-      size_t data_s = serial_.read(insgps_frame_.read_buf.read_msg, (INSGPS_LEN + 1)); //48+1
+      size_t data_s = ahrs_serial_.read(insgps_frame_.read_buf.read_msg, (INSGPS_LEN + 1)); //48+1
       // if (if_debug_){
       //   for (size_t i = 0; i < (AHRS_LEN + 1); i++)
       //   {
@@ -373,7 +373,7 @@ void ahrsBringup::processLoop()   // 数据处理过程
       uint16_t head_crc16_l = Geodetic_Position_frame_.frame.header.header_crc16_l;
       uint16_t head_crc16_h = Geodetic_Position_frame_.frame.header.header_crc16_h;
       uint16_t head_crc16 = head_crc16_l + (head_crc16_h << 8);
-      size_t data_s = serial_.read(Geodetic_Position_frame_.read_buf.read_msg, (GEODETIC_POS_LEN + 1)); //24+1
+      size_t data_s = ahrs_serial_.read(Geodetic_Position_frame_.read_buf.read_msg, (GEODETIC_POS_LEN + 1)); //24+1
       // if (if_debug_){
       //   for (size_t i = 0; i < (AHRS_LEN + 1); i++)
       //   {
@@ -453,6 +453,7 @@ void ahrsBringup::processLoop()   // 数据处理过程
         imu_data.linear_acceleration.y = -imu_frame_.frame.data.data_pack.accelerometer_y;
         imu_data.linear_acceleration.z = -imu_frame_.frame.data.data_pack.accelerometer_z;
       }
+      //clang
       // double current_time_ms = ros::Time::now().toSec() * 1000;
       // ROS_INFO("\033[1;31mCurrent time (ms): %.3f\033[0m", current_time_ms);
       //5ms per time
@@ -527,7 +528,7 @@ void ahrsBringup::processLoop()   // 数据处理过程
   }
 }
 
-void ahrsBringup::magCalculateYaw(double roll, double pitch, double &magyaw, double magx, double magy, double magz)
+void RobotSwitchBringup::ahrs_magCalculateYaw(double roll, double pitch, double &magyaw, double magx, double magy, double magz)
 {
   double temp1 = magy * cos(roll) + magz * sin(roll);
   double temp2 = magx * cos(pitch) + magy * sin(pitch) * sin(roll) - magz * sin(pitch) * cos(roll);
@@ -539,7 +540,7 @@ void ahrsBringup::magCalculateYaw(double roll, double pitch, double &magyaw, dou
   // return magyaw;
 }
 
-void ahrsBringup::checkSN(int type)
+void RobotSwitchBringup::ahrs_checkSN(int type)
 {
   switch (type)
   {
@@ -632,12 +633,12 @@ void ahrsBringup::checkSN(int type)
   }
 }
 
-} //namespace FDILink
+} //namespace RobotSwitch
 
 int main(int argc, char **argv)
 {
-  ros::init(argc, argv, "ahrs_bringup");
-  FDILink::ahrsBringup bp;
+  ros::init(argc, argv, "robotswitch_bringup");
+  RobotSwitch::RobotSwitchBringup bp;
 
   return 0;
 }

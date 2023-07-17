@@ -21,7 +21,7 @@
 #include <crc_table.h>
 
 using namespace std;
-namespace FDILink
+namespace RobotSwitch
 {
 #define FRAME_HEAD 0xfc
 #define FRAME_END 0xfd
@@ -38,17 +38,16 @@ namespace FDILink
 #define PI 3.141592653589793
 #define DEG_TO_RAD 0.017453292519943295
 
-
-class ahrsBringup
+class RobotSwitchBringup
 {
 public:
-  ahrsBringup();
-  ~ahrsBringup();
+  RobotSwitchBringup();
+  ~RobotSwitchBringup();
   void processLoop();
-  bool checkCS8(int len);
-  bool checkCS16(int len);
-  void checkSN(int type);
-  void magCalculateYaw(double roll, double pitch, double &magyaw, double magx, double magy, double magz);
+  bool ahrs_checkCS8(int len);
+  bool ahrs_checkCS16(int len);
+  void ahrs_checkSN(int type);
+  void ahrs_magCalculateYaw(double roll, double pitch, double &magyaw, double magx, double magy, double magz);
   ros::NodeHandle nh_;
 
 private:
@@ -60,10 +59,10 @@ private:
   bool frist_sn_;
   int device_type_ = 1;
 
-  //serial
-  serial::Serial serial_; //声明串口对象
-  std::string serial_port_;
-  int serial_baud_;
+  //4 serial
+  serial::Serial ahrs_serial_; //声明串口对象
+  std::string ahrs_serial_port_;
+  int ahrs_serial_baud_;
   int serial_timeout_;
   //data
   FDILink::imu_frame_read  imu_frame_;
@@ -89,9 +88,7 @@ private:
   ros::Publisher Magnetic_pub_;
   ros::Publisher twist_pub_;
   ros::Publisher NED_odom_pub_;
-
-
-}; //ahrsBringup
-} // namespace FDILink
+}; //RobotSwitchBringup
+} // namespace RobotSwitch
 
 #endif
