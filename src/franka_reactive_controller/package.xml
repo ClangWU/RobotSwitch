@@ -64,6 +64,7 @@
   <build_depend>rospy</build_depend>
   <build_depend>tf</build_depend>
   <build_depend>tf_conversions</build_depend>
+  <build_export_depend>message_runtime</build_export_depend>
   <build_export_depend>control_toolbox</build_export_depend>
   <build_export_depend>controller_interface</build_export_depend>
   <build_export_depend>dynamic_reconfigure</build_export_depend>
@@ -78,12 +79,16 @@
   <build_export_depend>rospy</build_export_depend>
   <build_export_depend>tf</build_export_depend>
   <build_export_depend>tf_conversions</build_export_depend>
+  <exec_depend>franka_control</exec_depend>
+  <exec_depend>message_runtime</exec_depend>
   <exec_depend>control_toolbox</exec_depend>
   <exec_depend>controller_interface</exec_depend>
   <exec_depend>dynamic_reconfigure</exec_depend>
   <exec_depend>eigen_conversions</exec_depend>
   <exec_depend>franka_gripper</exec_depend>
   <exec_depend>franka_hw</exec_depend>
+  <exec_depend>franka_control</exec_depend>
+  <exec_depend>franka_description</exec_depend>
   <exec_depend>geometry_msgs</exec_depend>
   <exec_depend>hardware_interface</exec_depend>
   <exec_depend>pluginlib</exec_depend>
@@ -92,8 +97,9 @@
   <exec_depend>rospy</exec_depend>
   <exec_depend>tf</exec_depend>
   <exec_depend>tf_conversions</exec_depend>
+  <exec_depend>panda_moveit_config</exec_depend>
 
-
+  <depend>libfranka</depend>
   <!-- The export tag contains other, unspecified, tags -->
   <export>
     <!-- Other tools can request additional information be placed here -->

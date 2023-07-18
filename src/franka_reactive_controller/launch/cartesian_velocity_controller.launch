@@ -1,4 +1,5 @@
 <launch>
+  <!-- Load desired controller-->  
   <arg name="stopped" default="false" />
   <rosparam command="load" file="$(find franka_reactive_controller)/config/franka_reactive_controller.yaml" />
   <node unless="$(arg stopped)" name="controller_spawner_cv" pkg="controller_manager" type="spawner" respawn="false" output="screen"  args="cartesian_velocity_node_controller"/>
