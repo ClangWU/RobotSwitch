@@ -109,6 +109,9 @@ private:
   ros::Publisher Magnetic_pub_;
   ros::Publisher twist_pub_;
   ros::Publisher NED_odom_pub_;
+
+  //For Franka
+  ros::Publisher velocity_command_publisher;
 }; //RobotSwitchBringup
 } // namespace RobotSwitch
 

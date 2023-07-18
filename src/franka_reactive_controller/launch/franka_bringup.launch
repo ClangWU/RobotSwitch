@@ -17,17 +17,17 @@
     </include>
 
     <!-- Start only if cartesian_velocity_controller is set in "controller"-->
-    <!-- <include file="$(find franka_reactive_controller)/launch/cartesian_velocity_controller.launch" 
+    <include file="$(find franka_reactive_controller)/launch/cartesian_velocity_controller.launch" 
       if="$(eval arg('controller') == 'cartesian_velocity_controller')">
-    </include> -->
+    </include>
   </group>
 
   <group if="$(arg bringup_rviz)">
     <!-- Convert franka state of EE to Geometry Message PoseStamped!! -->  
-    <node name="franka_to_geometry_messages" pkg="franka_reactive_controller" type="franka_to_geometry_messages.py" respawn="false" output="screen"/>
+    <!-- <node name="franka_to_geometry_messages" pkg="franka_reactive_controller" type="franka_to_geometry_messages.py" respawn="false" output="screen"/> -->
 
     <!-- Bring up rqt_reconfigure to modify values -->
-    <node name="rqt_reconfigure" pkg="rqt_reconfigure" type="rqt_reconfigure" required="false" />
+    <!-- <node name="rqt_reconfigure" pkg="rqt_reconfigure" type="rqt_reconfigure" required="false" /> -->
 
     <!-- Bring up gripper GUI to control gripper from code -->  
     <node if="$(arg use_gripper_gui)" name="franka_gui_gripper_run" pkg="franka_reactive_controller" type="franka_gui_gripper_run.py" respawn="false" output="screen"/>

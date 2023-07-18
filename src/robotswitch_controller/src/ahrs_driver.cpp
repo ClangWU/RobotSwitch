@@ -31,9 +31,20 @@ RobotSwitchBringup::RobotSwitchBringup() :frist_sn_(false)
   twist_pub_ = nh_.advertise<geometry_msgs::Twist>(twist_topic_.c_str(), 10);
   NED_odom_pub_ = nh_.advertise<nav_msgs::Odometry>(NED_odom_topic_.c_str(), 10);
 
+  velocity_command_publisher = nh_.advertise<geometry_msgs::Twist>("/cartesian_velocity_controller/cartesian_velocity", 10);
+
   //setp up serial  设置串口参数并打开串口
   try
   {
+    // ahrs_serial_.setPort(ahrs_serial_port_);
+    // ahrs_serial_.setBaudrate(ahrs_serial_baud_);
+    // ahrs_serial_.setFlowcontrol(serial::flowcontrol_none);
+    // ahrs_serial_.setParity(serial::parity_none); //default is parity_none
+    // ahrs_serial_.setStopbits(serial::stopbits_one);
+    // ahrs_serial_.setBytesize(serial::eightbits);
+    // serial::Timeout time_out = serial::Timeout::simpleTimeout(ahrs_serial_timeout_);
+    // ahrs_serial_.setTimeout(time_out);
+    // ahrs_serial_.open();
     serial_init(&ahrs_serial_, ahrs_serial_port_, ahrs_serial_baud_, ahrs_serial_timeout_);
     // serial_init(&move_dof_serial_, move_dof_serial_port_, move_dof_serial_baud_, move_dof_serial_timeout_);
     // serial_init(&force_dof_serial_, force_dof_serial_port_, force_dof_serial_baud_, force_dof_serial_timeout_);
@@ -449,11 +460,20 @@ void RobotSwitchBringup::processLoop()   // 数据处理过程
         imu_data.linear_acceleration.y = -imu_frame_.frame.data.data_pack.accelerometer_y;
         imu_data.linear_acceleration.z = -imu_frame_.frame.data.data_pack.accelerometer_z;
       }
+
+      geometry_msgs::Twist fk_cartesian_msg;
+      fk_cartesian_msg.linear.x = 0;
+      fk_cartesian_msg.linear.y = 0;
+      fk_cartesian_msg.linear.z = 0;
+      fk_cartesian_msg.angular.x = imu_data.angular_velocity.x * 0.1f;
+      fk_cartesian_msg.angular.y = imu_data.angular_velocity.y * 0.1f;
+      fk_cartesian_msg.angular.z = imu_data.angular_velocity.z * 0.1f;
       //clang
       // double current_time_ms = ros::Time::now().toSec() * 1000;
       // ROS_INFO("\033[1;31mCurrent time (ms): %.3f\033[0m", current_time_ms);
       //5ms per time
       imu_pub_.publish(imu_data);
+      velocity_command_publisher.publish(fk_cartesian_msg);
 }
     //读取AHRS数据进行解析，并发布相关话题
     else if (head_type[0] == TYPE_AHRS)

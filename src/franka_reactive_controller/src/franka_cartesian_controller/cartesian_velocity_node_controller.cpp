@@ -102,11 +102,11 @@ namespace franka_reactive_controller
 
     node_handle.param<bool>("stop_on_contact", stop_on_contact, true);
 
-    velocity_command_subscriber = node_handle.subscribe("cartesian_velocity",
+    velocity_command_subscriber = node_handle.subscribe("/cartesian_velocity_controller/cartesian_velocity",
                                                         10,
                                                         &CartesianVelocityNodeController::cartesian_velocity_callback,
                                                         this);
-
+    ROS_INFO("\033[1;31mvelocity_command_subscriber  initialize\033[0m");
     return true;
   }
 
@@ -127,7 +127,8 @@ namespace franka_reactive_controller
     velocity_command[3] = msg->angular.x;
     velocity_command[4] = msg->angular.y;
     velocity_command[5] = msg->angular.z;
-
+    
+    std::cout << "get command" << std::endl;
     time_since_last_command = ros::Duration(0.0);
   }
 
@@ -136,6 +137,7 @@ namespace franka_reactive_controller
   {
     // Update the controller at 1kHz
     time_since_last_command += period;
+    // std::cout << "running" << std::endl;
 
     // If no message received in set time,
     if (time_since_last_command.toSec() > max_duration_between_commands)
