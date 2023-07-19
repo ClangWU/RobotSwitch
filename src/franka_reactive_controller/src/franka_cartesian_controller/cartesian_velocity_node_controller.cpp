@@ -127,8 +127,7 @@ namespace franka_reactive_controller
     velocity_command[3] = msg->angular.x;
     velocity_command[4] = msg->angular.y;
     velocity_command[5] = msg->angular.z;
-    
-    std::cout << "get command" << std::endl;
+
     time_since_last_command = ros::Duration(0.0);
   }
 
@@ -137,7 +136,6 @@ namespace franka_reactive_controller
   {
     // Update the controller at 1kHz
     time_since_last_command += period;
-    // std::cout << "running" << std::endl;
 
     // If no message received in set time,
     if (time_since_last_command.toSec() > max_duration_between_commands)
