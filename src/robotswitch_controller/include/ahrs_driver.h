@@ -44,6 +44,12 @@ public:
   RobotSwitchBringup();
   ~RobotSwitchBringup();
   void processLoop();
+  // all task process
+  void ahrs_process();
+  void move_process();
+  void interact_process();
+  void force_process();
+
   bool ahrs_checkCS8(int len);
   bool ahrs_checkCS16(int len);
   void ahrs_checkSN(int type);
@@ -109,6 +115,8 @@ private:
   ros::Publisher Magnetic_pub_;
   ros::Publisher twist_pub_;
   ros::Publisher NED_odom_pub_;
+
+  
 }; //RobotSwitchBringup
 } // namespace RobotSwitch
 

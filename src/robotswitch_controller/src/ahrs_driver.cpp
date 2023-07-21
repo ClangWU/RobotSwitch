@@ -60,14 +60,23 @@ RobotSwitchBringup::RobotSwitchBringup() :frist_sn_(false)
 RobotSwitchBringup::~RobotSwitchBringup()  // 析构函数关闭串口通道
 {
   if (ahrs_serial_.isOpen())
-    ahrs_serial_.close();
+      ahrs_serial_.close();
+  if (move_dof_serial_.isOpen())
+      move_dof_serial_.close();  
+  if (force_dof_serial_.isOpen())
+      force_dof_serial_.close();  
+  if (interact_dof_serial_.isOpen())
+      interact_dof_serial_.close();
 }
 
 void RobotSwitchBringup::processLoop()   // 数据处理过程
 {
   ROS_INFO("RobotSwitchBringup::processLoop: start");
-  while (ros::ok())
-  {
+  while (ros::ok()){
+        move_process();
+    force_process();
+    interact_process();
+    //ahrs_process();
     if (!ahrs_serial_.isOpen())
     {
       ROS_WARN("serial unopen");
@@ -513,15 +522,33 @@ void RobotSwitchBringup::processLoop()   // 数据处理过程
       speed_msg.linear.y =  insgps_frame_.frame.data.data_pack.BodyVelocity_Y;
       speed_msg.linear.z =  insgps_frame_.frame.data.data_pack.BodyVelocity_Z;   
       twist_pub_.publish(speed_msg);
-
-
-		
     //  std::cout << "N: " << insgps_frame_.frame.data.data_pack.Location_North << std::endl;
     //  std::cout << "E: " << insgps_frame_.frame.data.data_pack.Location_East << std::endl;
     //  std::cout << "D: " << insgps_frame_.frame.data.data_pack.Location_Down << std::endl;
+    }
+}
+}
 
-    }   
+void RobotSwitchBringup::move_process(){
+  if (!move_dof_serial_.isOpen()){         
+    ROS_WARN("serial unopen");
   }
+  
+}
+
+void RobotSwitchBringup::interact_process(){
+  if (!interact_dof_serial_.isOpen()){         
+    ROS_WARN("serial unopen");
+  }
+
+}
+
+void RobotSwitchBringup::force_process(){
+  if (!force_dof_serial_.isOpen()){         
+    ROS_WARN("serial unopen");
+    
+  }
+
 }
 
 void RobotSwitchBringup::ahrs_magCalculateYaw(double roll, double pitch, double &magyaw, double magx, double magy, double magz)
