@@ -35,9 +35,9 @@ RobotSwitchBringup::RobotSwitchBringup() :frist_sn_(false)
   try
   {
     serial_init(&ahrs_serial_, ahrs_serial_port_, ahrs_serial_baud_, ahrs_serial_timeout_);
-    // serial_init(&move_dof_serial_, move_dof_serial_port_, move_dof_serial_baud_, move_dof_serial_timeout_);
-    // serial_init(&force_dof_serial_, force_dof_serial_port_, force_dof_serial_baud_, force_dof_serial_timeout_);
-    // serial_init(&interact_dof_serial_, interact_dof_serial_port_, interact_dof_serial_baud_, interact_dof_serial_timeout_);
+    serial_init(&move_dof_serial_, move_dof_serial_port_, move_dof_serial_baud_, move_dof_serial_timeout_);
+    serial_init(&force_dof_serial_, force_dof_serial_port_, force_dof_serial_baud_, force_dof_serial_timeout_);
+    serial_init(&interact_dof_serial_, interact_dof_serial_port_, interact_dof_serial_baud_, interact_dof_serial_timeout_);
 
   }
   catch (serial::IOException &e)  // 抓取异常
@@ -57,7 +57,7 @@ RobotSwitchBringup::RobotSwitchBringup() :frist_sn_(false)
   processLoop();
 }
 
-RobotSwitchBringup::~RobotSwitchBringup()  // 析构函数关闭串口通道
+RobotSwitchBringup::~RobotSwitchBringup()  
 {
   if (ahrs_serial_.isOpen())
       ahrs_serial_.close();
@@ -69,7 +69,7 @@ RobotSwitchBringup::~RobotSwitchBringup()  // 析构函数关闭串口通道
       interact_dof_serial_.close();
 }
 
-void RobotSwitchBringup::processLoop()   // 数据处理过程
+void RobotSwitchBringup::processLoop()   
 {
   ROS_INFO("RobotSwitchBringup::processLoop: start");
   while (ros::ok()){
@@ -531,21 +531,21 @@ void RobotSwitchBringup::processLoop()   // 数据处理过程
 
 void RobotSwitchBringup::move_process(){
   if (!move_dof_serial_.isOpen()){         
-    ROS_WARN("serial unopen");
+    ROS_WARN("move serial unopen");
   }
   
 }
 
 void RobotSwitchBringup::interact_process(){
   if (!interact_dof_serial_.isOpen()){         
-    ROS_WARN("serial unopen");
+    ROS_WARN("interact serial unopen");
   }
 
 }
 
 void RobotSwitchBringup::force_process(){
   if (!force_dof_serial_.isOpen()){         
-    ROS_WARN("serial unopen");
+    ROS_WARN("force serial unopen");
     
   }
 
