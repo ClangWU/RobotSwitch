@@ -31,6 +31,8 @@ RobotSwitchBringup::RobotSwitchBringup() :frist_sn_(false)
   twist_pub_ = nh_.advertise<geometry_msgs::Twist>(twist_topic_.c_str(), 10);
   NED_odom_pub_ = nh_.advertise<nav_msgs::Odometry>(NED_odom_topic_.c_str(), 10);
 
+  velocity_command_publisher = nh_.advertise<geometry_msgs::Twist>("/cartesian_velocity_controller/cartesian_velocity", 10);
+
   //setp up serial  设置串口参数并打开串口
   try
   {
@@ -463,6 +465,17 @@ void RobotSwitchBringup::processLoop()
       // ROS_INFO("\033[1;31mCurrent time (ms): %.3f\033[0m", current_time_ms);
       //5ms per time
       imu_pub_.publish(imu_data);
+
+      geometry_msgs::Twist fk_cartesian_msg;
+      fk_cartesian_msg.linear.x = 0;
+      fk_cartesian_msg.linear.y = 0;
+      fk_cartesian_msg.linear.z = 0;
+      fk_cartesian_msg.angular.x = imu_data.angular_velocity.x * 0.1f;
+      fk_cartesian_msg.angular.y = imu_data.angular_velocity.y * 0.1f;
+      fk_cartesian_msg.angular.z = imu_data.angular_velocity.z * 0.1f;
+
+      imu_pub_.publish(imu_data);
+      velocity_command_publisher.publish(fk_cartesian_msg);
 }
     //读取AHRS数据进行解析，并发布相关话题
     else if (head_type[0] == TYPE_AHRS)

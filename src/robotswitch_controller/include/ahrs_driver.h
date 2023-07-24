@@ -131,6 +131,8 @@ private:
   ros::Publisher Magnetic_pub_;
   ros::Publisher twist_pub_;
   ros::Publisher NED_odom_pub_;
+  
+  ros::Publisher velocity_command_publisher;
 
   template <typename T>
     std::vector<T> readStruct(serial::Serial *serial_, unsigned char head, unsigned char tail)
