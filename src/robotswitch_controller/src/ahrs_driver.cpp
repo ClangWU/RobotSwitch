@@ -19,8 +19,14 @@ RobotSwitchBringup::RobotSwitchBringup() :frist_sn_(false)
   pravite_nh.param("NED_odom_topic_", NED_odom_topic_, std::string("/NED_odometry")); 
 
   //serial                                                 
-  pravite_nh.param("port", ahrs_serial_port_, std::string("/dev/ttyTHS1")); 
-  pravite_nh.param("baud", ahrs_serial_baud_, 115200);
+  pravite_nh.param("ahrs_port", ahrs_serial_port_, std::string("/dev/ttyTHS1")); 
+  pravite_nh.param("ahrs_baud", ahrs_serial_baud_, 115200);
+
+  pravite_nh.param("interact_port", interact_dof_serial_port_, std::string("/dev/ttyUSB1")); 
+  pravite_nh.param("interact_baud", ahrs_serial_baud_, 115200);
+  
+  // pravite_nh.param("force_port", ahrs_serial_port_, std::string("/dev/ttyTHS1")); 
+  // pravite_nh.param("force_baud", ahrs_serial_baud_, 115200);
 
   //publisher  创建发布对象
   imu_pub_ = nh_.advertise<sensor_msgs::Imu>(imu_topic_.c_str(), 10);
@@ -36,15 +42,15 @@ RobotSwitchBringup::RobotSwitchBringup() :frist_sn_(false)
   //setp up serial  设置串口参数并打开串口
   try
   {
-    serial_init(&ahrs_serial_, ahrs_serial_port_, ahrs_serial_baud_, ahrs_serial_timeout_);
-    serial_init(&move_dof_serial_, move_dof_serial_port_, move_dof_serial_baud_, move_dof_serial_timeout_);
-    serial_init(&force_dof_serial_, force_dof_serial_port_, force_dof_serial_baud_, force_dof_serial_timeout_);
-    serial_init(&interact_dof_serial_, interact_dof_serial_port_, interact_dof_serial_baud_, interact_dof_serial_timeout_);
+    serial_init(&ahrs_serial_, ahrs_serial_port_, ahrs_serial_baud_, 1000);
+    //serial_init(&move_dof_serial_, move_dof_serial_port_, move_dof_serial_baud_, move_dof_serial_timeout_);
+    //serial_init(&force_dof_serial_, force_dof_serial_port_, force_dof_serial_baud_, force_dof_serial_timeout_);
+    serial_init(&interact_dof_serial_, interact_dof_serial_port_, interact_dof_serial_baud_, 1000);
 
   }
   catch (serial::IOException &e)  // 抓取异常
   {
-    ROS_ERROR_STREAM("Unable to open port ");
+    ROS_ERROR_STREAM("ahrs Unable to open port ");
     exit(0);
   }
   if (ahrs_serial_.isOpen())
@@ -71,12 +77,13 @@ RobotSwitchBringup::~RobotSwitchBringup()
       interact_dof_serial_.close();
 }
 
+
 void RobotSwitchBringup::processLoop()   
 {
   ROS_INFO("RobotSwitchBringup::processLoop: start");
   while (ros::ok()){
-        move_process();
-    force_process();
+    // move_process();
+    //force_process();
     interact_process();
     //ahrs_process();
     if (!ahrs_serial_.isOpen())
@@ -543,25 +550,28 @@ void RobotSwitchBringup::processLoop()
 }
 
 void RobotSwitchBringup::move_process(){
-  if (!move_dof_serial_.isOpen()){         
+  if(!move_dof_serial_.isOpen()){         
     ROS_WARN("move serial unopen");
+  }else{
+    _move_handle = filter(readStruct<MoveData>(&move_dof_serial_,0x44, 0x55));
   }
-  
 }
 
 void RobotSwitchBringup::interact_process(){
   if (!interact_dof_serial_.isOpen()){         
     ROS_WARN("interact serial unopen");
+  }else{
+    _interact_handle = filter(readStruct<InteractData>(&interact_dof_serial_, 0x44, 0x55));
+    ROS_INFO("\033[1;31m channel: %d\033[0m", _interact_handle.y_);
   }
-
 }
 
 void RobotSwitchBringup::force_process(){
   if (!force_dof_serial_.isOpen()){         
     ROS_WARN("force serial unopen");
-    
+  }else{
+    _force_handle = filter(readStruct<ForceData>(&force_dof_serial_,0x44, 0x55));
   }
-
 }
 
 void RobotSwitchBringup::ahrs_magCalculateYaw(double roll, double pitch, double &magyaw, double magx, double magy, double magz)

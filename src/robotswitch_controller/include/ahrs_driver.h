@@ -131,8 +131,12 @@ private:
   ros::Publisher Magnetic_pub_;
   ros::Publisher twist_pub_;
   ros::Publisher NED_odom_pub_;
-  
+
   ros::Publisher velocity_command_publisher;
+
+  ForceData     _force_handle;
+  MoveData        _move_handle;
+  InteractData _interact_handle;
 
   template <typename T>
     std::vector<T> readStruct(serial::Serial *serial_, unsigned char head, unsigned char tail)
@@ -153,7 +157,7 @@ private:
     }
 
     template <typename T>
-    bool writeStruct(T data_struct)
+    bool writeStruct(serial::Serial *serial_, T data_struct)
     {
         size_t len_result = serial_->write(reinterpret_cast<const uint8_t*>(&data_struct), sizeof(data_struct));
         return (sizeof(data_struct) == len_result);
@@ -163,11 +167,9 @@ private:
     T filter(const std::vector<T> &dataScope){
     if (!dataScope.empty())
     {
-        this->data = dataScope.back();
         return dataScope.back();
     }else{
         ROS_ERROR_STREAM("Unable to read data ");
-        return this->data;
     }
   }
 

@@ -58,12 +58,14 @@ catkin_package(
 
 set(INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set(H_FILES   ${INCLUDE_DIR}/franka_cartesian_controller/cartesian_velocity_node_controller.h
+              ${INCLUDE_DIR}/franka_cartesian_controller/cartesian_pose_node_controller.h
               ${INCLUDE_DIR}/franka_motion_generator/libfranka_joint_motion_generator.h)
 
 include_directories(include/franka_cartesian_controller include/franka_motion_generator ${catkin_INCLUDE_DIRS})
 ## Declare a C++ executable
 set(SRCS
     src/franka_cartesian_controller/cartesian_velocity_node_controller.cpp
+    src/franka_cartesian_controller/cartesian_pose_node_controller.cpp
     src/franka_motion_generator/libfranka_joint_motion_generator.cpp)
 ## Declare a C++ library
 add_library(franka_reactive_controller ${H_FILES} ${SRCS})
