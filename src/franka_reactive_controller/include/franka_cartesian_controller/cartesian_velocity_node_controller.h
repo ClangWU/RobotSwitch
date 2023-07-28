@@ -28,7 +28,7 @@ class CartesianVelocityNodeController : public controller_interface::MultiInterf
   void starting(const ros::Time&) override;
   void stopping(const ros::Time&) override;
 
-  void cartesian_velocity_callback(const geometry_msgs::Twist::ConstPtr& msg);
+  void cartesian_velocity_callback(const geometry_msgs::Twist::ConstPtr& vel_msg);
 
  private:
   franka_hw::FrankaVelocityCartesianInterface* velocity_cartesian_interface_;

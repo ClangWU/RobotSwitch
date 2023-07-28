@@ -4,13 +4,13 @@
     <param name="debug"  value="false"/>
 
     <!-- <param name="port"  value="/dev/robotswitch_controller"/> -->
-    <param name="ahrs_port"  value="/dev/ttyUSB0"/>
+    <!-- <param name="ahrs_port"  value="/dev/ttyUSB0"/> -->
     <!-- 波特率 -->
-    <param name="ahrs_baud"  value="921600"/>
+    <!-- <param name="ahrs_baud"  value="921600"/> -->
 
-    <param name="interact_port"  value="/dev/ttyUSB1"/>
+    <param name="interact_port"  value="/dev/ttyUSB0"/>
     <!-- 波特率 -->
-    <param name="interact_baud"  value="921600"/>
+    <param name="interact_baud"  value="115200"/>
 
     <!-- imu数据话题 -->
     <!-- MSG_IMU 0X40数据包的数据 --> 

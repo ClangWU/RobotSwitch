@@ -51,7 +51,7 @@ struct MoveData
 
 struct InteractData
 {
-    uint16_t y_;    //interact data
+    int y_;    //interact data
 } __attribute__((packed));
 
 class RobotSwitchBringup

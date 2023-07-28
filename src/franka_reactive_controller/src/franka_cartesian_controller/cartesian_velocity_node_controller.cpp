@@ -117,7 +117,7 @@ namespace franka_reactive_controller
     last_sent_velocity = {{0.0, 0.0, 0.0, 0.0, 0.0, 0.0}};
   }
 
-  void CartesianVelocityNodeController::cartesian_velocity_callback(const geometry_msgs::Twist::ConstPtr &msg)
+  void CartesianVelocityNodeController::cartesian_velocity_callback(const geometry_msgs::Twist::ConstPtr &vel_msg)
   {
     // Callback for ROS message
     velocity_command[0] = msg->linear.x;

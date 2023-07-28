@@ -14,21 +14,21 @@
 #include <pluginlib/class_list_macros.h>
 #include <ros/ros.h>
 
-namespace franka_interactive_controllers {
+namespace franka_reactive_controller{
 
-bool CartesianPoseFrankaController::init(hardware_interface::RobotHW* robot_hardware,
+bool CartesianPoseNodeController::init(hardware_interface::RobotHW* robot_hardware,
                                           ros::NodeHandle& node_handle) {
   cartesian_pose_interface_ = robot_hardware->get<franka_hw::FrankaPoseCartesianInterface>();
   if (cartesian_pose_interface_ == nullptr) {
     ROS_ERROR(
-        "CartesianPoseFrankaController: Could not get Cartesian Pose "
+        "CartesianPoseNodeController: Could not get Cartesian Pose "
         "interface from hardware");
     return false;
   }
 
   std::string arm_id;
   if (!node_handle.getParam("arm_id", arm_id)) {
-    ROS_ERROR("CartesianPoseFrankaController: Could not get parameter arm_id");
+    ROS_ERROR("CartesianPoseNodeController: Could not get parameter arm_id");
     return false;
   }
 
@@ -37,13 +37,13 @@ bool CartesianPoseFrankaController::init(hardware_interface::RobotHW* robot_hard
         cartesian_pose_interface_->getHandle(arm_id + "_robot"));
   } catch (const hardware_interface::HardwareInterfaceException& e) {
     ROS_ERROR_STREAM(
-        "CartesianPoseFrankaController: Exception getting Cartesian handle: " << e.what());
+        "CartesianPoseNodeController: Exception getting Cartesian handle: " << e.what());
     return false;
   }
 
   auto state_interface = robot_hardware->get<franka_hw::FrankaStateInterface>();
   if (state_interface == nullptr) {
-    ROS_ERROR("CartesianPoseFrankaController: Could not get state interface from hardware");
+    ROS_ERROR("CartesianPoseNodeController: Could not get state interface from hardware");
     return false;
   }
 
@@ -54,7 +54,7 @@ bool CartesianPoseFrankaController::init(hardware_interface::RobotHW* robot_hard
     for (size_t i = 0; i < q_start.size(); i++) {
       if (std::abs(state_handle.getRobotState().q_d[i] - q_start[i]) > 0.1) {
         ROS_ERROR_STREAM(
-            "CartesianPoseFrankaController: Robot is not in the expected starting position for "
+            "CartesianPoseNodeController: Robot is not in the expected starting position for "
             "running this example. Run `roslaunch franka_interactive_controllers move_to_start.launch "
             "robot_ip:=<robot-ip> load_gripper:=<has-attached-gripper>` first.");
         return false;
@@ -62,35 +62,106 @@ bool CartesianPoseFrankaController::init(hardware_interface::RobotHW* robot_hard
     }
   } catch (const hardware_interface::HardwareInterfaceException& e) {
     ROS_ERROR_STREAM(
-        "CartesianPoseFrankaController: Exception getting state handle: " << e.what());
+        "CartesianPoseNodeController: Exception getting state handle: " << e.what());
     return false;
   }
+
+  // Rate Limiting
+    if (!node_handle.getParam("rate_limiting/linear/velocity", max_velocity_linear))
+    {
+      ROS_ERROR("CartesianVelocityNodeController: Could not get parameter rate_limiting/linear/velocity");
+      return false;
+    }
+    if (!node_handle.getParam("rate_limiting/linear/acceleration", max_acceleration_linear))
+    {
+      ROS_ERROR("CartesianVelocityNodeController: Could not get parameter rate_limiting/acc/acceleration");
+      return false;
+    }
+    if (!node_handle.getParam("rate_limiting/linear/jerk", max_jerk_linear))
+    {
+      ROS_ERROR("CartesianVelocityNodeController: Could not get parameter rate_limiting/linear/jerk");
+      return false;
+    }
+    if (!node_handle.getParam("rate_limiting/angular/velocity", max_velocity_angular))
+    {
+      ROS_ERROR("CartesianVelocityNodeController: Could not get parameter rate_limiting/angular/velocity");
+      return false;
+    }
+    if (!node_handle.getParam("rate_limiting/angular/acceleration", max_acceleration_angular))
+    {
+      ROS_ERROR("CartesianVelocityNodeController: Could not get parameter rate_limiting/acc/acceleration");
+      return false;
+    }
+    if (!node_handle.getParam("rate_limiting/angular/jerk", max_jerk_angular))
+    {
+      ROS_ERROR("CartesianVelocityNodeController: Could not get parameter rate_limiting/angular/jerk");
+      return false;
+    }
+
+    node_handle.param<bool>("stop_on_contact", stop_on_contact, true);
 
   return true;
 }
 
-void CartesianPoseFrankaController::starting(const ros::Time& /* time */) {
-  initial_pose_ = cartesian_pose_handle_->getRobotState().O_T_EE_d;
-  elapsed_time_ = ros::Duration(0.0);
+void CartesianPoseNodeController::starting(const ros::Time& /* time */) {
+  initial_pose_ = cartesian_pose_handle_->getRobotState().O_T_EE;//O_T_EE_d
+  new_pose = initial_pose_;
+  time_since_last_command = ros::Duration(0.0);
+}
+void CartesianPoseNodeController::cartesian_pose_callback(const geometry_msgs::PoseStamped::ConstPtr& pose_msg){
+  //TODO
+  Eigen::Affine3d pose_transform(Eigen::Translation3d(Eigen::Vector3d(pose_msg.position.x,
+                                                                      pose_msg.position.y,
+                                                                      pose_msg.position.z)) *
+                                                      Eigen::Quaterniond( pose_msg.orientation.w,
+                                                                          pose_msg.orientation.x,
+                                                                          pose_msg.orientation.y,
+                                                                          pose_msg.orientation.z));
+
+  Eigen::Matrix4d matrix = pose_transform.matrix();
+  std::copy(matrix.data(), matrix.data() + 16, pose_command.begin());
 }
 
-void CartesianPoseFrankaController::update(const ros::Time& /* time */,
+  // pose_command
+  time_since_last_command = ros::Duration(0.0);
+}
+
+void CartesianPoseNodeController::update(const ros::Time& /* time */,
                                             const ros::Duration& period) {
 
   // TODO: Change this code to take a desired pose message stamped
-  elapsed_time_ += period;
+  time_since_last_command += period;
+  auto state = state_handle_->getRobotState();
 
-  double radius = 0.3;
-  double angle = M_PI / 4 * (1 - std::cos(M_PI / 5.0 * elapsed_time_.toSec()));
-  double delta_x = radius * std::sin(angle);
-  double delta_z = radius * (std::cos(angle) - 1);
-  std::array<double, 16> new_pose = initial_pose_;
-  new_pose[12] -= delta_x;
-  new_pose[14] -= delta_z;
+  if (time_since_last_command.toSec() > max_duration_between_commands){
+    pose_command = state.O_T_EE_d;
+    //pose_command = state.O_T_EE;
+  }
+  
+  new_pose = franka::limitRate( 	   
+        max_translational_velocity,
+        max_translational_acceleration,
+        max_translational_jerk,
+        max_rotational_velocity,
+        max_rotational_acceleration,
+        max_rotational_jerk,
+        pose_command
+        state.O_T_EE_c,
+        state.O_dP_EE_c,
+        state.O_ddP_EE_c 
+    )	
+
   cartesian_pose_handle_->setCommand(new_pose);
+}
+
+void CartesianPoseNodeController::stopping(const ros::Time & /*time*/)
+{
+  // WARNING: DO NOT SEND ZERO VELOCITIES HERE AS IN CASE OF ABORTING DURING MOTION
+  // A JUMP TO ZERO WILL BE COMMANDED PUTTING HIGH LOADS ON THE ROBOT. LET THE DEFAULT
+  // BUILT-IN STOPPING BEHAVIOR SLOW DOWN THE ROBOT.
 }
 
 }  // namespace franka_interactive_controllers
 
-PLUGINLIB_EXPORT_CLASS(franka_interactive_controllers::CartesianPoseFrankaController,
+PLUGINLIB_EXPORT_CLASS(franka_reactive_controller::CartesianPoseNodeController,
                        controller_interface::ControllerBase)
