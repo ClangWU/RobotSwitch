@@ -12,6 +12,7 @@
 #include <ros/node_handle.h>
 #include <ros/time.h>
 #include <Eigen/Geometry>
+#include <franka/rate_limiting.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <franka_hw/franka_cartesian_command_interface.h>
 
@@ -24,6 +25,7 @@ class CartesianPoseNodeController
   bool init(hardware_interface::RobotHW* robot_hardware, ros::NodeHandle& node_handle) override;
   void starting(const ros::Time&) override;
   void update(const ros::Time&, const ros::Duration& period) override;
+  void stopping(const ros::Time&) override;
   void cartesian_pose_callback(const geometry_msgs::PoseStamped::ConstPtr& pose_msg);
 
  private:
@@ -34,14 +36,15 @@ class CartesianPoseNodeController
   std::array<double, 16> last_pose_;
   std::array<double, 16> new_pose_;
   std::array<double, 16> pose_command;
+  Eigen::Matrix4d pose_command_mat;
 
   double max_duration_between_commands;
-  double max_velocity_linear;
-  double max_acceleration_linear;
-  double max_jerk_linear;
-  double max_velocity_angular;
-  double max_acceleration_angular;
-  double max_jerk_angular;
+  double max_translational_velocity;
+  double max_translational_acceleration;
+  double max_translational_jerk;
+  double max_rotational_velocity;
+  double max_rotational_acceleration;
+  double max_rotational_jerk;
   bool stop_on_contact;
 };
 
