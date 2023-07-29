@@ -3,7 +3,7 @@
   <arg name="robot_ip"            default="192.168.1.100"/>
   <arg name="load_gripper"        default="true" />
   <arg name="use_gripper_gui"     default="true" />
-  <arg name="controller"          default="cartesian_velocity_controller"   doc="Which controller should be started? (One of {cartesian_pose, cartesian_twist}_controller )" />
+  <arg name="controller"          default="cartesian_pose_controller"   doc="Which controller should be started? (One of {cartesian_pose, cartesian_velocity}_controller )" />
   <arg name="bringup_rviz"        default="true" />
   <arg name="load_franka_control" default="true" />
 
@@ -17,9 +17,14 @@
     </include>
 
     <!-- Start only if cartesian_velocity_controller is set in "controller"-->
-    <!-- <include file="$(find franka_reactive_controller)/launch/cartesian_velocity_controller.launch" 
+    <include file="$(find franka_reactive_controller)/launch/cartesian_velocity_controller.launch" 
       if="$(eval arg('controller') == 'cartesian_velocity_controller')">
-    </include> -->
+    </include>
+
+    <!-- Start only if cartesian_pose_controller is set in "controller"-->
+    <include file="$(find franka_reactive_controller)/launch/cartesian_pose_controller.launch" 
+      if="$(eval arg('controller') == 'cartesian_pose_controller')">
+    </include>
   </group>
 
   <group if="$(arg bringup_rviz)">

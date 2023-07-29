@@ -15,7 +15,7 @@ cartesian_velocity_node_controller:
             jerk: 2000.0
     stop_on_contact: true
 
-CartesianPoseNodeController:
+cartesian_pose_node_controller:
     type: franka_reactive_controller/CartesianPoseNodeController
     arm_id: panda
     # If no new velocity commands are received in time (seconds)
