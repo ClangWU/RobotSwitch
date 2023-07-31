@@ -45,8 +45,8 @@ struct ForceData
 
 struct MoveData
 {
-    uint16_t x_;    //move data
-    uint16_t z_;
+    int x_;    //move data
+    int z_;
 } __attribute__((packed));
 
 struct InteractData

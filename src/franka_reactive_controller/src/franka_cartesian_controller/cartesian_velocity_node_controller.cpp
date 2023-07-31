@@ -120,10 +120,31 @@ namespace franka_reactive_controller
   void CartesianVelocityNodeController::cartesian_velocity_callback(const geometry_msgs::Twist::ConstPtr &vel_msg)
   {
     // Callback for ROS message
+
+    if(vel_msg->linear.y > INTERACT_VEL_POS) {
+      vel_y_ = DELTA_VEL_TRANS;
+    }else if(vel_msg->linear.y < -INTERACT_VEL_NEG){
+      vel_y_ = -DELTA_VEL_TRANS;
+    }else{
+      vel_y_ = 0;
+    }
+      if(vel_msg->linear.x > MOVE_X_VEL_POS) {
+        vel_x_ = DELTA_VEL_TRANS;
+      }else if(vel_msg->linear.x < -MOVE_X_VEL_NEG){
+        vel_x_ = -DELTA_VEL_TRANS;
+      }else{
+        vel_x_ = 0;
+      }
+        if(vel_msg->linear.z > MOVE_Z_VEL_POS) {
+          vel_z_ = DELTA_VEL_TRANS;
+        }else if(vel_msg->linear.z < -MOVE_Z_VEL_NEG){
+          vel_x_ = -DELTA_VEL_TRANS;
+        }else{
+          vel_x_ = 0;
+        }
     velocity_command[0] =  vel_msg->linear.x;
     velocity_command[1] =  vel_msg->linear.y;
     velocity_command[2] =  vel_msg->linear.z;
-
     velocity_command[3] =  vel_msg->angular.x;
     velocity_command[4] =  vel_msg->angular.y;
     velocity_command[5] =  vel_msg->angular.z;

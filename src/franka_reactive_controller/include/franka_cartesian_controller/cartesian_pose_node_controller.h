@@ -18,13 +18,13 @@
 
 namespace franka_reactive_controller {
 
-#define INTERACT_POS 500
-#define INTERACT_NEG -500
-#define MOVE_X_POS 500
-#define MOVE_X_NEG -500
-#define MOVE_Z_POS 500
-#define MOVE_Z_NEG -500
-#define DELTA_TRANS 0.005
+#define INTERACT_POSE_POS 500
+#define INTERACT_POSE_NEG -500
+#define MOVE_X_POSE_POS 500
+#define MOVE_X_POSE_NEG -500
+#define MOVE_Z_POSE_POS 500
+#define MOVE_Z_POSE_NEG -500
+#define DELTA_POSE_TRANS 0.005
 
 class CartesianPoseNodeController
     : public controller_interface::MultiInterfaceController<franka_hw::FrankaPoseCartesianInterface,
@@ -48,9 +48,9 @@ class CartesianPoseNodeController
   Eigen::Matrix3d rotation_mat;
   ros::Subscriber pose_command_subscriber;
 
-  double pos_x;
-  double pos_y;
-  double pos_z;
+  double pos_x_;
+  double pos_y_;
+  double pos_z_;
 
   double max_duration_between_commands;
   double max_translational_velocity;

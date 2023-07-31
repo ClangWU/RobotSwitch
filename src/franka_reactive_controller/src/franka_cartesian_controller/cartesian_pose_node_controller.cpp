@@ -132,26 +132,26 @@ namespace franka_reactive_controller
   }
 void CartesianPoseNodeController::cartesian_pose_callback(const geometry_msgs::PoseStamped::ConstPtr &pose_msg)
 {
-  if(pose_msg->pose.position.y > INTERACT_POS) {
-    pos_y = DELTA_TRANS;
-  }else if(pose_msg->pose.position.y < INTERACT_NEG){
-    pos_y = -DELTA_TRANS;
-  }else{
-    pos_y = 0;
-  }
-    if(pose_msg->pose.position.x > MOVE_X_POS) {
-      pos_x = DELTA_TRANS;
-    }else if(pose_msg->pose.position.x < MOVE_X_NEG){
-      pos_x = -DELTA_TRANS;
+    if(pose_msg->pose.position.y > INTERACT_POSE_POS) {
+      pos_y_ = DELTA_POSE_TRANS;
+    }else if(pose_msg->pose.position.y < -INTERACT_POSE_NEG){
+      pos_y_ = -DELTA_POSE_TRANS;
     }else{
-      pos_x = 0;
+      pos_y_ = 0;
     }
-      if(pose_msg->pose.position.z > MOVE_Z_POS) {
-        pos_z = DELTA_TRANS;
-      }else if(pose_msg->pose.position.z < MOVE_Z_NEG){
-        pos_z = -DELTA_TRANS;
+    if(pose_msg->pose.position.x > MOVE_X_POSE_POS) {
+      pos_x_ = DELTA_POSE_TRANS;
+    }else if(pose_msg->pose.position.x < -MOVE_X_POSE_NEG){
+      pos_x_ = -DELTA_POSE_TRANS;
+    }else{
+      pos_x_ = 0;
+    }
+      if(pose_msg->pose.position.z > MOVE_Z_POSE_POS) {
+        pos_z_ = DELTA_POSE_TRANS;
+      }else if(pose_msg->pose.position.z < -MOVE_Z_POSE_NEG){
+        pos_z_ = -DELTA_POSE_TRANS;
       }else{
-        pos_z = 0;
+        pos_z_ = 0;
       }
 
   Eigen::Quaterniond quat(pose_msg->pose.orientation.w,
