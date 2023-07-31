@@ -114,7 +114,7 @@ namespace franka_reactive_controller
     node_handle.param<bool>("stop_on_contact", stop_on_contact, true);
 
     return true;
-    pose_command_subscriber = node_handle.subscribe("cartesian_pose",
+    pose_command_subscriber = node_handle.subscribe("/cartesian_pose_controller/cartesian_pose",
                                                     10,
                                                     &CartesianPoseNodeController::cartesian_pose_callback,
                                                     this);

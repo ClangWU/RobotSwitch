@@ -38,6 +38,7 @@ namespace RobotSwitch
     NED_odom_pub_ = nh_.advertise<nav_msgs::Odometry>(NED_odom_topic_.c_str(), 10);
 
     velocity_command_publisher = nh_.advertise<geometry_msgs::Twist>("/cartesian_velocity_controller/cartesian_velocity", 10);
+    pose_command_publisher = nh_.advertise<geometry_msgs::PoseStamped>("/cartesian_pose_controller/cartesian_pose", 10);
 
     // setp up serial  设置串口参数并打开串口
     //  try
