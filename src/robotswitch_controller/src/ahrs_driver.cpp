@@ -38,9 +38,11 @@ namespace RobotSwitch
     twist_pub_ = nh_.advertise<geometry_msgs::Twist>(twist_topic_.c_str(), 10);
     NED_odom_pub_ = nh_.advertise<nav_msgs::Odometry>(NED_odom_topic_.c_str(), 10);
 
-    velocity_command_publisher = nh_.advertise<geometry_msgs::Twist>("/cartesian_velocity_controller/cartesian_velocity", 10);
-    // pose_command_publisher = nh_.advertise<geometry_msgs::PoseStamped>("/cartesian_pose_controller/cartesian_pose", 10);
+    velocity_command_publisher = nh_.advertise<geometry_msgs::Twist>("/cartesian_velocity_node_controller/cartesian_velocity", 10);
+    // pose_command_publisher = nh_.advertise<geometry_msgs::PoseStamped>("/cartesian_pose_node_controller/cartesian_pose", 10);
 
+    _move_handle ={0};
+    _interact_handle = {0};
     // setp up serial  设置串口参数并打开串口
      try
      {
@@ -55,6 +57,21 @@ namespace RobotSwitch
        exit(0);
      }
     processLoop();
+    
+    // while (ros::ok()){
+    //     move_process();
+    //     interact_process();
+    //     processLoop();
+    //     geometry_msgs::Twist fk_cartesian_msg;
+    //     fk_cartesian_msg.linear.x = _move_handle.x_;
+    //     fk_cartesian_msg.linear.y = _interact_handle.y_;
+    //     fk_cartesian_msg.linear.z = _move_handle.z_;
+    //     fk_cartesian_msg.angular.x = 0;
+    //     fk_cartesian_msg.angular.y = 0;
+    //     fk_cartesian_msg.angular.z = 0;
+
+    //     velocity_command_publisher.publish(fk_cartesian_msg);
+    // }
 
   }
 
@@ -75,10 +92,9 @@ namespace RobotSwitch
     ROS_INFO("RobotSwitchBringup::processLoop: start");
     while (ros::ok())
     {
-      move_process();
-      interact_process();
+      // move_process();
+      // interact_process();
       // force_process();
-      ROS_WARN("serial open");
       // ahrs_process();
       if (!ahrs_serial_.isOpen())
       {
@@ -482,12 +498,12 @@ namespace RobotSwitch
         imu_pub_.publish(imu_data);
 
         geometry_msgs::Twist fk_cartesian_msg;
-        fk_cartesian_msg.linear.x = 0;
-        fk_cartesian_msg.linear.y = 0;
-        fk_cartesian_msg.linear.z = 0;
-        fk_cartesian_msg.angular.x = imu_data.angular_velocity.x * 0.1f;
-        fk_cartesian_msg.angular.y = imu_data.angular_velocity.y * 0.1f;
-        fk_cartesian_msg.angular.z = imu_data.angular_velocity.z * 0.1f;
+        fk_cartesian_msg.linear.x = _move_handle.x_;
+        fk_cartesian_msg.linear.y = _interact_handle.y_;
+        fk_cartesian_msg.linear.z = _move_handle.z_;
+        fk_cartesian_msg.angular.x = imu_data.angular_velocity.x * 0.5f;
+        fk_cartesian_msg.angular.y = imu_data.angular_velocity.y * 0.5f;
+        fk_cartesian_msg.angular.z = imu_data.angular_velocity.z * 0.5f;
 
         imu_pub_.publish(imu_data);
         velocity_command_publisher.publish(fk_cartesian_msg);
@@ -565,8 +581,8 @@ namespace RobotSwitch
     else
     {
       _move_handle = filter(readStruct<MoveData>(&move_dof_serial_, 0x44, 0x55));
-      ROS_INFO_STREAM("Read X" << _move_handle.x_);
-      ROS_INFO_STREAM("Read Z" << _move_handle.z_);
+      // ROS_INFO_STREAM("Read X" << _move_handle.x_);
+      // ROS_INFO_STREAM("Read Z" << _move_handle.z_);
     }
   }
 
@@ -579,7 +595,7 @@ namespace RobotSwitch
     else
     {
       _interact_handle = filter(readStruct<InteractData>(&interact_dof_serial_, 0x44, 0x55));
-      ROS_INFO_STREAM("Read Y" << _interact_handle.y_);
+      // ROS_INFO_STREAM("Read Y" << _interact_handle.y_);
     }
   }
 

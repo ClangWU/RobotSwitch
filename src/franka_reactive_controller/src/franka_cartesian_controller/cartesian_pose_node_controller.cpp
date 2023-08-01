@@ -20,6 +20,7 @@ namespace franka_reactive_controller
   bool CartesianPoseNodeController::init(hardware_interface::RobotHW *robot_hardware,
                                          ros::NodeHandle &node_handle)
   {
+
     cartesian_pose_interface_ = robot_hardware->get<franka_hw::FrankaPoseCartesianInterface>();
     if (cartesian_pose_interface_ == nullptr)
     {
@@ -128,6 +129,7 @@ namespace franka_reactive_controller
                     initial_pose_[4], initial_pose_[5], initial_pose_[6], 
                     initial_pose_[8], initial_pose_[9], initial_pose_[10];
     std::cout << "rotation matrix"  << rotation_mat << std::endl;
+    pose_command_mat = Eigen::Map<Eigen::Matrix<double, 4, 4, Eigen::ColMajor>>(initial_pose_.data());
     time_since_last_command = ros::Duration(0.0);
   }
 void CartesianPoseNodeController::cartesian_pose_callback(const geometry_msgs::PoseStamped::ConstPtr &pose_msg)
@@ -160,7 +162,7 @@ void CartesianPoseNodeController::cartesian_pose_callback(const geometry_msgs::P
                           pose_msg->pose.orientation.z);
 
   rotation_mat = quat.toRotationMatrix();
-  // pose_command
+  // pose_command_
   time_since_last_command = ros::Duration(0.0);
 }
 
@@ -172,13 +174,15 @@ void CartesianPoseNodeController::update(const ros::Time & /* time */,
   time_since_last_command += period;
   auto robot_state_ = cartesian_pose_handle_->getRobotState();
 
+
+
   if (time_since_last_command.toSec() > max_duration_between_commands)
   {
-    pose_command =  robot_state_.O_T_EE;
-    // pose_command =  robot_state_.O_T_EE;
+    pose_command_ =  robot_state_.O_T_EE_c;
+    // pose_command_ =  robot_state_.O_T_EE;
+  }else{
+    pose_command_mat.topLeftCorner<3,3>() = rotation_mat;
   }
-
-    robot_state_.O_T_EE_d; 
 
   new_pose_ = franka::limitRate(
                  max_translational_velocity,
@@ -187,7 +191,7 @@ void CartesianPoseNodeController::update(const ros::Time & /* time */,
                  max_rotational_velocity,
                  max_rotational_acceleration,
                  max_rotational_jerk,
-                 pose_command,
+                 pose_command_,
                   robot_state_.O_T_EE_c,
                   robot_state_.O_dP_EE_c,
                   robot_state_.O_ddP_EE_c);

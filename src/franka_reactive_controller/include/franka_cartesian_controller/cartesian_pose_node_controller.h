@@ -43,7 +43,7 @@ class CartesianPoseNodeController
   std::array<double, 16> initial_pose_;
   std::array<double, 16> last_pose_;
   std::array<double, 16> new_pose_;
-  std::array<double, 16> pose_command;
+  std::array<double, 16> pose_command_;
   Eigen::Matrix4d pose_command_mat;
   Eigen::Matrix3d rotation_mat;
   ros::Subscriber pose_command_subscriber;

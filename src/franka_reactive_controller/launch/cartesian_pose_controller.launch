@@ -11,7 +11,7 @@
 
   <!-- Bringup franka_interactive_bringup.laucnh -->
   <group if="$(arg load_franka_control)">
-    <include file="$(find franka_interactive_controllers)/launch/franka_interactive_bringup.launch" >
+    <include file="$(find franka_reactive_controller)/launch/franka_interactive.launch" >
       <arg name="robot_ip" value="$(arg robot_ip)" />
       <arg name="load_gripper" value="$(arg load_gripper)" />
       <arg name="use_gripper_gui" value="$(arg use_gripper_gui)" />

@@ -24,7 +24,7 @@ namespace franka_reactive_controller {
 #define MOVE_X_VEL_NEG -500
 #define MOVE_Z_VEL_POS 500
 #define MOVE_Z_VEL_NEG -500
-#define DELTA_VEL_TRANS 0.005
+#define DELTA_VEL_TRANS 0.01
 
 class CartesianVelocityNodeController : public controller_interface::MultiInterfaceController<
                                                franka_hw::FrankaVelocityCartesianInterface,
