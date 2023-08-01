@@ -102,7 +102,7 @@ namespace franka_reactive_controller
 
     node_handle.param<bool>("stop_on_contact", stop_on_contact, true);
 
-    velocity_command_subscriber = node_handle.subscribe("/cartesian_velocity_controller/cartesian_velocity",
+    velocity_command_subscriber = node_handle.subscribe("/cartesian_velocity_node_controller/cartesian_imu_velocity",
                                                         10,
                                                         &CartesianVelocityNodeController::cartesian_velocity_callback,
                                                         this);

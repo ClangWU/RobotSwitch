@@ -32,7 +32,7 @@ namespace RobotSwitch
     twist_pub_ = nh_.advertise<geometry_msgs::Twist>(twist_topic_.c_str(), 10);
     NED_odom_pub_ = nh_.advertise<nav_msgs::Odometry>(NED_odom_topic_.c_str(), 10);
 
-    imu_velocity_command_publisher = nh_.advertise<geometry_msgs::Twist>("/cartesian_velocity_node_controller/cartesian_velocity", 10);
+    imu_velocity_command_publisher = nh_.advertise<geometry_msgs::Twist>("/cartesian_velocity_node_controller/cartesian_imu_velocity", 10);
 
     // setp up serial  设置串口参数并打开串口
      try
