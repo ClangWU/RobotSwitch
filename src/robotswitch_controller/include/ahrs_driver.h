@@ -143,7 +143,7 @@ private:
     std::vector<T> readStruct(serial::Serial *serial_, unsigned char head, unsigned char tail)
     {
     std::vector<T> vec_t;
-    const int LENGTH = 16;
+    const int LENGTH = 24;
     const int SIZE = sizeof(T);
     unsigned char read_buffer[LENGTH] = {0};
     size_t len_result = serial_->read(read_buffer, LENGTH);
