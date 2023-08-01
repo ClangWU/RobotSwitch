@@ -102,7 +102,7 @@ namespace franka_reactive_controller
 
     node_handle.param<bool>("stop_on_contact", stop_on_contact, true);
 
-    velocity_command_subscriber = node_handle.subscribe("/cartesian_velocity_node_controller/cartesian_imu_velocity",
+    velocity_command_publisher = node_handle.subscribe("/cartesian_velocity_node_controller/cartesian_velocity",
                                                         10,
                                                         &CartesianVelocityNodeController::cartesian_velocity_callback,
                                                         this);
@@ -119,25 +119,23 @@ namespace franka_reactive_controller
 
   void CartesianVelocityNodeController::cartesian_velocity_callback(const geometry_msgs::Twist::ConstPtr &vel_msg)
   {
-    // Callback for ROS message
-
-    if(vel_msg->linear.y > INTERACT_VEL_POS) {
+    if(  vel_msg->linear.y > INTERACT_VEL_POS) {
       vel_y_ = DELTA_VEL_TRANS;
-    }else if(vel_msg->linear.y < INTERACT_VEL_NEG){
+    }else if(  vel_msg->linear.y < INTERACT_VEL_NEG){
       vel_y_ = -DELTA_VEL_TRANS;
     }else{
       vel_y_ = 0;
     }
-      if(vel_msg->linear.x > MOVE_X_VEL_POS) {
+      if(  vel_msg->linear.x > MOVE_X_VEL_POS) {
         vel_x_ = DELTA_VEL_TRANS;
-      }else if(vel_msg->linear.x < MOVE_X_VEL_NEG){
+      }else if(  vel_msg->linear.x < MOVE_X_VEL_NEG){
         vel_x_ = -DELTA_VEL_TRANS;
       }else{
         vel_x_ = 0;
       }
-        if(vel_msg->linear.z > MOVE_Z_VEL_POS) {
+        if(  vel_msg->linear.z > MOVE_Z_VEL_POS) {
           vel_z_ = DELTA_VEL_TRANS;
-        }else if(vel_msg->linear.z < MOVE_Z_VEL_NEG){
+        }else if(  vel_msg->linear.z < MOVE_Z_VEL_NEG){
           vel_z_ = -DELTA_VEL_TRANS;
         }else{
           vel_z_ = 0;
@@ -145,13 +143,12 @@ namespace franka_reactive_controller
     velocity_command[0] =  vel_x_;
     velocity_command[1] =  vel_y_;
     velocity_command[2] =  vel_z_;
-    velocity_command[3] =  vel_msg->angular.x;
-    velocity_command[4] =  vel_msg->angular.y;
-    velocity_command[5] =  vel_msg->angular.z;
+    velocity_command[3] =   vel_msg->angular.x;
+    velocity_command[4] =   vel_msg->angular.y;
+    velocity_command[5] =   vel_msg->angular.z;
 
     // std::cout<<" x "<< velocity_command[0] << " y " << velocity_command[1] << " z " << velocity_command[2]<< std::endl;
     // std::cout<<" xxx "<< velocity_command[3] << " yyy " << velocity_command[4] << " zzz " << velocity_command[5]<< std::endl;
-
     time_since_last_command = ros::Duration(0.0);
   }
 
@@ -184,7 +181,6 @@ namespace franka_reactive_controller
 
     // std::cout<<" x "<< velocity_command[3] << " y " << velocity_command[4] << " z " << velocity_command[5]<< std::endl;
 
-
     last_sent_velocity = franka::limitRate(
         max_velocity_linear,
         max_acceleration_linear,
@@ -196,7 +192,7 @@ namespace franka_reactive_controller
         state.O_dP_EE_c,//Last commanded end effector twist in base frame. 
         state.O_ddP_EE_c);//Last commanded end effector acceleration in base frame. 
 
-    velocity_cartesian_handle_->setCommand(last_sent_velocity);
+      velocity_cartesian_handle_->setCommand(last_sent_velocity);
   }
 
   void CartesianVelocityNodeController::stopping(const ros::Time & /*time*/)

@@ -32,7 +32,7 @@ namespace RobotSwitch
     twist_pub_ = nh_.advertise<geometry_msgs::Twist>(twist_topic_.c_str(), 10);
     NED_odom_pub_ = nh_.advertise<nav_msgs::Odometry>(NED_odom_topic_.c_str(), 10);
 
-    imu_velocity_command_publisher = nh_.advertise<geometry_msgs::Twist>("/cartesian_velocity_node_controller/cartesian_imu_velocity", 10);
+    imu_velocity_command_publisher = nh_.advertise<geometry_msgs::Twist>("/cartesian_imu_velocity", 10);
 
     // setp up serial  设置串口参数并打开串口
      try
@@ -525,45 +525,6 @@ namespace RobotSwitch
         //  std::cout << "E: " << insgps_frame_.frame.data.data_pack.Location_East << std::endl;
         //  std::cout << "D: " << insgps_frame_.frame.data.data_pack.Location_Down << std::endl;
       }
-    }
-  }
-
-  void RobotSwitchBringup::move_process()
-  {
-    if (!move_dof_serial_.isOpen())
-    {
-      ROS_WARN("move serial unopen");
-    }
-    else
-    {
-      _move_handle = filter(readStruct<MoveData>(&move_dof_serial_, 0x44, 0x55));
-      // ROS_INFO_STREAM("Read X" << _move_handle.x_);
-      // ROS_INFO_STREAM("Read Z" << _move_handle.z_);
-    }
-  }
-
-  void RobotSwitchBringup::interact_process()
-  {
-    if (!interact_dof_serial_.isOpen())
-    {
-      ROS_WARN("interact serial unopen");
-    }
-    else
-    {
-      _interact_handle = filter(readStruct<InteractData>(&interact_dof_serial_, 0x44, 0x55));
-      // ROS_INFO_STREAM("Read Y" << _interact_handle.y_);
-    }
-  }
-
-  void RobotSwitchBringup::force_process()
-  {
-    if (!force_dof_serial_.isOpen())
-    {
-      ROS_WARN("force serial unopen");
-    }
-    else
-    {
-      _force_handle = filter(readStruct<ForceData>(&force_dof_serial_, 0x44, 0x55));
     }
   }
 

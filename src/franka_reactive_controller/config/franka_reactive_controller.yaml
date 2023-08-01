@@ -1,4 +1,4 @@
-cartesian_velocity_controller:
+cartesian_velocity_node_controller:
     type: franka_reactive_controller/CartesianVelocityNodeController
     arm_id: panda
     # If no new velocity commands are received in time (seconds)

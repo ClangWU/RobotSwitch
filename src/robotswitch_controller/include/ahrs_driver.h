@@ -60,11 +60,6 @@ public:
   RobotSwitchBringup();
   ~RobotSwitchBringup();
   void processLoop();
-  // all task process
-  void ahrs_process();
-  void move_process();
-  void interact_process();
-  void force_process();
 
   bool ahrs_checkCS8(int len);
   bool ahrs_checkCS16(int len);
@@ -88,24 +83,6 @@ private:
   std::string ahrs_serial_port_;
   int ahrs_serial_baud_;
   int ahrs_serial_timeout_;
-
-  //interact dof
-  serial::Serial interact_dof_serial_; //声明串口对象
-  std::string interact_dof_serial_port_;
-  int interact_dof_serial_baud_;
-  int interact_dof_serial_timeout_;
-
-  //move dof
-  serial::Serial move_dof_serial_; //声明串口对象
-  std::string move_dof_serial_port_;
-  int move_dof_serial_baud_;
-  int move_dof_serial_timeout_;
-
-  //force dof
-  serial::Serial force_dof_serial_; //声明串口对象
-  std::string force_dof_serial_port_;
-  int force_dof_serial_baud_;
-  int force_dof_serial_timeout_;
 
   //data
   FDILink::imu_frame_read  imu_frame_;

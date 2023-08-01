@@ -35,8 +35,7 @@ class CartesianVelocityNodeController : public controller_interface::MultiInterf
   void starting(const ros::Time&) override;
   void stopping(const ros::Time&) override;
 
-  void cartesian_velocity_callback(const geometry_msgs::Twist::ConstPtr& vel_msg);
-
+  void cartesian_velocity_callback(const geometry_msgs::Twist::ConstPtr& imu_msg);
  private:
   franka_hw::FrankaVelocityCartesianInterface* velocity_cartesian_interface_;
   std::unique_ptr<franka_hw::FrankaCartesianVelocityHandle> velocity_cartesian_handle_;
@@ -44,12 +43,16 @@ class CartesianVelocityNodeController : public controller_interface::MultiInterf
 
   std::array<double, 6> velocity_command;
   std::array<double, 6> last_sent_velocity;
+  std::array<double, 6> last_velocity_command;
   ros::Duration time_since_last_command;
-  ros::Subscriber velocity_command_subscriber;
+  ros::Subscriber velocity_command_publisher;
 
   double vel_x_;
   double vel_y_;
   double vel_z_;
+
+  bool imu_flag = false;
+  bool stick_flag = false;
 
   // Parameters
   double max_duration_between_commands;
