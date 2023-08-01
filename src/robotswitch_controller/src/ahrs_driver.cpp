@@ -22,12 +22,6 @@ namespace RobotSwitch
     // ahrs
     pravite_nh.param("ahrs_port", ahrs_serial_port_, std::string("/dev/ttyUSB0"));
     pravite_nh.param("ahrs_baud", ahrs_serial_baud_, 921600);
-    //Left
-    pravite_nh.param("interact_port", interact_dof_serial_port_, std::string("/dev/ttyUSB1"));
-    pravite_nh.param("interact_baud", interact_dof_serial_baud_, 115200);
-    //Right
-    pravite_nh.param("move_port", move_dof_serial_port_, std::string("/dev/ttyUSB2"));
-    pravite_nh.param("move_baud", move_dof_serial_baud_, 115200);
 
     // publisher  创建发布对象
     imu_pub_ = nh_.advertise<sensor_msgs::Imu>(imu_topic_.c_str(), 10);
@@ -38,53 +32,25 @@ namespace RobotSwitch
     twist_pub_ = nh_.advertise<geometry_msgs::Twist>(twist_topic_.c_str(), 10);
     NED_odom_pub_ = nh_.advertise<nav_msgs::Odometry>(NED_odom_topic_.c_str(), 10);
 
-    velocity_command_publisher = nh_.advertise<geometry_msgs::Twist>("/cartesian_velocity_node_controller/cartesian_velocity", 10);
-    // pose_command_publisher = nh_.advertise<geometry_msgs::PoseStamped>("/cartesian_pose_node_controller/cartesian_pose", 10);
+    imu_velocity_command_publisher = nh_.advertise<geometry_msgs::Twist>("/cartesian_velocity_node_controller/cartesian_velocity", 10);
 
-    _move_handle ={0};
-    _interact_handle = {0};
     // setp up serial  设置串口参数并打开串口
      try
-     {
+    {
         serial_init(&ahrs_serial_, ahrs_serial_port_, ahrs_serial_baud_, ahrs_serial_timeout_);
-        serial_init(&interact_dof_serial_, interact_dof_serial_port_, interact_dof_serial_baud_, interact_dof_serial_timeout_);
-        serial_init(&move_dof_serial_, move_dof_serial_port_, move_dof_serial_baud_, move_dof_serial_timeout_);
-       //serial_init(&force_dof_serial_, force_dof_serial_port_, force_dof_serial_baud_, force_dof_serial_timeout_);
-     }
+    }
      catch (serial::IOException &e)  // 抓取异常
      {
        ROS_ERROR_STREAM("Unable to open port ");
        exit(0);
      }
     processLoop();
-    
-    // while (ros::ok()){
-    //     move_process();
-    //     interact_process();
-    //     processLoop();
-    //     geometry_msgs::Twist fk_cartesian_msg;
-    //     fk_cartesian_msg.linear.x = _move_handle.x_;
-    //     fk_cartesian_msg.linear.y = _interact_handle.y_;
-    //     fk_cartesian_msg.linear.z = _move_handle.z_;
-    //     fk_cartesian_msg.angular.x = 0;
-    //     fk_cartesian_msg.angular.y = 0;
-    //     fk_cartesian_msg.angular.z = 0;
-
-    //     velocity_command_publisher.publish(fk_cartesian_msg);
-    // }
-
   }
 
   RobotSwitchBringup::~RobotSwitchBringup()
   {
     if (ahrs_serial_.isOpen())
       ahrs_serial_.close();
-    if (move_dof_serial_.isOpen())
-      move_dof_serial_.close();
-    if (force_dof_serial_.isOpen())
-      force_dof_serial_.close();
-    if (interact_dof_serial_.isOpen())
-      interact_dof_serial_.close();
   }
 
   void RobotSwitchBringup::processLoop()
@@ -92,10 +58,6 @@ namespace RobotSwitch
     ROS_INFO("RobotSwitchBringup::processLoop: start");
     while (ros::ok())
     {
-      // move_process();
-      // interact_process();
-      // force_process();
-      // ahrs_process();
       if (!ahrs_serial_.isOpen())
       {
         ROS_WARN("serial unopen");
@@ -498,15 +460,10 @@ namespace RobotSwitch
         imu_pub_.publish(imu_data);
 
         geometry_msgs::Twist fk_cartesian_msg;
-        fk_cartesian_msg.linear.x = _move_handle.x_;
-        fk_cartesian_msg.linear.y = _interact_handle.y_;
-        fk_cartesian_msg.linear.z = _move_handle.z_;
         fk_cartesian_msg.angular.x = imu_data.angular_velocity.x * 0.5f;
         fk_cartesian_msg.angular.y = imu_data.angular_velocity.y * 0.5f;
         fk_cartesian_msg.angular.z = imu_data.angular_velocity.z * 0.5f;
-
-        imu_pub_.publish(imu_data);
-        velocity_command_publisher.publish(fk_cartesian_msg);
+        imu_velocity_command_publisher.publish(fk_cartesian_msg);
       }
       // 读取AHRS数据进行解析，并发布相关话题
       else if (head_type[0] == TYPE_AHRS)

@@ -9,12 +9,12 @@
     <param name="ahrs_baud"  value="921600"/>
     
     <!-- Left Stick -->
-    <param name="interact_port"  value="/dev/ttyUSB1"/>
-    <param name="interact_baud"  value="115200"/>
+    <!-- <param name="interact_port"  value="/dev/ttyUSB1"/>
+    <param name="interact_baud"  value="115200"/> -->
 
     <!-- Right Stick -->
-    <param name="move_port"  value="/dev/ttyUSB2"/>
-    <param name="move_baud"  value="115200"/>
+    <!-- <param name="move_port"  value="/dev/ttyUSB2"/>
+    <param name="move_baud"  value="115200"/> -->
 
     <!-- Force -->
     <!-- <param name="move_port"  value="/dev/ttyUSB3"/>

@@ -132,8 +132,7 @@ private:
   ros::Publisher twist_pub_;
   ros::Publisher NED_odom_pub_;
 
-  ros::Publisher velocity_command_publisher;
-  ros::Publisher pose_command_publisher;
+  ros::Publisher imu_velocity_command_publisher;
 
   ForceData     _force_handle;
   MoveData        _move_handle;

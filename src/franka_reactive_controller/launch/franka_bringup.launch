@@ -20,14 +20,11 @@
     <include file="$(find franka_reactive_controller)/launch/cartesian_velocity_controller.launch" 
       if="$(eval arg('controller') == 'cartesian_velocity_controller')">
     </include>
-<<<<<<< HEAD
-=======
 
     <!-- Start only if cartesian_pose_controller is set in "controller"-->
     <include file="$(find franka_reactive_controller)/launch/cartesian_pose_controller.launch" 
       if="$(eval arg('controller') == 'cartesian_pose_controller')">
     </include>
->>>>>>> one_node
   </group>
 
   <group if="$(arg bringup_rviz)">
