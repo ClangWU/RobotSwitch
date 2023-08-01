@@ -17,7 +17,7 @@
   
   <!-- Load desired controller-->  
   <arg name="stopped" default="false" />
-  <rosparam command="load" file="$(find franka_reactive_controller)/config/franka_reactive_controller.yaml" />
+  <rosparam command="load" file="$(find franka_reactive_controller)/config/cartesian_controller_params.yaml" />
   <node unless="$(arg stopped)" name="controller_spawner_cv" pkg="controller_manager" type="spawner" respawn="false" output="screen"  args="cartesian_pose_node_controller"/>
   <node if="$(arg stopped)" name="controller_spawner_cv" pkg="controller_manager" type="spawner" respawn="false" output="screen"  args="--stopped cartesian_pose_node_controller"/>
 </launch>

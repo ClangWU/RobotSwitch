@@ -29,7 +29,7 @@
 
   <group if="$(arg bringup_rviz)">
     <!-- Convert franka state of EE to Geometry Message PoseStamped!! -->  
-    <!-- <node name="franka_to_geometry_messages" pkg="franka_reactive_controller" type="franka_to_geometry_messages.py" respawn="false" output="screen"/> -->
+    <node name="franka_to_geometry_messages" pkg="franka_reactive_controller" type="franka_to_geometry_messages.py" respawn="false" output="screen"/>
 
     <!-- Bring up rqt_reconfigure to modify values -->
     <!-- <node name="rqt_reconfigure" pkg="rqt_reconfigure" type="rqt_reconfigure" required="false" /> -->
