@@ -38,12 +38,34 @@ namespace RobotSwitch
 #define PI 3.141592653589793
 #define DEG_TO_RAD 0.017453292519943295
 
+struct ForceData
+{
+    float _force;    //HX711 data
+} __attribute__((packed));
+
+struct MoveData
+{
+    int x_;    //move data
+    int z_;
+} __attribute__((packed));
+
+struct InteractData
+{
+    int y_;    //interact data
+} __attribute__((packed));
+
 class RobotSwitchBringup
 {
 public:
   RobotSwitchBringup();
   ~RobotSwitchBringup();
   void processLoop();
+  // all task process
+  void ahrs_process();
+  void move_process();
+  void interact_process();
+  void force_process();
+
   bool ahrs_checkCS8(int len);
   bool ahrs_checkCS16(int len);
   void ahrs_checkSN(int type);
@@ -110,9 +132,51 @@ private:
   ros::Publisher twist_pub_;
   ros::Publisher NED_odom_pub_;
 
-  //For Franka
   ros::Publisher velocity_command_publisher;
-}; //RobotSwitchBringup
+  ros::Publisher pose_command_publisher;
+
+  ForceData     _force_handle;
+  MoveData        _move_handle;
+  InteractData _interact_handle;
+
+  template <typename T>
+    std::vector<T> readStruct(serial::Serial *serial_, unsigned char head, unsigned char tail)
+    {
+    std::vector<T> vec_t;
+    const int LENGTH = 24;
+    const int SIZE = sizeof(T);
+    unsigned char read_buffer[LENGTH] = {0};
+    size_t len_result = serial_->read(read_buffer, LENGTH);
+    for (size_t i = 0; (i + SIZE + 1) < len_result; i++)
+    {
+        if (read_buffer[i] == head && read_buffer[i + SIZE + 1] == tail)
+        { 
+        vec_t.push_back(*(reinterpret_cast<T *>(&read_buffer[i + 1])));
+        }
+    }
+    return vec_t;
+    }
+
+    template <typename T>
+    bool writeStruct(serial::Serial *serial_, T data_struct)
+    {
+        size_t len_result = serial_->write(reinterpret_cast<const uint8_t*>(&data_struct), sizeof(data_struct));
+        return (sizeof(data_struct) == len_result);
+    }
+
+  template <typename T>
+    T filter(const std::vector<T> &dataScope){
+    if (!dataScope.empty())
+    {
+        return dataScope.back();
+    }else{
+        ROS_ERROR_STREAM("Unable to read data ");
+    }
+  }
+
+  }; //RobotSwitchBringup
 } // namespace RobotSwitch
+
+
 
 #endif

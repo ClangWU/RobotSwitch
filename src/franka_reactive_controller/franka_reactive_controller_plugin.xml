@@ -4,4 +4,9 @@
             A Cartesian velocity controller that takes commands from a ROS subscriber.
         </description>
     </class>
+    <class name="franka_reactive_controller/CartesianPoseNodeController" type="franka_reactive_controller::CartesianPoseNodeController" base_class_type="controller_interface::ControllerBase">
+        <description>
+            A Cartesian pose controller that takes commands from a ROS subscriber.
+        </description>
+    </class>
 </library>

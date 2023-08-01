@@ -117,16 +117,40 @@ namespace franka_reactive_controller
     last_sent_velocity = {{0.0, 0.0, 0.0, 0.0, 0.0, 0.0}};
   }
 
-  void CartesianVelocityNodeController::cartesian_velocity_callback(const geometry_msgs::Twist::ConstPtr &msg)
+  void CartesianVelocityNodeController::cartesian_velocity_callback(const geometry_msgs::Twist::ConstPtr &vel_msg)
   {
     // Callback for ROS message
-    velocity_command[0] = msg->linear.x;
-    velocity_command[1] = msg->linear.y;
-    velocity_command[2] = msg->linear.z;
 
-    velocity_command[3] = msg->angular.x;
-    velocity_command[4] = msg->angular.y;
-    velocity_command[5] = msg->angular.z;
+    if(vel_msg->linear.y > INTERACT_VEL_POS) {
+      vel_y_ = DELTA_VEL_TRANS;
+    }else if(vel_msg->linear.y < INTERACT_VEL_NEG){
+      vel_y_ = -DELTA_VEL_TRANS;
+    }else{
+      vel_y_ = 0;
+    }
+      if(vel_msg->linear.x > MOVE_X_VEL_POS) {
+        vel_x_ = DELTA_VEL_TRANS;
+      }else if(vel_msg->linear.x < MOVE_X_VEL_NEG){
+        vel_x_ = -DELTA_VEL_TRANS;
+      }else{
+        vel_x_ = 0;
+      }
+        if(vel_msg->linear.z > MOVE_Z_VEL_POS) {
+          vel_z_ = DELTA_VEL_TRANS;
+        }else if(vel_msg->linear.z < MOVE_Z_VEL_NEG){
+          vel_z_ = -DELTA_VEL_TRANS;
+        }else{
+          vel_z_ = 0;
+        }
+    velocity_command[0] =  vel_x_;
+    velocity_command[1] =  vel_y_;
+    velocity_command[2] =  vel_z_;
+    velocity_command[3] =  vel_msg->angular.x;
+    velocity_command[4] =  vel_msg->angular.y;
+    velocity_command[5] =  vel_msg->angular.z;
+
+    // std::cout<<" x "<< velocity_command[0] << " y " << velocity_command[1] << " z " << velocity_command[2]<< std::endl;
+    // std::cout<<" xxx "<< velocity_command[3] << " yyy " << velocity_command[4] << " zzz " << velocity_command[5]<< std::endl;
 
     time_since_last_command = ros::Duration(0.0);
   }
@@ -138,25 +162,28 @@ namespace franka_reactive_controller
     time_since_last_command += period;
 
     // If no message received in set time,
-    if (time_since_last_command.toSec() > max_duration_between_commands)
-    {
-      velocity_command = {{0.0, 0.0, 0.0, 0.0, 0.0, 0.0}};
-    }
+    // if (time_since_last_command.toSec() > max_duration_between_commands)
+    // {
+    //   velocity_command = {{0.0, 0.0, 0.0, 0.0, 0.0, 0.0}};
+    // }
 
     auto state = state_handle_->getRobotState();
 
     // Check for contacts
-    if (stop_on_contact)
-    {
-      for (size_t i = 0; i < state.cartesian_contact.size(); i++)
-      {
-        if (state.cartesian_contact[i])
-        {
-          velocity_command = {{0.0, 0.0, 0.0, 0.0, 0.0, 0.0}};
-          // ROS_ERROR_STREAM("Detected Cartesian Contact in Direction "  << i);
-        }
-      }
-    }
+    // if (stop_on_contact)
+    // {
+    //   for (size_t i = 0; i < state.cartesian_contact.size(); i++)
+    //   {
+    //     if (state.cartesian_contact[i])
+    //     {
+    //       velocity_command = {{0.0, 0.0, 0.0, 0.0, 0.0, 0.0}};
+    //       // ROS_ERROR_STREAM("Detected Cartesian Contact in Direction "  << i);
+    //     }
+    //   }
+    // }
+
+    // std::cout<<" x "<< velocity_command[3] << " y " << velocity_command[4] << " z " << velocity_command[5]<< std::endl;
+
 
     last_sent_velocity = franka::limitRate(
         max_velocity_linear,
