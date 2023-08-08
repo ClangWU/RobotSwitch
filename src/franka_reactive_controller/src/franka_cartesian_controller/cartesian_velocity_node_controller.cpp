@@ -147,7 +147,7 @@ namespace franka_reactive_controller
     velocity_command[4] =   vel_msg->angular.y;
     velocity_command[5] =   vel_msg->angular.z;
 
-    // std::cout<<" x "<< velocity_command[0] << " y " << velocity_command[1] << " z " << velocity_command[2]<< std::endl;
+    std::cout<<" pos x "<< velocity_command[0] << " pos y " << velocity_command[1] << " pos z " << velocity_command[2]<< std::endl;
     // std::cout<<" xxx "<< velocity_command[3] << " yyy " << velocity_command[4] << " zzz " << velocity_command[5]<< std::endl;
     time_since_last_command = ros::Duration(0.0);
   }

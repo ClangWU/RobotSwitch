@@ -32,7 +32,7 @@ namespace RobotSwitch
     twist_pub_ = nh_.advertise<geometry_msgs::Twist>(twist_topic_.c_str(), 10);
     NED_odom_pub_ = nh_.advertise<nav_msgs::Odometry>(NED_odom_topic_.c_str(), 10);
 
-    imu_velocity_command_publisher = nh_.advertise<geometry_msgs::Twist>("/cartesian_imu_velocity", 10);
+    imu_velocity_command_publisher = nh_.advertise<geometry_msgs::Twist>("/ahrs_velocity", 10);
 
     // setp up serial  设置串口参数并打开串口
      try
@@ -454,9 +454,6 @@ namespace RobotSwitch
           imu_data.linear_acceleration.z = -imu_frame_.frame.data.data_pack.accelerometer_z;
         }
         // clang
-        //  double current_time_ms = ros::Time::now().toSec() * 1000;
-        //  ROS_INFO("\033[1;31mCurrent time (ms): %.3f\033[0m", current_time_ms);
-        // 5ms per time
         imu_pub_.publish(imu_data);
 
         geometry_msgs::Twist fk_cartesian_msg;
@@ -526,6 +523,7 @@ namespace RobotSwitch
         //  std::cout << "D: " << insgps_frame_.frame.data.data_pack.Location_Down << std::endl;
       }
     }
+    ros::waitForShutdown();
   }
 
   void RobotSwitchBringup::ahrs_magCalculateYaw(double roll, double pitch, double &magyaw, double magx, double magy, double magz)
