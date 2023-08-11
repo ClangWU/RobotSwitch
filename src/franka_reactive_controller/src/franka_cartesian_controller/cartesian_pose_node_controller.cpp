@@ -67,7 +67,7 @@ namespace franka_reactive_controller
         {
           ROS_ERROR_STREAM(
               "CartesianPoseNodeController: Robot is not in the expected starting position for "
-              "running this example. Run `roslaunch franka_interactive_controllers move_to_start.launch "
+              "running this example. Run `roslaunch franka_reactive_controllers move_to_start.launch "
               "robot_ip:=<robot-ip> load_gripper:=<has-attached-gripper>` first.");
           return false;
         }
@@ -173,8 +173,13 @@ void CartesianPoseNodeController::update(const ros::Time & /* time */,
   // TODO: Change this code to take a desired pose message stamped
   time_since_last_command += period;
   auto robot_state_ = cartesian_pose_handle_->getRobotState();
-
-
+  std::cout << "O_T_EE: " << std::endl;
+  for (int i = 0; i < 4; i++) {
+    for (int j = 0; j < 4; j++) {
+      std::cout << robot_state_.O_T_EE[i * 4 + j] << " ";
+    }
+    std::cout << std::endl;
+  }
 
   if (time_since_last_command.toSec() > max_duration_between_commands)
   {
