@@ -123,13 +123,13 @@ namespace franka_reactive_controller
 
   void CartesianPoseNodeController::starting(const ros::Time & /* time */)
   {
-    initial_pose_ = cartesian_pose_handle_->getRobotState().O_T_EE; // O_T_EE_d
+    initial_pose_ = cartesian_pose_handle_->getRobotState().O_T_EE_d; // O_T_EE_d
     new_pose_ = initial_pose_;
     rotation_mat << initial_pose_[0], initial_pose_[1], initial_pose_[2], 
                     initial_pose_[4], initial_pose_[5], initial_pose_[6], 
                     initial_pose_[8], initial_pose_[9], initial_pose_[10];
     std::cout << "rotation matrix"  << rotation_mat << std::endl;
-    pose_command_mat = Eigen::Map<Eigen::Matrix<double, 4, 4, Eigen::ColMajor>>(initial_pose_.data());
+    // pose_command_mat = Eigen::Map<Eigen::Matrix<double, 4, 4, Eigen::ColMajor>>(initial_pose_.data());
     time_since_last_command = ros::Duration(0.0);
   }
 void CartesianPoseNodeController::cartesian_pose_callback(const geometry_msgs::PoseStamped::ConstPtr &pose_msg)
@@ -173,35 +173,35 @@ void CartesianPoseNodeController::update(const ros::Time & /* time */,
   // TODO: Change this code to take a desired pose message stamped
   time_since_last_command += period;
   auto robot_state_ = cartesian_pose_handle_->getRobotState();
-  std::cout << "O_T_EE: " << std::endl;
-  for (int i = 0; i < 4; i++) {
-    for (int j = 0; j < 4; j++) {
-      std::cout << robot_state_.O_T_EE[i * 4 + j] << " ";
-    }
-    std::cout << std::endl;
-  }
+  // std::cout << "O_T_EE: " << std::endl;
+  // for (int i = 0; i < 4; i++) {
+  //   for (int j = 0; j < 4; j++) {
+  //     std::cout << robot_state_.O_T_EE_c[j * 4 + i] << " ";
+  //   }
+  //   std::cout << std::endl;
+  // }
+      pose_command_ =  robot_state_.O_T_EE_d;
 
   if (time_since_last_command.toSec() > max_duration_between_commands)
   {
-    pose_command_ =  robot_state_.O_T_EE_c;
+      pose_command_ =  robot_state_.O_T_EE_d;
     // pose_command_ =  robot_state_.O_T_EE;
   }else{
     pose_command_mat.topLeftCorner<3,3>() = rotation_mat;
   }
 
-  new_pose_ = franka::limitRate(
-                 max_translational_velocity,
-                 max_translational_acceleration,
-                 max_translational_jerk,
-                 max_rotational_velocity,
-                 max_rotational_acceleration,
-                 max_rotational_jerk,
-                 pose_command_,
-                  robot_state_.O_T_EE_c,
-                  robot_state_.O_dP_EE_c,
-                  robot_state_.O_ddP_EE_c);
-
-                //  cartesian_pose_handle_->setCommand(new_pose_);
+    new_pose_ = franka::limitRate(
+                max_translational_velocity,
+                max_translational_acceleration,
+                max_translational_jerk,
+                max_rotational_velocity,
+                max_rotational_acceleration,
+                max_rotational_jerk,
+                pose_command_,
+                robot_state_.O_T_EE_c,
+                robot_state_.O_dP_EE_c,
+                robot_state_.O_ddP_EE_c);
+    cartesian_pose_handle_->setCommand(new_pose_);
 }
 
 void CartesianPoseNodeController::stopping(const ros::Time & /*time*/)
