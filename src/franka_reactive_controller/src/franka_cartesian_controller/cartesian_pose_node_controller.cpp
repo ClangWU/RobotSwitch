@@ -128,7 +128,8 @@ namespace franka_reactive_controller
     rotation_mat << initial_pose_[0], initial_pose_[1], initial_pose_[2], 
                     initial_pose_[4], initial_pose_[5], initial_pose_[6], 
                     initial_pose_[8], initial_pose_[9], initial_pose_[10];
-    std::cout << "rotation matrix"  << rotation_mat << std::endl;
+    std::cout << "\033[34mO_T_EE_d:\033[0m"  << std::endl << rotation_mat << std::endl;
+    std::cout << " x " << initial_pose_[12] << " y " << initial_pose_[13] << " z " << initial_pose_[14] << std::endl;
     // pose_command_mat = Eigen::Map<Eigen::Matrix<double, 4, 4, Eigen::ColMajor>>(initial_pose_.data());
     time_since_last_command = ros::Duration(0.0);
   }
@@ -173,13 +174,18 @@ void CartesianPoseNodeController::update(const ros::Time & /* time */,
   // TODO: Change this code to take a desired pose message stamped
   time_since_last_command += period;
   auto robot_state_ = cartesian_pose_handle_->getRobotState();
-  // std::cout << "O_T_EE: " << std::endl;
-  // for (int i = 0; i < 4; i++) {
-  //   for (int j = 0; j < 4; j++) {
-  //     std::cout << robot_state_.O_T_EE_c[j * 4 + i] << " ";
-  //   }
-  //   std::cout << std::endl;
-  // }
+  static bool flag = true;
+  if(flag){
+    std::cout << "\033[34mO_T_EE:\033[0m" << std::endl;
+    for (int i = 0; i < 4; i++) {
+      for (int j = 0; j < 4; j++) {
+        std::cout << robot_state_.O_T_EE[j * 4 + i] << " ";
+      }
+      std::cout << std::endl;
+    }
+  }
+  flag = false;
+
       pose_command_ =  robot_state_.O_T_EE_d;
 
   if (time_since_last_command.toSec() > max_duration_between_commands)
