@@ -131,6 +131,20 @@ namespace franka_reactive_controller
     std::cout << "\033[34mO_T_EE_d:\033[0m"  << std::endl << rotation_mat << std::endl;
     std::cout << " x " << initial_pose_[12] << " y " << initial_pose_[13] << " z " << initial_pose_[14] << std::endl;
     // pose_command_mat = Eigen::Map<Eigen::Matrix<double, 4, 4, Eigen::ColMajor>>(initial_pose_.data());
+    Eigen::Quaterniond quaternion(rotation_mat);
+
+    std::cout << "四元数:\n"
+              << "w: " << quaternion.w() << "\n"
+              << "x: " << quaternion.x() << "\n"
+              << "y: " << quaternion.y() << "\n"
+              << "z: " << quaternion.z() << std::endl;
+
+    //   机械臂四元数:
+    // w: -4.92282e-05
+    // x: 0.999998
+    // y: -0.000260781
+    // z: -0.000265499
+
     time_since_last_command = ros::Duration(0.0);
   }
 void CartesianPoseNodeController::cartesian_pose_callback(const geometry_msgs::PoseStamped::ConstPtr &pose_msg)
