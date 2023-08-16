@@ -1,0 +1,6 @@
+Linked: (/home/yzc/project/robotswitch/devel/.private/robotswitch_controller/share/robotswitch_controller/cmake/robotswitch_controllerConfig.cmake, /home/yzc/project/robotswitch/devel/share/robotswitch_controller/cmake/robotswitch_controllerConfig.cmake)
+Linked: (/home/yzc/project/robotswitch/devel/.private/robotswitch_controller/share/robotswitch_controller/cmake/robotswitch_controllerConfig-version.cmake, /home/yzc/project/robotswitch/devel/share/robotswitch_controller/cmake/robotswitch_controllerConfig-version.cmake)
+Linked: (/home/yzc/project/robotswitch/devel/.private/robotswitch_controller/lib/libcrc_table.so, /home/yzc/project/robotswitch/devel/lib/libcrc_table.so)
+Linked: (/home/yzc/project/robotswitch/devel/.private/robotswitch_controller/lib/robotswitch_controller/ahrs_driver, /home/yzc/project/robotswitch/devel/lib/robotswitch_controller/ahrs_driver)
+Linked: (/home/yzc/project/robotswitch/devel/.private/robotswitch_controller/lib/robotswitch_controller/imu_tf, /home/yzc/project/robotswitch/devel/lib/robotswitch_controller/imu_tf)
+Linked: (/home/yzc/project/robotswitch/devel/.private/robotswitch_controller/lib/pkgconfig/robotswitch_controller.pc, /home/yzc/project/robotswitch/devel/lib/pkgconfig/robotswitch_controller.pc)

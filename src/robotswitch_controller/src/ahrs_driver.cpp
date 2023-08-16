@@ -1,5 +1,4 @@
 ﻿#include <ahrs_driver.h>
-#include <Eigen/Eigen>
 namespace RobotSwitch
 {
   RobotSwitchBringup::RobotSwitchBringup() : frist_sn_(false)
@@ -56,6 +55,8 @@ namespace RobotSwitch
 
   void RobotSwitchBringup::processLoop()
   {
+    static bool initialized = false;
+
     ROS_INFO("RobotSwitchBringup::processLoop: start");
     while (ros::ok())
     {
@@ -453,84 +454,30 @@ namespace RobotSwitch
         // x: 0.999998
         // y: -0.000260781
         // z: -0.000265499
+        Eigen::Quaterniond controller_quaternion(imu_data.orientation.w, imu_data.orientation.x, imu_data.orientation.y, imu_data.orientation.z);
 
+        if (!initialized) {
+            Eigen::Quaterniond robot_initial_quaternion(0, 1, 0, 0);
+            calibration_quaternion = robot_initial_quaternion * controller_quaternion.conjugate();
+            initialized = true;
+        }
+        Eigen::Quaterniond robot_quaternion = calibration_quaternion * controller_quaternion;
         // clang
         geometry_msgs::PoseStamped pose_msg;
-        pose_msg.pose.orientation.x = imu_data.orientation.x;
-        pose_msg.pose.orientation.y = imu_data.orientation.y;
-        pose_msg.pose.orientation.z = imu_data.orientation.z;
-        pose_msg.pose.orientation.w = imu_data.orientation.w;
+        pose_msg.pose.orientation.x = robot_quaternion.x();
+        pose_msg.pose.orientation.y = robot_quaternion.y();
+        pose_msg.pose.orientation.z = robot_quaternion.z();
+        pose_msg.pose.orientation.w = robot_quaternion.w();
         qtn_publisher.publish(pose_msg);
-
-        geometry_msgs::Twist fk_cartesian_msg;
-        fk_cartesian_msg.angular.x = imu_data.angular_velocity.x * 0.5f;
-        fk_cartesian_msg.angular.y = imu_data.angular_velocity.y * 0.5f;
-        fk_cartesian_msg.angular.z = imu_data.angular_velocity.z * 0.5f;
-        imu_velocity_publisher.publish(fk_cartesian_msg);
       }
-      // // 读取AHRS数据进行解析，并发布相关话题
-      // else if (head_type[0] == TYPE_AHRS)
-      // {
-      //   geometry_msgs::Pose2D pose_2d;
-      //   pose_2d.theta = ahrs_frame_.frame.data.data_pack.Heading;
-      //   mag_pose_pub_.publish(pose_2d);
-      //   // std::cout << "YAW: " << pose_2d.theta << std::endl;
-      //   geometry_msgs::Vector3 Euler_angles_2d, Magnetic;
-      //   Euler_angles_2d.x = ahrs_frame_.frame.data.data_pack.Roll;
-      //   Euler_angles_2d.y = ahrs_frame_.frame.data.data_pack.Pitch;
-      //   Euler_angles_2d.z = ahrs_frame_.frame.data.data_pack.Heading;
-      //   Magnetic.x = imu_frame_.frame.data.data_pack.magnetometer_x;
-      //   Magnetic.y = imu_frame_.frame.data.data_pack.magnetometer_y;
-      //   Magnetic.z = imu_frame_.frame.data.data_pack.magnetometer_z;
-
-      //   Euler_angles_pub_.publish(Euler_angles_2d);
-      //   Magnetic_pub_.publish(Magnetic);
-      // }
-      // // 读取gps_pos数据进行解析，并发布相关话题
-      // else if (head_type[0] == TYPE_GEODETIC_POS)
-      // {
-      //   sensor_msgs::NavSatFix gps_data;
-      //   gps_data.header.stamp = ros::Time::now();
-      //   gps_data.header.frame_id = "navsat_link";
-      //   gps_data.latitude = Geodetic_Position_frame_.frame.data.data_pack.Latitude / DEG_TO_RAD;
-      //   gps_data.longitude = Geodetic_Position_frame_.frame.data.data_pack.Longitude / DEG_TO_RAD;
-      //   gps_data.altitude = Geodetic_Position_frame_.frame.data.data_pack.Height;
-
-      //   // std::cout << "lat: " << Geodetic_Position_frame_.frame.data.data_pack.Latitude << std::endl;
-      //   // std::cout << "lon: " << Geodetic_Position_frame_.frame.data.data_pack.Longitude << std::endl;
-      //   // std::cout << "h: " << Geodetic_Position_frame_.frame.data.data_pack.Height << std::endl;
-
-      //   gps_pub_.publish(gps_data);
-      // }
-      // // 读取INSGPS数据进行解析，并发布相关话题
-      // else if (head_type[0] == TYPE_INSGPS)
-      // {
-
-      //   nav_msgs::Odometry odom_msg;
-      //   odom_msg.header.stamp = ros::Time::now();
-      //   // odom_msg.header.frame_id = odom_frame_id; // Odometer TF parent coordinates //里程计TF父坐标
-      //   odom_msg.pose.pose.position.x = insgps_frame_.frame.data.data_pack.Location_North; // Position //位置
-      //   odom_msg.pose.pose.position.y = insgps_frame_.frame.data.data_pack.Location_East;
-      //   odom_msg.pose.pose.position.z = insgps_frame_.frame.data.data_pack.Location_Down;
-
-      //   // odom_msg.child_frame_id = robot_frame_id; // Odometer TF subcoordinates //里程计TF子坐标
-      //   odom_msg.twist.twist.linear.x = insgps_frame_.frame.data.data_pack.Velocity_North; // Speed in the X direction //X方向速度
-      //   odom_msg.twist.twist.linear.y = insgps_frame_.frame.data.data_pack.Velocity_East;  // Speed in the Y direction //Y方向速度
-      //   odom_msg.twist.twist.linear.z = insgps_frame_.frame.data.data_pack.Velocity_Down;
-      //   NED_odom_pub_.publish(odom_msg);
-
-      //   geometry_msgs::Twist speed_msg;
-      //   speed_msg.linear.x = insgps_frame_.frame.data.data_pack.BodyVelocity_X;
-      //   speed_msg.linear.y = insgps_frame_.frame.data.data_pack.BodyVelocity_Y;
-      //   speed_msg.linear.z = insgps_frame_.frame.data.data_pack.BodyVelocity_Z;
-      //   twist_pub_.publish(speed_msg);
-      //   //  std::cout << "N: " << insgps_frame_.frame.data.data_pack.Location_North << std::endl;
-      //   //  std::cout << "E: " << insgps_frame_.frame.data.data_pack.Location_East << std::endl;
-      //   //  std::cout << "D: " << insgps_frame_.frame.data.data_pack.Location_Down << std::endl;
-      // }
     }
     ros::waitForShutdown();
   }
+          // geometry_msgs::Twist fk_cartesian_msg;
+          // fk_cartesian_msg.angular.x = imu_data.angular_velocity.x * 0.5f;
+          // fk_cartesian_msg.angular.y = imu_data.angular_velocity.y * 0.5f;
+          // fk_cartesian_msg.angular.z = imu_data.angular_velocity.z * 0.5f;
+          // imu_velocity_publisher.publish(fk_cartesian_msg);
 
   void RobotSwitchBringup::ahrs_magCalculateYaw(double roll, double pitch, double &magyaw, double magx, double magy, double magz)
   {

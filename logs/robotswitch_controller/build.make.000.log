@@ -1,0 +1,12 @@
+[35m[1mScanning dependencies of target crc_table[0m
+[35m[1mScanning dependencies of target imu_tf[0m
+[ 16%] [32mBuilding CXX object CMakeFiles/crc_table.dir/src/crc_table.cpp.o[0m
+[ 33%] [32mBuilding CXX object CMakeFiles/imu_tf.dir/src/imu_tf.cpp.o[0m
+[ 50%] [32m[1mLinking CXX shared library /home/yzc/project/robotswitch/devel/.private/robotswitch_controller/lib/libcrc_table.so[0m
+[ 50%] Built target crc_table
+[35m[1mScanning dependencies of target ahrs_driver[0m
+[ 66%] [32mBuilding CXX object CMakeFiles/ahrs_driver.dir/src/ahrs_driver.cpp.o[0m
+[ 83%] [32m[1mLinking CXX executable /home/yzc/project/robotswitch/devel/.private/robotswitch_controller/lib/robotswitch_controller/imu_tf[0m
+[ 83%] Built target imu_tf
+[100%] [32m[1mLinking CXX executable /home/yzc/project/robotswitch/devel/.private/robotswitch_controller/lib/robotswitch_controller/ahrs_driver[0m
+[100%] Built target ahrs_driver

@@ -1,0 +1,3 @@
+[ 33%] Built target crc_table
+[ 66%] Built target imu_tf
+[100%] Built target ahrs_driver

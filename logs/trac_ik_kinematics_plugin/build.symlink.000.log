@@ -1,0 +1,4 @@
+Symlinking /home/yzc/project/robotswitch/devel/share/trac_ik_kinematics_plugin/cmake/trac_ik_kinematics_pluginConfig-version.cmake
+Symlinking /home/yzc/project/robotswitch/devel/share/trac_ik_kinematics_plugin/cmake/trac_ik_kinematics_pluginConfig.cmake
+Symlinking /home/yzc/project/robotswitch/devel/lib/libtrac_ik_kinematics_plugin.so
+Symlinking /home/yzc/project/robotswitch/devel/lib/pkgconfig/trac_ik_kinematics_plugin.pc

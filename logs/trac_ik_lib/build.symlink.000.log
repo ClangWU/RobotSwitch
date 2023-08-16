@@ -1,0 +1,4 @@
+Symlinking /home/yzc/project/robotswitch/devel/share/trac_ik_lib/cmake/trac_ik_libConfig-version.cmake
+Symlinking /home/yzc/project/robotswitch/devel/share/trac_ik_lib/cmake/trac_ik_libConfig.cmake
+Symlinking /home/yzc/project/robotswitch/devel/lib/libtrac_ik.so
+Symlinking /home/yzc/project/robotswitch/devel/lib/pkgconfig/trac_ik_lib.pc

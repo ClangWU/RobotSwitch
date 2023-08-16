@@ -1,0 +1,6 @@
+Symlinking /home/yzc/project/robotswitch/devel/share/robotswitch_controller/cmake/robotswitch_controllerConfig.cmake
+Symlinking /home/yzc/project/robotswitch/devel/share/robotswitch_controller/cmake/robotswitch_controllerConfig-version.cmake
+Symlinking /home/yzc/project/robotswitch/devel/lib/libcrc_table.so
+Symlinking /home/yzc/project/robotswitch/devel/lib/robotswitch_controller/ahrs_driver
+Symlinking /home/yzc/project/robotswitch/devel/lib/robotswitch_controller/imu_tf
+Symlinking /home/yzc/project/robotswitch/devel/lib/pkgconfig/robotswitch_controller.pc

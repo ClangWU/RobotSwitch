@@ -19,6 +19,7 @@
 #include <string>
 #include <ros/package.h>
 #include <crc_table.h>
+#include <Eigen/Eigen>
 
 using namespace std;
 namespace RobotSwitch
@@ -69,6 +70,8 @@ public:
   ros::NodeHandle nh_;
 
 private:
+  Eigen::Quaterniond calibration_quaternion;
+
   bool if_debug_;
   //sum info
   int sn_lost_ = 0;

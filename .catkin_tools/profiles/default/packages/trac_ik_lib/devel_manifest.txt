@@ -1,0 +1,6 @@
+trac_ik/trac_ik_lib
+/home/yzc/project/robotswitch/devel/.private/trac_ik_lib/cmake.lock /home/yzc/project/robotswitch/devel/./cmake.lock
+/home/yzc/project/robotswitch/devel/.private/trac_ik_lib/share/trac_ik_lib/cmake/trac_ik_libConfig-version.cmake /home/yzc/project/robotswitch/devel/share/trac_ik_lib/cmake/trac_ik_libConfig-version.cmake
+/home/yzc/project/robotswitch/devel/.private/trac_ik_lib/share/trac_ik_lib/cmake/trac_ik_libConfig.cmake /home/yzc/project/robotswitch/devel/share/trac_ik_lib/cmake/trac_ik_libConfig.cmake
+/home/yzc/project/robotswitch/devel/.private/trac_ik_lib/lib/libtrac_ik.so /home/yzc/project/robotswitch/devel/lib/libtrac_ik.so
+/home/yzc/project/robotswitch/devel/.private/trac_ik_lib/lib/pkgconfig/trac_ik_lib.pc /home/yzc/project/robotswitch/devel/lib/pkgconfig/trac_ik_lib.pc

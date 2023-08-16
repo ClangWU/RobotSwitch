@@ -1,0 +1,5 @@
+[ 33%] [34m[1mSwig source[0m
+[35m[1mScanning dependencies of target _trac_ik_wrap[0m
+[ 66%] [32mBuilding C object CMakeFiles/_trac_ik_wrap.dir/trac_ik_wrapPYTHON_wrap.c.o[0m
+[100%] [32m[1mLinking C shared module /home/yzc/project/robotswitch/devel/.private/trac_ik_python/lib/python2.7/dist-packages/trac_ik_python/_trac_ik_wrap.so[0m
+[100%] Built target _trac_ik_wrap
