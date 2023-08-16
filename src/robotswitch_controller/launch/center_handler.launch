@@ -1,0 +1,4 @@
+<launch>
+        <node name = "center_node" pkg = "robotswitch_controller" type = "center_pose_node" respawn="false" output="screen"/>
+        <!-- <node name = "center_node" pkg = "robotswitch_controller" type = "center_node" respawn="false" output="screen"/> -->
+</launch>

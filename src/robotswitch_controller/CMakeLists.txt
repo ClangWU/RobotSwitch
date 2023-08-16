@@ -40,11 +40,34 @@ catkin_package(
 # link_directories(${SERIAL_LIB_PATH})
 
 ## ahrs_driver
-add_executable(ahrs_driver src/ahrs_driver.cpp)
+add_executable(ahrs_driver src/ahrs/ahrs_driver.cpp)
 target_link_libraries(ahrs_driver crc_table ${catkin_LIBRARIES})# ${SERIAL_LIB}
 
-add_executable(imu_tf src/imu_tf.cpp)
+add_executable(imu_tf src/ahrs/imu_tf.cpp)
 target_link_libraries( imu_tf ${catkin_LIBRARIES})# ${SERIAL_LIB}
 
 ## crc_table
-add_library(crc_table src/crc_table.cpp)
+add_library(crc_table src/ahrs/crc_table.cpp)
+
+add_executable(center_vel_node 
+              src/center_vel_node.cpp)
+target_link_libraries(center_vel_node ${catkin_LIBRARIES})
+
+add_executable(center_pose_node 
+              src/center_pose_node.cpp)
+target_link_libraries(center_pose_node ${catkin_LIBRARIES})
+
+add_executable(force_mcu_node 
+              src/force_mcu/force_mcu_serial_node.cpp
+              src/force_mcu/force_mcu_control.cpp)
+target_link_libraries(force_mcu_node ${catkin_LIBRARIES})
+
+add_executable(left_mcu_node 
+              src/left_mcu/left_mcu_serial_node.cpp
+              src/left_mcu/left_mcu_control.cpp)
+target_link_libraries(left_mcu_node ${catkin_LIBRARIES})
+
+add_executable(right_mcu_node 
+              src/right_mcu/right_mcu_serial_node.cpp
+              src/right_mcu/right_mcu_control.cpp)
+target_link_libraries(right_mcu_node ${catkin_LIBRARIES})
