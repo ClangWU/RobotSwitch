@@ -35,6 +35,8 @@ namespace RobotSwitch
     // qtn_publisher = nh_.advertise<geometry_msgs::PoseStamped>("/qtn_pose", 10);
     qtn_publisher = nh_.advertise<geometry_msgs::PoseStamped>("/cartesian_impedance_controller/desired_pose", 10);
 
+    // qtn_publisher = nh_.advertise<geometry_msgs::Pose>("/hiro_panda/goto_pose", 10);
+
     // setp up serial  设置串口参数并打开串口
      try
     {
@@ -468,6 +470,10 @@ namespace RobotSwitch
         pose_msg.pose.position.x = 0.3069;
         pose_msg.pose.position.y = 0.0;
         pose_msg.pose.position.z = 0.4866;
+
+        // pose_msg.pose.position.x = 0.4;
+        // pose_msg.pose.position.y = 0.0;
+        // pose_msg.pose.position.z = 0.6;
 
         pose_msg.pose.orientation.x = robot_quaternion.x();
         pose_msg.pose.orientation.y = robot_quaternion.y();

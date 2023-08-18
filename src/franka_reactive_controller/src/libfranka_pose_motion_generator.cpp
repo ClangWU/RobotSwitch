@@ -59,10 +59,11 @@ int main(int argc, char** argv) {
 
       std::array<double, 16> new_pose = initial_pose;
 
+      std::cout <<  delta_x<< std::endl;
 
-      new_pose[12] += delta_x;
-      new_pose[13] += 0.000005;
-      new_pose[14] += delta_z;
+      // new_pose[12] += delta_x;
+      // new_pose[13] += 0.000005;
+      // new_pose[14] += delta_z;
 
 // new_pose[0] = 1.0;  new_pose[4] = 0.0;  new_pose[8] = 0.0;  new_pose[12] += delta_x;
 // new_pose[1] = 0.0;  new_pose[5] = 1.0;  new_pose[9] = 0.0;  new_pose[13] = 0.0;
