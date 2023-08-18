@@ -32,7 +32,8 @@ namespace RobotSwitch
     NED_odom_pub_ = nh_.advertise<nav_msgs::Odometry>(NED_odom_topic_.c_str(), 10);
 
     imu_velocity_publisher = nh_.advertise<geometry_msgs::Twist>("/ahrs_velocity", 10);
-    qtn_publisher = nh_.advertise<geometry_msgs::PoseStamped>("/qtn_pose", 10);
+    // qtn_publisher = nh_.advertise<geometry_msgs::PoseStamped>("/qtn_pose", 10);
+    qtn_publisher = nh_.advertise<geometry_msgs::PoseStamped>("/cartesian_impedance_controller/desired_pose", 10);
 
     // setp up serial  设置串口参数并打开串口
      try
@@ -464,6 +465,10 @@ namespace RobotSwitch
         Eigen::Quaterniond robot_quaternion = calibration_quaternion * controller_quaternion;
         // clang
         geometry_msgs::PoseStamped pose_msg;
+        pose_msg.pose.position.x = 0.3069;
+        pose_msg.pose.position.y = 0.0;
+        pose_msg.pose.position.z = 0.4866;
+
         pose_msg.pose.orientation.x = robot_quaternion.x();
         pose_msg.pose.orientation.y = robot_quaternion.y();
         pose_msg.pose.orientation.z = robot_quaternion.z();
