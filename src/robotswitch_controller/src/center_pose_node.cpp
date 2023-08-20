@@ -8,14 +8,14 @@ geometry_msgs::PoseStamped combined_pose;
 
 void left_recv_callback(const geometry_msgs::PoseStamped::ConstPtr& msg){
   mtx.lock();
-    combined_pose.pose.position.x = msg->pose.position.x;
+    combined_pose.pose.position.x = msg->pose.position.z;
     pose_puber_ptr->publish(combined_pose);
   mtx.unlock();
 }
 void right_recv_callback(const geometry_msgs::PoseStamped::ConstPtr& msg){
   mtx.lock();
-    combined_pose.pose.position.y = msg->pose.position.y;
-    combined_pose.pose.position.z = msg->pose.position.z;
+    combined_pose.pose.position.y = msg->pose.position.x;
+    combined_pose.pose.position.z = msg->pose.position.y;
     pose_puber_ptr->publish(combined_pose);
   mtx.unlock();
 }
@@ -34,7 +34,7 @@ int main(int argc, char** argv)
   ros::init(argc, argv, "center_node"); //初始化节点
   ros::NodeHandle nh;
   ros::Publisher pub = 
-  nh.advertise<geometry_msgs::PoseStamped>("/cartesian_pose_node_controller/cartesian_pose", 10);
+  nh.advertise<geometry_msgs::PoseStamped>("/cartesian_impedance_controller/desired_pose", 10);
   pose_puber_ptr = &pub;
 
   ros::Subscriber left_suber = nh.subscribe("/left_velocity", 100, left_recv_callback);

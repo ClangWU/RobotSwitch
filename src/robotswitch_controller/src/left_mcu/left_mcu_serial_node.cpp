@@ -2,6 +2,8 @@
 #include <mcu_common/serial_node.h>
 #include "left_mcu/left_mcu_control.h"
 #include <geometry_msgs/Twist.h>
+#include <geometry_msgs/PoseStamped.h>
+
 #include <std_msgs/Float32.h>
 using namespace std;
 // bool flag = false;
@@ -23,9 +25,9 @@ int main(int argc, char** argv)
   private_nh.param("left_port_", left_port_, std::string("/dev/ttyUSB1"));
   private_nh.param("left_baud_", left_baud_, 115200);
 
-  geometry_msgs::Twist left_msg;
+  geometry_msgs::PoseStamped left_msg;
   ros::Publisher  left_pub = 
-  nh.advertise<geometry_msgs::Twist>("/left_velocity", 10); // 创建一个发布器，话题名称是"force_data"
+  nh.advertise<geometry_msgs::PoseStamped>("/left_velocity", 10); // 创建一个发布器，话题名称是"force_data"
 
   ros::Subscriber sub = nh.subscribe("/end_effector_force", 10, left_callback);
 
@@ -41,7 +43,7 @@ int main(int argc, char** argv)
   while(ros::ok())
   {
     left.left_data = left.port_manager.filter(left.left_port.readStruct<LeftData>(0x44, 0x55));
-    left_msg.linear.z = left.left_data._y;
+    left_msg.pose.position.z = left.left_data._y;
     left_pub.publish(left_msg);
 
     ros::spinOnce(); 

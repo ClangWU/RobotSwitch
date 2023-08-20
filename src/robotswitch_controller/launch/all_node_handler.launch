@@ -12,10 +12,10 @@
   </node>
 
   <!-- Force MCU Node -->
-  <node name="force_mcu_node" pkg="robotswitch_controller" type="force_mcu_node" output="screen">
+  <!-- <node name="force_mcu_node" pkg="robotswitch_controller" type="force_mcu_node" output="screen">
     <param name="force_port_"  value="/dev/ttyACM0"/>
     <param name="force_baud_"  value="115200"/>
-  </node>
+  </node> -->
 
   <!-- Center Node -->
   <node name="center_node" pkg="robotswitch_controller" type="center_node" output="screen">
