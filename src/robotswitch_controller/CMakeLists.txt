@@ -19,12 +19,13 @@ find_package(catkin REQUIRED COMPONENTS
   nav_msgs
   serial
 )
+
+find_package(Eigen3 REQUIRED)
+
 include_directories(
   include 
-  src
   ${catkin_INCLUDE_DIRS}
   ${Eigen3_INCLUDE_DIRS} 
-  
 )
 
 catkin_package(

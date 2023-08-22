@@ -1,6 +1,6 @@
 #pragma once
-#include <mcu_common/common_data.h>
-#include <mcu_common/serial_node.h>
+#include <rs_common/common_data.h>
+#include <rs_common/serial_node.h>
 class ForceControl
 {
 public:

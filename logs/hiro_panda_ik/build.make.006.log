@@ -1,4 +1,0 @@
-[35m[1mScanning dependencies of target hiro_panda_ik_controllers[0m
-[ 33%] [32mBuilding CXX object CMakeFiles/hiro_panda_ik_controllers.dir/src/panda_interface/panda_pose_controller.cpp.o[0m
-[ 66%] [32m[1mLinking CXX shared library /home/yzc/project/robotswitch/devel/.private/hiro_panda_ik/lib/libhiro_panda_ik_controllers.so[0m
-[100%] Built target hiro_panda_ik_controllers

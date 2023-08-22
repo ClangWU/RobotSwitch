@@ -1,6 +1,0 @@
-Symlinking /home/yzc/project/robotswitch/devel/share/trac_ik_python/cmake/trac_ik_pythonConfig.cmake
-Symlinking /home/yzc/project/robotswitch/devel/share/trac_ik_python/cmake/trac_ik_pythonConfig-version.cmake
-Symlinking /home/yzc/project/robotswitch/devel/lib/pkgconfig/trac_ik_python.pc
-Symlinking /home/yzc/project/robotswitch/devel/lib/python2.7/dist-packages/trac_ik_python/_trac_ik_wrap.so
-Symlinking /home/yzc/project/robotswitch/devel/lib/python2.7/dist-packages/trac_ik_python/__init__.py
-Symlinking /home/yzc/project/robotswitch/devel/lib/python2.7/dist-packages/trac_ik_python/trac_ik_wrap.py

@@ -16,12 +16,27 @@ namespace RobotSwitch
     pravite_nh.param("gps_topic_", gps_topic_, std::string("/gps/fix"));
     pravite_nh.param("twist_topic_", twist_topic_, std::string("/system_speed"));
     pravite_nh.param("NED_odom_topic_", NED_odom_topic_, std::string("/NED_odometry"));
-
     // serial
-    // ahrs
     pravite_nh.param("ahrs_port", ahrs_serial_port_, std::string("/dev/ttyUSB0"));
     pravite_nh.param("ahrs_baud", ahrs_serial_baud_, 921600);
 
+    pravite_nh.getParam("ahrs_config/print_flag", print_flag_);
+
+    if (pravite_nh.getParam("ahrs_config/file_path", matlab_path))
+      ROS_INFO("Got file_path: %s", matlab_path.c_str());
+    else
+      ROS_ERROR("Failed to get param 'ahrs_config/file_path'");
+
+    if (print_flag_)
+    {
+      matlab_file.open(matlab_path);
+      if (matlab_file.is_open())
+        printf("[AHRS DATA] file opened successfully.\n");
+      else
+        printf("[AHRS DATA] Failed to open file.\n");
+    }
+
+    
     // publisher  创建发布对象
     imu_pub_ = nh_.advertise<sensor_msgs::Imu>(imu_topic_.c_str(), 10);
     mag_pose_pub_ = nh_.advertise<geometry_msgs::Pose2D>(mag_pose_2d_topic_.c_str(), 10);
@@ -36,6 +51,8 @@ namespace RobotSwitch
     // qtn_publisher = nh_.advertise<geometry_msgs::PoseStamped>("/cartesian_impedance_controller/desired_pose", 10);
 //cartesian_impedance_controller/desired_pose
     // qtn_publisher = nh_.advertise<geometry_msgs::Pose>("/hiro_panda/goto_pose", 10);
+
+    
 
     // setp up serial  设置串口参数并打开串口
      try
@@ -450,6 +467,10 @@ namespace RobotSwitch
           imu_data.linear_acceleration.x = imu_frame_.frame.data.data_pack.accelerometer_x;
           imu_data.linear_acceleration.y = -imu_frame_.frame.data.data_pack.accelerometer_y;
           imu_data.linear_acceleration.z = -imu_frame_.frame.data.data_pack.accelerometer_z;
+
+          if(print_flag_){
+            // matlab_file 
+          }
         }
         imu_pub_.publish(imu_data);
         //   机械臂四元数:

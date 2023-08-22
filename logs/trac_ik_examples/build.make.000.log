@@ -1,4 +1,0 @@
-[35m[1mScanning dependencies of target ik_tests[0m
-[ 50%] [32mBuilding CXX object CMakeFiles/ik_tests.dir/src/ik_tests.cpp.o[0m
-[100%] [32m[1mLinking CXX executable /home/yzc/project/robotswitch/devel/.private/trac_ik_examples/lib/trac_ik_examples/ik_tests[0m
-[100%] Built target ik_tests

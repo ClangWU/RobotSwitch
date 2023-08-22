@@ -80,12 +80,15 @@ private:
   bool frist_sn_;
   int device_type_ = 1;
 
-  //4 serial
   //imu
   serial::Serial ahrs_serial_; //声明串口对象
   std::string ahrs_serial_port_;
   int ahrs_serial_baud_;
   int ahrs_serial_timeout_;
+
+  std::ofstream matlab_file;
+  std::string matlab_path;
+  bool print_flag_;
 
   //data
   FDILink::imu_frame_read  imu_frame_;
