@@ -1,4 +1,4 @@
-﻿#include <ahrs_driver.h>
+﻿#include <ahrs/ahrs_driver.h>
 namespace RobotSwitch
 {
   RobotSwitchBringup::RobotSwitchBringup() : frist_sn_(false)
@@ -20,15 +20,16 @@ namespace RobotSwitch
     pravite_nh.param("ahrs_port", ahrs_serial_port_, std::string("/dev/ttyUSB0"));
     pravite_nh.param("ahrs_baud", ahrs_serial_baud_, 921600);
 
-    pravite_nh.getParam("ahrs_config/print_flag", print_flag_);
+    nh_.getParam("ahrs_config/print_flag", print_flag_);
 
-    if (pravite_nh.getParam("ahrs_config/file_path", matlab_path))
+    if(nh_.getParam("ahrs_config/file_path", matlab_path))
       ROS_INFO("Got file_path: %s", matlab_path.c_str());
     else
       ROS_ERROR("Failed to get param 'ahrs_config/file_path'");
 
     if (print_flag_)
     {
+      logData = new double[10]();
       matlab_file.open(matlab_path);
       if (matlab_file.is_open())
         printf("[AHRS DATA] file opened successfully.\n");
@@ -36,7 +37,7 @@ namespace RobotSwitch
         printf("[AHRS DATA] Failed to open file.\n");
     }
 
-    
+
     // publisher  创建发布对象
     imu_pub_ = nh_.advertise<sensor_msgs::Imu>(imu_topic_.c_str(), 10);
     mag_pose_pub_ = nh_.advertise<geometry_msgs::Pose2D>(mag_pose_2d_topic_.c_str(), 10);
@@ -467,9 +468,22 @@ namespace RobotSwitch
           imu_data.linear_acceleration.x = imu_frame_.frame.data.data_pack.accelerometer_x;
           imu_data.linear_acceleration.y = -imu_frame_.frame.data.data_pack.accelerometer_y;
           imu_data.linear_acceleration.z = -imu_frame_.frame.data.data_pack.accelerometer_z;
-
+        // clang
           if(print_flag_){
-            // matlab_file 
+            logData[0] = imu_data.orientation.w;
+            logData[1] = imu_data.orientation.x;
+            logData[2] = imu_data.orientation.y;
+            logData[3] = imu_data.orientation.z;
+            logData[4] = imu_data.angular_velocity.x;
+            logData[5] = imu_data.angular_velocity.y;
+            logData[6] = imu_data.angular_velocity.z;
+            logData[7] = imu_data.linear_acceleration.x;
+            logData[8] = imu_data.linear_acceleration.y;
+            logData[9] = imu_data.linear_acceleration.z;
+
+            matlab_file << ros::Time::now() << " ";
+            stream_array_in(matlab_file, logData, 10);
+            matlab_file << endl;
           }
         }
         imu_pub_.publish(imu_data);

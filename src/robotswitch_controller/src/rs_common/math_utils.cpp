@@ -1,6 +1,7 @@
 #include <rs_common/math_utils.hpp>
+namespace RobotSwitch{
+const static double _PI = 3.14159265;
 
-const static double _PI = 3.1415926;
 
 Quaterniond QuatMTimes(const Quaterniond &q1,
     const Quaterniond &q2)  {
@@ -266,7 +267,7 @@ Matrix6 JacobianSpt2BodyV(const Matrix3 &R) {
 }
 
 double Gaussian(double x, double var) {
-  double k = 1.0/var/std::sqrt(2.0*PI);
+  double k = 1.0/var/std::sqrt(2.0*_PI);
   double exp = std::exp(-x*x/2.0/var/var);
   return k*exp;
 }
@@ -435,4 +436,6 @@ Vector3 OmegaS2EulerAcc(const Vector3& eul, const Vector3& eul_vel,
   Vector3 eul_acc = o2e_vel * (omega_acc - e2o_acc * eul_vel);
 
   return eul_acc;
+}
+
 }

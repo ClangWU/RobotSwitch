@@ -1,7 +1,0 @@
-<launch>
-        <!-- right device  -->
-        <node name = "right_mcu_node" pkg = "robotswitch_controller" type = "right_mcu_node" respawn="false" output="screen" >
-                <param name="right_port_"  value="/dev/ttyUSB2"/>
-                <param name="right_baud_"  value="115200"/>
-        </node>
-</launch>

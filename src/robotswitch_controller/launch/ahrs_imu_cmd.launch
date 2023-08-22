@@ -1,5 +1,5 @@
 <launch>
-  <rosparam file="$(find robotswitch)/config/init.yaml" command="load" />
+  <rosparam file="$(find robotswitch_controller)/config/init.yaml" command="load" />
   <node pkg="robotswitch_controller" name="ahrs_driver" type="ahrs_driver" output="screen" >
     <!-- 是否输出debug信息 -->
     <param name="debug"  value="false"/>

@@ -22,10 +22,37 @@ find_package(catkin REQUIRED COMPONENTS
 
 find_package(Eigen3 REQUIRED)
 
+set(INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
+set(H_FILES   ${INCLUDE_DIR}/rs_common/math_utils.hpp)
+
 include_directories(
-  include 
+  include
   ${catkin_INCLUDE_DIRS}
   ${Eigen3_INCLUDE_DIRS} 
+)
+## Declare a C++ executable
+set(SRCS
+    src/rs_common/math_utils.cpp)
+## Declare a C++ library
+add_library(math_utils ${H_FILES} ${SRCS})
+
+add_dependencies(math_utils
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS}
+  ##${PROJECT_NAME}_generate_messages_cpp
+  ##${PROJECT_NAME}_gencfg
+)
+
+target_link_libraries(math_utils PUBLIC
+  ${catkin_LIBRARIES}
+)
+
+target_include_directories(math_utils SYSTEM PUBLIC
+  ${EIGEN3_INCLUDE_DIRS}
+  ${catkin_INCLUDE_DIRS}
+)
+target_include_directories(math_utils PUBLIC
+  include
 )
 
 catkin_package(
@@ -35,40 +62,12 @@ catkin_package(
 #  CATKIN_DEPENDS roscpp rospy senor_msgs std_msgs
 #  DEPENDS system_lib
 )
-
-# set(SERIAL_LIB /opt/ros/kinetic/lib/libserial.so)
-# set(SERIAL_LIB_PATH /opt/ros/kinetic/lib)
-# link_directories(${SERIAL_LIB_PATH})
-
 ## ahrs_driver
 add_executable(ahrs_driver src/ahrs/ahrs_driver.cpp)
-target_link_libraries(ahrs_driver crc_table ${catkin_LIBRARIES})# ${SERIAL_LIB}
+target_link_libraries(ahrs_driver crc_table math_utils ${catkin_LIBRARIES})# ${SERIAL_LIB}
 
 add_executable(imu_tf src/ahrs/imu_tf.cpp)
 target_link_libraries( imu_tf ${catkin_LIBRARIES})# ${SERIAL_LIB}
 
 ## crc_table
 add_library(crc_table src/ahrs/crc_table.cpp)
-
-add_executable(center_vel_node 
-              src/center_vel_node.cpp)
-target_link_libraries(center_vel_node ${catkin_LIBRARIES})
-
-add_executable(center_pose_node 
-              src/center_pose_node.cpp)
-target_link_libraries(center_pose_node ${catkin_LIBRARIES})
-
-add_executable(force_mcu_node 
-              src/force_mcu/force_mcu_serial_node.cpp
-              src/force_mcu/force_mcu_control.cpp)
-target_link_libraries(force_mcu_node ${catkin_LIBRARIES})
-
-add_executable(left_mcu_node 
-              src/left_mcu/left_mcu_serial_node.cpp
-              src/left_mcu/left_mcu_control.cpp)
-target_link_libraries(left_mcu_node ${catkin_LIBRARIES})
-
-add_executable(right_mcu_node 
-              src/right_mcu/right_mcu_serial_node.cpp
-              src/right_mcu/right_mcu_control.cpp)
-target_link_libraries(right_mcu_node ${catkin_LIBRARIES})

@@ -11,15 +11,17 @@
 
 #include <math.h>
 #include <fstream>
-#include <fdilink_data_struct.h>
+#include <ahrs/fdilink_data_struct.h>
 #include <sensor_msgs/Imu.h>
 #include <sensor_msgs/NavSatFix.h>
 #include <geometry_msgs/Pose2D.h>
 #include <boost/thread.hpp>
 #include <string>
 #include <ros/package.h>
-#include <crc_table.h>
+#include <ahrs/crc_table.h>
 #include <Eigen/Eigen>
+#include <rs_common/math_utils.hpp>
+
 
 using namespace std;
 namespace RobotSwitch
@@ -88,6 +90,7 @@ private:
 
   std::ofstream matlab_file;
   std::string matlab_path;
+  double *logData;
   bool print_flag_;
 
   //data
