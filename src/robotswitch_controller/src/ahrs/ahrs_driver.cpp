@@ -468,7 +468,15 @@ namespace RobotSwitch
           imu_data.linear_acceleration.x = imu_frame_.frame.data.data_pack.accelerometer_x;
           imu_data.linear_acceleration.y = -imu_frame_.frame.data.data_pack.accelerometer_y;
           imu_data.linear_acceleration.z = -imu_frame_.frame.data.data_pack.accelerometer_z;
-        // clang
+        
+        }
+        if(first_flag_){
+          first_flag_ = false;
+          continue;
+        }
+        else{
+          imu_pub_.publish(imu_data);
+          // clang
           if(print_flag_){
             logData[0] = imu_data.orientation.w;
             logData[1] = imu_data.orientation.x;
@@ -486,7 +494,7 @@ namespace RobotSwitch
             matlab_file << endl;
           }
         }
-        imu_pub_.publish(imu_data);
+          
         //   机械臂四元数:
         // w: -4.92282e-05
         // x: 0.999998

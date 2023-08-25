@@ -92,6 +92,7 @@ private:
   std::string matlab_path;
   double *logData;
   bool print_flag_;
+  bool first_flag_ = true;
 
   //data
   FDILink::imu_frame_read  imu_frame_;
