@@ -96,7 +96,13 @@ private:
   bool print_flag_;
   bool first_flag_ = true;
   //gravity calibration
-  double cali_term = 0;
+  double g_calibration = 0;
+  Eigen::Vector3d raw_acc;
+  Eigen::Vector3d real_acc;
+  Eigen::Vector3d raw_vel;
+  Eigen::Vector3d real_vel;
+  Eigen::Vector3d raw_pos;
+  Eigen::Vector3d real_pos;
 
   //data
   FDILink::imu_frame_read  imu_frame_;

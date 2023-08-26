@@ -8,7 +8,7 @@
 
 namespace RobotSwitch{
   const static double kEpsilon = 1e-7;
-
+  typedef Eigen::Matrix<double, 2, 1> Vector2;
   typedef Eigen::Matrix<double, 3, 1> Vector3;
   typedef Eigen::Matrix<double, 4, 1> Vector4;
   typedef Eigen::Matrix<double, 6, 1> Vector6;
@@ -83,8 +83,6 @@ namespace RobotSwitch{
      * @param      pose_traj  The interpolated pose traj. 7 x Nsteps matrix
      */
     void MotionPlanningLinear(const double *pose0, const double *pose_set, const int Nsteps, MatrixXd *pose_traj);
-
-
 }
 
 #endif

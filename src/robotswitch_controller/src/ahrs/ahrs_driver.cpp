@@ -389,7 +389,7 @@ namespace RobotSwitch
                                 imu_data.orientation.z);
           Eigen::Vector3d real_acc = q.toRotationMatrix().transpose()*raw_acc;
           sum_times++;
-          cali_term = cali_term + (real_acc(2) - cali_term) / sum_times;
+          g_calibration = g_calibration + (real_acc(2) - g_calibration) / sum_times;
           // std::cout << "Quaternion q: w = " << q.w() 
           // << ", x = " << q.x() 
           // << ", y = " << q.y() 
@@ -397,7 +397,7 @@ namespace RobotSwitch
         }    
       }
       if(sum_times >= times){
-        std::cout << "cali_term  "<< std::endl << cali_term << std::endl; 
+        std::cout << "g_calibration  "<< std::endl << g_calibration << std::endl; 
         printf("[AHRS DATA] calibration finished.\n");
         break;}
     }
@@ -711,60 +711,45 @@ namespace RobotSwitch
             Eigen::AngleAxisd(PI / 2, Eigen::Vector3d::UnitZ()) *
             Eigen::AngleAxisd(0.00000, Eigen::Vector3d::UnitY()) *
             Eigen::AngleAxisd(PI, Eigen::Vector3d::UnitX());
-        if (device_type_ == 0) // 未经变换的原始数据
-        {
-          imu_data.orientation.w = ahrs_frame_.frame.data.data_pack.Qw;
-          imu_data.orientation.x = ahrs_frame_.frame.data.data_pack.Qx;
-          imu_data.orientation.y = ahrs_frame_.frame.data.data_pack.Qy;
-          imu_data.orientation.z = ahrs_frame_.frame.data.data_pack.Qz;
-          imu_data.angular_velocity.x = imu_frame_.frame.data.data_pack.gyroscope_x;
-          imu_data.angular_velocity.y = imu_frame_.frame.data.data_pack.gyroscope_y;
-          imu_data.angular_velocity.z = imu_frame_.frame.data.data_pack.gyroscope_z;
-          imu_data.linear_acceleration.x = imu_frame_.frame.data.data_pack.accelerometer_x;
-          imu_data.linear_acceleration.y = imu_frame_.frame.data.data_pack.accelerometer_y;
-          imu_data.linear_acceleration.z = imu_frame_.frame.data.data_pack.accelerometer_z;
-        }
-        else if (device_type_ == 1) // imu单品ROS标准下的坐标变换
-        {
 
           Eigen::Quaterniond q_out = q_r * q_ahrs * q_rr;
-          imu_data.orientation.w = q_out.w();
-          imu_data.orientation.x = q_out.x();
-          imu_data.orientation.y = q_out.y();
-          imu_data.orientation.z = q_out.z();
-          imu_data.angular_velocity.x = imu_frame_.frame.data.data_pack.gyroscope_x;
-          imu_data.angular_velocity.y = -imu_frame_.frame.data.data_pack.gyroscope_y;
-          imu_data.angular_velocity.z = -imu_frame_.frame.data.data_pack.gyroscope_z;
-          imu_data.linear_acceleration.x = imu_frame_.frame.data.data_pack.accelerometer_x;
-          imu_data.linear_acceleration.y = -imu_frame_.frame.data.data_pack.accelerometer_y;
-          imu_data.linear_acceleration.z = -imu_frame_.frame.data.data_pack.accelerometer_z;
-        
-        }
-        if(first_flag_){
-          first_flag_ = false;
-          continue;
-        }
-        else{
+          // imu_data.orientation.w = q_out.w();
+          // imu_data.orientation.x = q_out.x();
+          // imu_data.orientation.y = q_out.y();
+          // imu_data.orientation.z = q_out.z();
+          // imu_data.angular_velocity.x = imu_frame_.frame.data.data_pack.gyroscope_x;
+          // imu_data.angular_velocity.y = -imu_frame_.frame.data.data_pack.gyroscope_y;
+          // imu_data.angular_velocity.z = -imu_frame_.frame.data.data_pack.gyroscope_z;
+          // imu_data.linear_acceleration.x = imu_frame_.frame.data.data_pack.accelerometer_x;
+          // imu_data.linear_acceleration.y = -imu_frame_.frame.data.data_pack.accelerometer_y;
+          // imu_data.linear_acceleration.z = -imu_frame_.frame.data.data_pack.accelerometer_z;
+  
+          Eigen::Vector3d   raw_acc( 
+                    imu_frame_.frame.data.data_pack.accelerometer_x, 
+                    -imu_frame_.frame.data.data_pack.accelerometer_y, 
+                    -imu_frame_.frame.data.data_pack.accelerometer_z);
+
+          real_acc = q_out.toRotationMatrix().transpose()*raw_acc;
+          real_acc(2) -=g_calibration;
+          raw_vel = real_vel + real_acc * 0.005;
+
           imu_pub_.publish(imu_data);
           // clang
           if(print_flag_){
-            logData[0] = imu_data.orientation.w;
-            logData[1] = imu_data.orientation.x;
-            logData[2] = imu_data.orientation.y;
-            logData[3] = imu_data.orientation.z;
-            logData[4] = imu_data.angular_velocity.x;
-            logData[5] = imu_data.angular_velocity.y;
-            logData[6] = imu_data.angular_velocity.z;
-            logData[7] = imu_data.linear_acceleration.x;
-            logData[8] = imu_data.linear_acceleration.y;
-            logData[9] = imu_data.linear_acceleration.z;
-
+            logData[0] = q_out.w();
+            logData[1] = q_out.x();
+            logData[2] = q_out.y();
+            logData[3] = q_out.z();
+            logData[4] = imu_frame_.frame.data.data_pack.gyroscope_x;
+            logData[5] = -imu_frame_.frame.data.data_pack.gyroscope_y;
+            logData[6] = -imu_frame_.frame.data.data_pack.gyroscope_z;
+            logData[7] = imu_frame_.frame.data.data_pack.accelerometer_x;
+            logData[8] = -imu_frame_.frame.data.data_pack.accelerometer_y;
+            logData[9] = -imu_frame_.frame.data.data_pack.accelerometer_z;
             matlab_file << ros::Time::now() << " ";
             stream_array_in(matlab_file, logData, 10);
             matlab_file << endl;
           }
-        }
-          
         //   机械臂四元数:
         // w: -4.92282e-05
         // x: 0.999998
@@ -783,10 +768,6 @@ namespace RobotSwitch
         // pose_msg.pose.position.x = 0.3069;
         // pose_msg.pose.position.y = 0.0;
         // pose_msg.pose.position.z = 0.4866;
-
-        // pose_msg.pose.position.x = 0.4;
-        // pose_msg.pose.position.y = 0.0;
-        // pose_msg.pose.position.z = 0.6;
 
         pose_msg.pose.orientation.x = robot_quaternion.x();
         pose_msg.pose.orientation.y = robot_quaternion.y();

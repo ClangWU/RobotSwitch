@@ -438,4 +438,6 @@ Vector3 OmegaS2EulerAcc(const Vector3& eul, const Vector3& eul_vel,
   return eul_acc;
 }
 
+
+
 }
