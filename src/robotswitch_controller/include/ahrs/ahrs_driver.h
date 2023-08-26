@@ -11,14 +11,17 @@
 
 #include <math.h>
 #include <fstream>
-#include <fdilink_data_struct.h>
+#include <ahrs/fdilink_data_struct.h>
 #include <sensor_msgs/Imu.h>
 #include <sensor_msgs/NavSatFix.h>
 #include <geometry_msgs/Pose2D.h>
 #include <boost/thread.hpp>
 #include <string>
 #include <ros/package.h>
-#include <crc_table.h>
+#include <ahrs/crc_table.h>
+#include <Eigen/Eigen>
+#include <rs_common/math_utils.hpp>
+
 
 using namespace std;
 namespace RobotSwitch
@@ -38,20 +41,41 @@ namespace RobotSwitch
 #define PI 3.141592653589793
 #define DEG_TO_RAD 0.017453292519943295
 
+struct ForceData
+{
+    float _force;    //HX711 data
+} __attribute__((packed));
+
+struct MoveData
+{
+    int x_;    //move data
+    int z_;
+} __attribute__((packed));
+
+struct InteractData
+{
+    int y_;    //interact data
+} __attribute__((packed));
+
 class RobotSwitchBringup
 {
 public:
   RobotSwitchBringup();
   ~RobotSwitchBringup();
   void processLoop();
+
   bool ahrs_checkCS8(int len);
   bool ahrs_checkCS16(int len);
   void ahrs_checkSN(int type);
   void ahrs_magCalculateYaw(double roll, double pitch, double &magyaw, double magx, double magy, double magz);
   void serial_init(serial::Serial *serial_, std::string _port_, int _baud_, int _timeout_);
+  void ahrs_calibration(int time_nums);
+  sensor_msgs::Imu RobotSwitchBringup::get_ahrs();
   ros::NodeHandle nh_;
 
 private:
+  Eigen::Quaterniond calibration_quaternion;
+
   bool if_debug_;
   //sum info
   int sn_lost_ = 0;
@@ -60,30 +84,17 @@ private:
   bool frist_sn_;
   int device_type_ = 1;
 
-  //4 serial
   //imu
   serial::Serial ahrs_serial_; //声明串口对象
   std::string ahrs_serial_port_;
   int ahrs_serial_baud_;
   int ahrs_serial_timeout_;
 
-  //interact dof
-  serial::Serial interact_dof_serial_; //声明串口对象
-  std::string interact_dof_serial_port_;
-  int interact_dof_serial_baud_;
-  int interact_dof_serial_timeout_;
-
-  //move dof
-  serial::Serial move_dof_serial_; //声明串口对象
-  std::string move_dof_serial_port_;
-  int move_dof_serial_baud_;
-  int move_dof_serial_timeout_;
-
-  //force dof
-  serial::Serial force_dof_serial_; //声明串口对象
-  std::string force_dof_serial_port_;
-  int force_dof_serial_baud_;
-  int force_dof_serial_timeout_;
+  std::ofstream matlab_file;
+  std::string matlab_path;
+  double *logData;
+  bool print_flag_;
+  bool first_flag_ = true;
 
   //data
   FDILink::imu_frame_read  imu_frame_;
@@ -110,9 +121,51 @@ private:
   ros::Publisher twist_pub_;
   ros::Publisher NED_odom_pub_;
 
-  //For Franka
-  ros::Publisher velocity_command_publisher;
-}; //RobotSwitchBringup
+  ros::Publisher imu_velocity_publisher;
+  ros::Publisher qtn_publisher;
+
+  ForceData     _force_handle;
+  MoveData        _move_handle;
+  InteractData _interact_handle;
+
+  template <typename T>
+    std::vector<T> readStruct(serial::Serial *serial_, unsigned char head, unsigned char tail)
+    {
+    std::vector<T> vec_t;
+    const int LENGTH = 24;
+    const int SIZE = sizeof(T);
+    unsigned char read_buffer[LENGTH] = {0};
+    size_t len_result = serial_->read(read_buffer, LENGTH);
+    for (size_t i = 0; (i + SIZE + 1) < len_result; i++)
+    {
+        if (read_buffer[i] == head && read_buffer[i + SIZE + 1] == tail)
+        { 
+        vec_t.push_back(*(reinterpret_cast<T *>(&read_buffer[i + 1])));
+        }
+    }
+    return vec_t;
+    }
+
+    template <typename T>
+    bool writeStruct(serial::Serial *serial_, T data_struct)
+    {
+        size_t len_result = serial_->write(reinterpret_cast<const uint8_t*>(&data_struct), sizeof(data_struct));
+        return (sizeof(data_struct) == len_result);
+    }
+
+  template <typename T>
+    T filter(const std::vector<T> &dataScope){
+    if (!dataScope.empty())
+    {
+        return dataScope.back();
+    }else{
+        ROS_ERROR_STREAM("Unable to read data ");
+    }
+  }
+
+  }; //RobotSwitchBringup
 } // namespace RobotSwitch
+
+
 
 #endif

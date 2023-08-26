@@ -1,12 +1,25 @@
 <launch>
+  <rosparam file="$(find robotswitch_controller)/config/init.yaml" command="load" />
   <node pkg="robotswitch_controller" name="ahrs_driver" type="ahrs_driver" output="screen" >
     <!-- 是否输出debug信息 -->
     <param name="debug"  value="false"/>
 
     <!-- <param name="port"  value="/dev/robotswitch_controller"/> -->
-    <param name="port"  value="/dev/ttyUSB0"/>
+    <param name="ahrs_port"  value="/dev/ttyUSB0"/>
     <!-- 波特率 -->
-    <param name="baud"  value="921600"/>
+    <param name="ahrs_baud"  value="921600"/>
+    
+    <!-- Left Stick -->
+    <!-- <param name="interact_port"  value="/dev/ttyUSB1"/>
+    <param name="interact_baud"  value="115200"/> -->
+
+    <!-- Right Stick -->
+    <!-- <param name="move_port"  value="/dev/ttyUSB2"/>
+    <param name="move_baud"  value="115200"/> -->
+
+    <!-- Force -->
+    <!-- <param name="move_port"  value="/dev/ttyUSB3"/>
+    <param name="move_baud"  value="115200"/> -->
 
     <!-- imu数据话题 -->
     <!-- MSG_IMU 0X40数据包的数据 --> 

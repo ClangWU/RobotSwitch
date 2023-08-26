@@ -58,12 +58,15 @@ catkin_package(
 
 set(INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set(H_FILES   ${INCLUDE_DIR}/franka_cartesian_controller/cartesian_velocity_node_controller.h
-              ${INCLUDE_DIR}/franka_motion_generator/libfranka_joint_motion_generator.h)
+              ${INCLUDE_DIR}/franka_cartesian_controller/cartesian_pose_node_controller.h
+              ${INCLUDE_DIR}/franka_motion_generator/libfranka_joint_motion_generator.h
+              ${INCLUDE_DIR}/franka_utils/examples_common.h)
 
 include_directories(include/franka_cartesian_controller include/franka_motion_generator ${catkin_INCLUDE_DIRS})
 ## Declare a C++ executable
 set(SRCS
     src/franka_cartesian_controller/cartesian_velocity_node_controller.cpp
+    src/franka_cartesian_controller/cartesian_pose_node_controller.cpp
     src/franka_motion_generator/libfranka_joint_motion_generator.cpp)
 ## Declare a C++ library
 add_library(franka_reactive_controller ${H_FILES} ${SRCS})
@@ -97,8 +100,14 @@ target_include_directories(franka_reactive_controller PUBLIC
 add_executable(franka_gripper_run_node src/franka_gripper_run_node.cpp)
 target_link_libraries(franka_gripper_run_node franka_reactive_controller ${catkin_LIBRARIES})
 
-add_executable(libfranka_joint_goal_motion_generator src/libfranka_joint_goal_motion_generator.cpp)
-target_link_libraries(libfranka_joint_goal_motion_generator franka_reactive_controller ${catkin_LIBRARIES})
+add_executable(libfranka_joint_motion_generator src/libfranka_joint_motion_generator.cpp)
+target_link_libraries(libfranka_joint_motion_generator franka_reactive_controller ${catkin_LIBRARIES})
+
+add_executable(libfranka_pose_motion_generator 
+                src/examples_common.cpp
+                src/libfranka_pose_motion_generator.cpp)
+target_link_libraries(libfranka_pose_motion_generator franka_reactive_controller ${catkin_LIBRARIES})
+
 
 ## Installation
 install(TARGETS franka_reactive_controller
