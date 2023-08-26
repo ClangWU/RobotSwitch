@@ -69,6 +69,8 @@ public:
   void ahrs_checkSN(int type);
   void ahrs_magCalculateYaw(double roll, double pitch, double &magyaw, double magx, double magy, double magz);
   void serial_init(serial::Serial *serial_, std::string _port_, int _baud_, int _timeout_);
+  void ahrs_calibration(int time_nums);
+  sensor_msgs::Imu RobotSwitchBringup::get_ahrs();
   ros::NodeHandle nh_;
 
 private:
