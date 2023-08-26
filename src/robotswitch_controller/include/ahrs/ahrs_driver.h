@@ -63,14 +63,13 @@ public:
   RobotSwitchBringup();
   ~RobotSwitchBringup();
   void processLoop();
+  void calibration(int times);
 
   bool ahrs_checkCS8(int len);
   bool ahrs_checkCS16(int len);
   void ahrs_checkSN(int type);
   void ahrs_magCalculateYaw(double roll, double pitch, double &magyaw, double magx, double magy, double magz);
   void serial_init(serial::Serial *serial_, std::string _port_, int _baud_, int _timeout_);
-  void ahrs_calibration(int time_nums);
-  sensor_msgs::Imu RobotSwitchBringup::get_ahrs();
   ros::NodeHandle nh_;
 
 private:
@@ -95,6 +94,8 @@ private:
   double *logData;
   bool print_flag_;
   bool first_flag_ = true;
+  //gravity calibration
+  double cali_term;
 
   //data
   FDILink::imu_frame_read  imu_frame_;
