@@ -91,11 +91,12 @@ private:
 
   std::ofstream matlab_file;
   std::string matlab_path;
+  int calibration_times;
   double *logData;
   bool print_flag_;
   bool first_flag_ = true;
   //gravity calibration
-  double cali_term;
+  double cali_term = 0;
 
   //data
   FDILink::imu_frame_read  imu_frame_;

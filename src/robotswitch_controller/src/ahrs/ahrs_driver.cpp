@@ -21,21 +21,13 @@ namespace RobotSwitch
     pravite_nh.param("ahrs_baud", ahrs_serial_baud_, 921600);
 
     nh_.getParam("ahrs_config/print_flag", print_flag_);
-
+    nh_.getParam("ahrs_config/calibration_times", calibration_times);
     if(nh_.getParam("ahrs_config/file_path", matlab_path))
       ROS_INFO("Got file_path: %s", matlab_path.c_str());
     else
       ROS_ERROR("Failed to get param 'ahrs_config/file_path'");
 
-    if (print_flag_)
-    {
-      logData = new double[10]();
-      matlab_file.open(matlab_path);
-      if (matlab_file.is_open())
-        printf("[AHRS DATA] file opened successfully.\n");
-      else
-        printf("[AHRS DATA] Failed to open file.\n");
-    }
+    
 
 
     // publisher  创建发布对象
@@ -65,7 +57,7 @@ namespace RobotSwitch
        ROS_ERROR_STREAM("Unable to open port ");
        exit(0);
      }
-
+    calibration(calibration_times);
     processLoop();
   }
 
@@ -75,7 +67,9 @@ namespace RobotSwitch
       ahrs_serial_.close();
   }
   void RobotSwitchBringup::calibration(int times){
-    while (times--)
+    static int sum_times = 0;
+    static bool initialized = false;
+    while (true)
     {
       if (!ahrs_serial_.isOpen())
       {
@@ -382,17 +376,45 @@ namespace RobotSwitch
           imu_data.linear_acceleration.x = imu_frame_.frame.data.data_pack.accelerometer_x;
           imu_data.linear_acceleration.y = -imu_frame_.frame.data.data_pack.accelerometer_y;
           imu_data.linear_acceleration.z = -imu_frame_.frame.data.data_pack.accelerometer_z;
-        
         }
+        if(!initialized){
+          initialized = true;
+        }else{
+          Eigen::Vector3d raw_acc(imu_data.linear_acceleration.x, 
+                              imu_data.linear_acceleration.y, 
+                              imu_data.linear_acceleration.z);
+          Eigen::Quaterniond q( imu_data.orientation.w, 
+                                imu_data.orientation.x, 
+                                imu_data.orientation.y, 
+                                imu_data.orientation.z);
+          Eigen::Vector3d real_acc = q.toRotationMatrix().transpose()*raw_acc;
+          sum_times++;
+          cali_term = cali_term + (real_acc(2) - cali_term) / sum_times;
+          // std::cout << "Quaternion q: w = " << q.w() 
+          // << ", x = " << q.x() 
+          // << ", y = " << q.y() 
+          // << ", z = " << q.z() << std::endl << "sum_times" <<sum_times <<std::endl;
+        }    
       }
-      if(times <= 0)break;
+      if(sum_times >= times){
+        std::cout << "cali_term  "<< std::endl << cali_term << std::endl; 
+        printf("[AHRS DATA] calibration finished.\n");
+        break;}
     }
-    
-    
   }
 
   void RobotSwitchBringup::processLoop()
   {
+    if (print_flag_)
+    {
+      logData = new double[10]();
+      matlab_file.open(matlab_path);
+      if (matlab_file.is_open())
+        printf("[AHRS DATA] file opened successfully.\n");
+      else
+        printf("[AHRS DATA] Failed to open file.\n");
+    }
+
     static bool initialized = false;
     ROS_INFO("RobotSwitchBringup::processLoop: start");
     while (ros::ok())
@@ -775,11 +797,6 @@ namespace RobotSwitch
     }
     ros::waitForShutdown();
   }
-          // geometry_msgs::Twist fk_cartesian_msg;
-          // fk_cartesian_msg.angular.x = imu_data.angular_velocity.x * 0.5f;
-          // fk_cartesian_msg.angular.y = imu_data.angular_velocity.y * 0.5f;
-          // fk_cartesian_msg.angular.z = imu_data.angular_velocity.z * 0.5f;
-          // imu_velocity_publisher.publish(fk_cartesian_msg);
 
   void RobotSwitchBringup::ahrs_magCalculateYaw(double roll, double pitch, double &magyaw, double magx, double magy, double magz)
   {
