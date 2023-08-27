@@ -437,4 +437,20 @@ Vector3 OmegaS2EulerVel(const Vector3& eul, const Vector3& omega_vel) {
 
     return eul_acc;
   }
+
+  Matrix3 quat2SO3_Matlab(const Eigen::Quaterniond& q) {
+      Eigen::Matrix3d R;
+
+      R(0, 0) = 2.0 * q.w() * q.w() - 1.0 + 2.0 * q.x() * q.x();
+      R(0, 1) = 2.0 * (q.x() * q.y() + q.w() * q.z());
+      R(0, 2) = 2.0 * (q.x() * q.z() - q.w() * q.y());
+      R(1, 0) = 2.0 * (q.x() * q.y() - q.w() * q.z());
+      R(1, 1) = 2.0 * q.w() * q.w() - 1.0 + 2.0 * q.y() * q.y();
+      R(1, 2) = 2.0 * (q.y() * q.z() + q.w() * q.x());
+      R(2, 0) = 2.0 * (q.x() * q.z() + q.w() * q.y());
+      R(2, 1) = 2.0 * (q.y() * q.z() - q.w() * q.x());
+      R(2, 2) = 2.0 * q.w() * q.w() - 1.0 + 2.0 * q.z() * q.z();
+      return R;
+  }
+
 }

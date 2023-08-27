@@ -24,12 +24,12 @@ namespace RobotSwitch{
 
   typedef Eigen::Quaterniond Quaterniond;
 
-  Quaterniond vec42quat(const Vector4 &v);
-  Vector4     quat2vec4(const Quaterniond &q);
-  Matrix3     quat2SO3(const Quaterniond &q);
-  Matrix3    quat2SO3(double qw, double qx, double qy, double qz);
-
-  Matrix3     wedge(const Vector3 &v);
+  Quaterniond   vec42quat(const Vector4 &v);
+  Vector4       quat2vec4(const Quaterniond &q);
+  Matrix3       quat2SO3(const Quaterniond &q);
+  Matrix3       quat2SO3(double qw, double qx, double qy, double qz);
+  Matrix3       quat2SO3_Matlab(const Eigen::Quaterniond& q);
+  Matrix3       wedge(const Vector3 &v);
 
   Quaterniond QuatBTVec(const Vector3 &v1, const Vector3 &v2);
   Quaterniond QuatMTimes(const Quaterniond &q1, const Quaterniond &q2);
