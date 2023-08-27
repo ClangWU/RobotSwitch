@@ -2,13 +2,15 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # 加载数据
-ahrs_data = np.loadtxt('ahrs_position.txt')
+ahrs_data = np.loadtxt('ahrs_static.txt')
 ahrs = {
     "Time": ahrs_data[:, 0],
     "acc": ahrs_data[:, 1:4],
-    "vel": ahrs_data[:, 5:8],
-    "pos": ahrs_data[:, 8:11]
+    "vel": ahrs_data[:, 4:7],
+    "pos": ahrs_data[:, 7:10],
+    "qua": ahrs_data[:, 10:13]
 }
+
 
 # 选择加速度数据中的X方向进行FFT
 acceleration_data_x = ahrs["acc"][:, 1]

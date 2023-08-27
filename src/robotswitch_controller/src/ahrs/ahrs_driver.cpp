@@ -726,7 +726,7 @@ namespace RobotSwitch
                     imu_data.linear_acceleration.y, 
                     imu_data.linear_acceleration.z);
 
-          acc_now = q_out.toRotationMatrix().transpose()*raw_acc;
+          acc_now = quat2SO3_Matlab(q_out).transpose()*raw_acc;
           acc_now(2) -=g_calibration;
           // vel_now = vel_pre + acc_pre * 0.005 + (acc_pre + acc_now) * 0.5 * 0.005;
           // pos_now = pos_pre + vel_pre * 0.005 + (vel_pre + vel_now) * 0.5 * 0.005;
