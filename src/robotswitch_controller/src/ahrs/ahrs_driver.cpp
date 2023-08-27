@@ -57,6 +57,7 @@ namespace RobotSwitch
        ROS_ERROR_STREAM("Unable to open port ");
        exit(0);
      }
+    InitFilter(200, 100, 50);
     calibration(calibration_times);
     processLoop();
   }
@@ -330,7 +331,6 @@ namespace RobotSwitch
       if (head_type[0] == TYPE_IMU)
       {
         // publish imu topic
-        sensor_msgs::Imu imu_data;
         imu_data.header.stamp = ros::Time::now();
         imu_data.header.frame_id = imu_frame_id_.c_str();
         Eigen::Quaterniond q_ahrs(ahrs_frame_.frame.data.data_pack.Qw,
@@ -380,6 +380,7 @@ namespace RobotSwitch
         if(!initialized){
           initialized = true;
         }else{
+          Update(true);
           Eigen::Vector3d raw_acc(imu_data.linear_acceleration.x, 
                               imu_data.linear_acceleration.y, 
                               imu_data.linear_acceleration.z);
@@ -692,7 +693,6 @@ namespace RobotSwitch
       if (head_type[0] == TYPE_IMU)
       {
         // publish imu topic
-        sensor_msgs::Imu imu_data;
         imu_data.header.stamp = ros::Time::now();
         imu_data.header.frame_id = imu_frame_id_.c_str();
         Eigen::Quaterniond q_ahrs(ahrs_frame_.frame.data.data_pack.Qw,
@@ -713,21 +713,23 @@ namespace RobotSwitch
             Eigen::AngleAxisd(PI, Eigen::Vector3d::UnitX());
 
           Eigen::Quaterniond q_out = q_r * q_ahrs * q_rr;
-          // imu_data.orientation.w = q_out.w();
-          // imu_data.orientation.x = q_out.x();
-          // imu_data.orientation.y = q_out.y();
-          // imu_data.orientation.z = q_out.z();
-          // imu_data.angular_velocity.x = imu_frame_.frame.data.data_pack.gyroscope_x;
-          // imu_data.angular_velocity.y = -imu_frame_.frame.data.data_pack.gyroscope_y;
-          // imu_data.angular_velocity.z = -imu_frame_.frame.data.data_pack.gyroscope_z;
-          // imu_data.linear_acceleration.x = imu_frame_.frame.data.data_pack.accelerometer_x;
-          // imu_data.linear_acceleration.y = -imu_frame_.frame.data.data_pack.accelerometer_y;
-          // imu_data.linear_acceleration.z = -imu_frame_.frame.data.data_pack.accelerometer_z;
-  
+          imu_data.orientation.w = q_out.w();
+          imu_data.orientation.x = q_out.x();
+          imu_data.orientation.y = q_out.y();
+          imu_data.orientation.z = q_out.z();
+          imu_data.angular_velocity.x = imu_frame_.frame.data.data_pack.gyroscope_x;
+          imu_data.angular_velocity.y = -imu_frame_.frame.data.data_pack.gyroscope_y;
+          imu_data.angular_velocity.z = -imu_frame_.frame.data.data_pack.gyroscope_z;
+          imu_data.linear_acceleration.x = imu_frame_.frame.data.data_pack.accelerometer_x;
+          imu_data.linear_acceleration.y = -imu_frame_.frame.data.data_pack.accelerometer_y;
+          imu_data.linear_acceleration.z = -imu_frame_.frame.data.data_pack.accelerometer_z;
+
+          Update(true);
+
           Eigen::Vector3d   raw_acc( 
-                    imu_frame_.frame.data.data_pack.accelerometer_x, 
-                    -imu_frame_.frame.data.data_pack.accelerometer_y, 
-                    -imu_frame_.frame.data.data_pack.accelerometer_z);
+                    imu_data.linear_acceleration.x, 
+                    imu_data.linear_acceleration.y, 
+                    imu_data.linear_acceleration.z);
 
           real_acc = q_out.toRotationMatrix().transpose()*raw_acc;
           real_acc(2) -=g_calibration;
@@ -740,12 +742,12 @@ namespace RobotSwitch
             logData[1] = q_out.x();
             logData[2] = q_out.y();
             logData[3] = q_out.z();
-            logData[4] = imu_frame_.frame.data.data_pack.gyroscope_x;
-            logData[5] = -imu_frame_.frame.data.data_pack.gyroscope_y;
-            logData[6] = -imu_frame_.frame.data.data_pack.gyroscope_z;
-            logData[7] = imu_frame_.frame.data.data_pack.accelerometer_x;
-            logData[8] = -imu_frame_.frame.data.data_pack.accelerometer_y;
-            logData[9] = -imu_frame_.frame.data.data_pack.accelerometer_z;
+            logData[4] = imu_data.angular_velocity.x;
+            logData[5] = imu_data.angular_velocity.y;
+            logData[6] = imu_data.angular_velocity.z;
+            logData[7] = imu_data.linear_acceleration.x;
+            logData[8] = imu_data.linear_acceleration.y;
+            logData[9] = imu_data.linear_acceleration.z;
             matlab_file << ros::Time::now() << " ";
             stream_array_in(matlab_file, logData, 10);
             matlab_file << endl;
@@ -777,6 +779,19 @@ namespace RobotSwitch
       }
     }
     ros::waitForShutdown();
+  }
+
+  void RobotSwitchBringup::Update(bool _useFilter)
+  {
+      if (_useFilter)
+      {
+          imu_data.linear_acceleration.x = biquadFilterApply(&accFilterLPF[0], imu_data.linear_acceleration.x);
+          imu_data.linear_acceleration.y = biquadFilterApply(&accFilterLPF[1], imu_data.linear_acceleration.y);
+          imu_data.linear_acceleration.z = biquadFilterApply(&accFilterLPF[2], imu_data.linear_acceleration.z);
+          imu_data.angular_velocity.x = biquadFilterApply(&gyroFilterLPF[0], imu_data.angular_velocity.x);
+          imu_data.angular_velocity.y = biquadFilterApply(&gyroFilterLPF[1], imu_data.angular_velocity.y);
+          imu_data.angular_velocity.z = biquadFilterApply(&gyroFilterLPF[2], imu_data.angular_velocity.z);
+      }
   }
 
   void RobotSwitchBringup::ahrs_magCalculateYaw(double roll, double pitch, double &magyaw, double magx, double magy, double magz)
@@ -904,6 +919,19 @@ namespace RobotSwitch
     serial_->setTimeout(time_out);
     serial_->open();
   }
+
+  void RobotSwitchBringup::InitFilter(float _imuUpdateRate,
+                                      float _gyroFilterCutoffFreq,
+                                      float _accFilterCutoffFreq)
+  {
+      for (int i = 0; i < 3; i++)
+      {
+          biquadFilterInitLPF(&gyroFilterLPF[i], _imuUpdateRate, _gyroFilterCutoffFreq);
+          biquadFilterInitLPF(&accFilterLPF[i], _imuUpdateRate, _accFilterCutoffFreq);
+      }
+  }
+
+
 
 } // namespace RobotSwitch
 
