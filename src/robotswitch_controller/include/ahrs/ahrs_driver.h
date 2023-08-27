@@ -21,7 +21,7 @@
 #include <ahrs/crc_table.h>
 #include <Eigen/Eigen>
 #include <rs_common/math_utils.hpp>
-
+#include <rs_common/biquad_filter.h>
 
 using namespace std;
 namespace RobotSwitch
@@ -64,6 +64,8 @@ public:
   ~RobotSwitchBringup();
   void processLoop();
   void calibration(int times);
+  void Update(bool _useFilter);
+  void InitFilter(float _imuUpdateRate, float _gyroFilterCutoffFreq, float _accFilterCutoffFreq);
 
   bool ahrs_checkCS8(int len);
   bool ahrs_checkCS16(int len);
@@ -74,6 +76,22 @@ public:
 
 private:
   Eigen::Quaterniond calibration_quaternion;
+  BiquadFilter_t gyroFilterLPF[3];
+  BiquadFilter_t accFilterLPF[3];
+  Eigen::Vector3d acc_now;
+  Eigen::Vector3d acc_pre;
+  Eigen::Vector3d vel_now;
+  Eigen::Vector3d vel_pre;
+  Eigen::Vector3d pos_now;
+  Eigen::Vector3d pos_pre;
+  double g_calibration = 0;
+
+  std::ofstream matlab_file;
+  std::string matlab_path;
+  int calibration_times;
+  double *logData;
+  bool print_flag_;
+  bool first_flag_ = true;
 
   bool if_debug_;
   //sum info
@@ -89,22 +107,10 @@ private:
   int ahrs_serial_baud_;
   int ahrs_serial_timeout_;
 
-  std::ofstream matlab_file;
-  std::string matlab_path;
-  int calibration_times;
-  double *logData;
-  bool print_flag_;
-  bool first_flag_ = true;
-  //gravity calibration
-  double g_calibration = 0;
-  Eigen::Vector3d raw_acc;
-  Eigen::Vector3d real_acc;
-  Eigen::Vector3d raw_vel;
-  Eigen::Vector3d real_vel;
-  Eigen::Vector3d raw_pos;
-  Eigen::Vector3d real_pos;
+
 
   //data
+  sensor_msgs::Imu imu_data;
   FDILink::imu_frame_read  imu_frame_;
   FDILink::ahrs_frame_read ahrs_frame_;
   FDILink::insgps_frame_read insgps_frame_;

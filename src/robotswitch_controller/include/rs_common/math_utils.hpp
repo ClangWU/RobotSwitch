@@ -83,6 +83,31 @@ namespace RobotSwitch{
      * @param      pose_traj  The interpolated pose traj. 7 x Nsteps matrix
      */
     void MotionPlanningLinear(const double *pose0, const double *pose_set, const int Nsteps, MatrixXd *pose_traj);
+
+    class ButterworthFilter {
+    public:
+        ButterworthFilter(const Vector3& b_coeffs, const Vector3& a_coeffs)
+            : b(b_coeffs), a(a_coeffs), prev_x1(Vector3::Zero()), prev_x2(Vector3::Zero()),
+              prev_y1(Vector3::Zero()), prev_y2(Vector3::Zero()) {}
+
+        Vector3 filter(const Vector3& x) {
+            Vector3 y;
+            y = b(0) * x + b(1) * prev_x1 + b(2) * prev_x2 
+                - a(1) * prev_y1 - a(2) * prev_y2;
+
+            prev_x2 = prev_x1;
+            prev_x1 = x;
+            prev_y2 = prev_y1;
+            prev_y1 = y;
+            
+            return y;
+        }
+
+    private:
+        Vector3 b, a;
+        Vector3 prev_x1, prev_x2, prev_y1, prev_y2;
+    };
+
 }
 
 #endif

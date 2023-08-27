@@ -23,7 +23,11 @@ find_package(catkin REQUIRED COMPONENTS
 find_package(Eigen3 REQUIRED)
 
 set(INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
-set(H_FILES   ${INCLUDE_DIR}/rs_common/math_utils.hpp)
+set(H_FILES   
+${INCLUDE_DIR}/rs_common/math_utils.hpp
+${INCLUDE_DIR}/rs_common/filter_math.h
+${INCLUDE_DIR}/rs_common/biquad_filter.h
+)
 
 include_directories(
   include
@@ -32,26 +36,29 @@ include_directories(
 )
 ## Declare a C++ executable
 set(SRCS
-    src/rs_common/math_utils.cpp)
+    src/rs_common/math_utils.cpp
+    src/rs_common/filter_math.c
+    src/rs_common/biquad_filter.c
+    )
 ## Declare a C++ library
-add_library(math_utils ${H_FILES} ${SRCS})
+add_library(utils ${H_FILES} ${SRCS})
 
-add_dependencies(math_utils
+add_dependencies(utils
   ${${PROJECT_NAME}_EXPORTED_TARGETS}
   ${catkin_EXPORTED_TARGETS}
   ##${PROJECT_NAME}_generate_messages_cpp
   ##${PROJECT_NAME}_gencfg
 )
 
-target_link_libraries(math_utils PUBLIC
+target_link_libraries(utils PUBLIC
   ${catkin_LIBRARIES}
 )
 
-target_include_directories(math_utils SYSTEM PUBLIC
+target_include_directories(utils SYSTEM PUBLIC
   ${EIGEN3_INCLUDE_DIRS}
   ${catkin_INCLUDE_DIRS}
 )
-target_include_directories(math_utils PUBLIC
+target_include_directories(utils PUBLIC
   include
 )
 
@@ -64,7 +71,7 @@ catkin_package(
 )
 ## ahrs_driver
 add_executable(ahrs_driver src/ahrs/ahrs_driver.cpp)
-target_link_libraries(ahrs_driver crc_table math_utils ${catkin_LIBRARIES})# ${SERIAL_LIB}
+target_link_libraries(ahrs_driver crc_table utils ${catkin_LIBRARIES})# ${SERIAL_LIB}
 
 add_executable(imu_tf src/ahrs/imu_tf.cpp)
 target_link_libraries( imu_tf ${catkin_LIBRARIES})# ${SERIAL_LIB}

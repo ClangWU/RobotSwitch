@@ -414,30 +414,27 @@ Vector3 OmegaS2EulerVel(const Vector3& eul, const Vector3& omega_vel) {
   return eul_vel;
 }
 
-Vector3 OmegaS2EulerAcc(const Vector3& eul, const Vector3& eul_vel,
-                        const Vector3& omega_acc) {
-  double sa = sin(eul[0]);
-  double ca = cos(eul[0]);
-  double sb = sin(eul[1]);
-  double cb = cos(eul[1]);
+  Vector3 OmegaS2EulerAcc(const Vector3& eul, const Vector3& eul_vel,
+                          const Vector3& omega_acc) {
+    double sa = sin(eul[0]);
+    double ca = cos(eul[0]);
+    double sb = sin(eul[1]);
+    double cb = cos(eul[1]);
 
-  double va = eul_vel[0];
-  double vb = eul_vel[1];
+    double va = eul_vel[0];
+    double vb = eul_vel[1];
 
-  double det = sa * sa * cb + ca * ca * cb;
+    double det = sa * sa * cb + ca * ca * cb;
 
-  Matrix3 o2e_vel;
-  o2e_vel << sb * ca / det, sa * sb / det, 1, -sa * cb / det, ca * cb / det, 0,
-      ca / det, sa / det, 0;
-  Matrix3 e2o_acc;
-  e2o_acc << 0, -ca * va, -sa * cb * va - ca * sb * vb, 0, -sa * va,
-      ca * cb * va - sa * cb * vb, 0, 0, -cb * vb;
+    Matrix3 o2e_vel;
+    o2e_vel << sb * ca / det, sa * sb / det, 1, -sa * cb / det, ca * cb / det, 0,
+        ca / det, sa / det, 0;
+    Matrix3 e2o_acc;
+    e2o_acc << 0, -ca * va, -sa * cb * va - ca * sb * vb, 0, -sa * va,
+        ca * cb * va - sa * cb * vb, 0, 0, -cb * vb;
 
-  Vector3 eul_acc = o2e_vel * (omega_acc - e2o_acc * eul_vel);
+    Vector3 eul_acc = o2e_vel * (omega_acc - e2o_acc * eul_vel);
 
-  return eul_acc;
-}
-
-
-
+    return eul_acc;
+  }
 }
