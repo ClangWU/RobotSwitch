@@ -4,7 +4,7 @@
 #include <math.h>
 #include <rs_common/biquad_filter.h>
 #include <rs_common/filter_math.h>
-
+#include <stdio.h>
 #define BIQUAD_Q 1.0f / sqrtf(2.0f)     /* quality factor - 2nd order butterworth*/
 
 // NULL filter
@@ -179,6 +179,12 @@ void biquadFilterUpdate(BiquadFilter_t *filter, float _filterCallFreq, float _cu
             filter->b2 = filter->b0;
             filter->a1 = -2 * cs;
             filter->a2 = 1 - alpha;
+                printf("The value of b1 is: %lf\n", filter->b1);
+                printf("The value of b0 is: %lf\n", filter->b0);
+                printf("The value of b2 is: %lf\n", filter->b2);
+                printf("The value of a1 is: %lf\n", filter->a1);
+                printf("The value of a2 is: %lf\n", filter->a2);
+
             break;
         case FILTER_NOTCH:
             filter->b0 = 1;
