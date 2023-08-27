@@ -403,7 +403,7 @@ namespace RobotSwitch
   {
     if (print_flag_)
     {
-      logData = new double[10]();
+      logData = new double[13]();
       matlab_file.open(matlab_path);
       if (matlab_file.is_open())
         printf("[AHRS DATA] file opened successfully.\n");
@@ -739,18 +739,22 @@ namespace RobotSwitch
           imu_pub_.publish(imu_data);
           // clang
           if(print_flag_){
-            logData[0] = acc_now(0);
-            logData[1] = acc_now(1);
-            logData[2] = acc_now(2);
-            logData[3] = 0;
-            logData[4] = vel_now(0);
-            logData[5] = vel_now(1);
-            logData[6] = vel_now(2);
-            logData[7] = pos_now(0);
-            logData[8] = pos_now(1);
-            logData[9] = pos_now(2);
+            logData[0] = raw_acc(0);
+            logData[1] = raw_acc(1);
+            logData[2] = raw_acc(2);
+            logData[3] = acc_now(0);
+            logData[4] = acc_now(1);
+            logData[5] = acc_now(2);
+            logData[6] = pos_now(0);
+            logData[7] = pos_now(1);
+            logData[8] = pos_now(2);
+            logData[9] = imu_data.orientation.w;
+            logData[10] = imu_data.orientation.x;
+            logData[11] = imu_data.orientation.y;
+            logData[12] = imu_data.orientation.z;
+
             matlab_file << ros::Time::now() << " ";
-            stream_array_in(matlab_file, logData, 10);
+            stream_array_in(matlab_file, logData, 13);
             matlab_file << endl;
           }
         //   机械臂四元数:
