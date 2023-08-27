@@ -41,16 +41,17 @@ f = Fs*(0:(L/2))/L; % Frequency vector
 filtered_acc = [filtered_accX, filtered_accY, filtered_accZ];
 
 linVel = zeros(size(filtered_acc));
-linVel_filtered = zeros(size(filtered_acc));
+
 for i = 2:length(filtered_acc)
+    
     linVel(i,:) = linVel(i-1,:) + filtered_acc(i,:) * samplePeriod ;
 end
 
 linPos = zeros(size(filtered_acc));
-linPos_filtered = zeros(size(filtered_acc));
+
 for i = 2:length(filtered_acc)
     linPos(i,:) = linPos(i-1,:) + linVel(i,:) * samplePeriod ;
-    linPos_filtered(i,:) = linPos_filtered(i-1,:) + linVel_filtered(i,:) * samplePeriod ;
+    linPos_filtered()
 end
 
 % Plot
