@@ -71,28 +71,14 @@ legend('X', 'Y', 'Z');
 %% Calculate linear acceleration in Earth frame (subtracting gravity)
 
 linAcc = tcAcc - [zeros(length(tcAcc), 1), zeros(length(tcAcc), 1), ones(length(tcAcc), 1) * gravity_estimate];
-% order = 2;
-% filtCutOff = 0.1;
-% [b, a] = butter(order, (2*filtCutOff)/(1/samplePeriod), 'high');
-% linAccHP = filtfilt(b, a, linAcc);
-% linAccHP_process = filtfilt(b, a, linAcc_process);
 
-% figure('NumberTitle', 'off', 'Name', 'Linear Acceleration HP');
-
-% First subplot for linAcc1
-% hold on;
-% % plot(linAcc_process(:,1), 'm');
-% % plot(linAcc_process(:,2), 'y');
-% plot(linAcc_process(:,3), 'k');
-% % plot(linAccHP_process(:,1), 'r');
-% % plot(linAccHP_process(:,2), 'g');
-% plot(linAccHP_process(:,3), 'b');
-% xlabel('sample');
-% ylabel('g');
-% title('Linear acceleration + HP + gravity_estimate');
-% legend('X', 'Y');
+order = 2;
+filtCutOff = 0.1;
+[b, a] = butter(order, (2*filtCutOff)/(1/samplePeriod), 'high');
+linAccHP = filtfilt(b, a, linAcc);
 
 figure('NumberTitle', 'off', 'Name', 'Linear Acceleration Analysis');
+subplot(2,1,1);
 hold on;
 plot(linAcc(:,1), 'r');
 plot(linAcc(:,2), 'g');
@@ -102,16 +88,27 @@ ylabel('g');
 title('Linear acceleration');
 legend('X', 'Y', 'Z');
 
+subplot(2,1,2);
+hold on;
+plot(linAccHP(:,1), 'r');
+plot(linAccHP(:,2), 'g');
+plot(linAccHP(:,3), 'b');
+xlabel('sample');
+ylabel('g');
+title('Linear acceleration HP');
+legend('X', 'Y', 'Z');
 %% Calculate linear velocity (integrate acceleartion)
 
-linVel = zeros(size(linAcc));
-
-for i = 2:length(linAcc)
-    linVel(i,:) = linVel(i-1,:) + linAcc(i,:) * samplePeriod ;
+linVel = zeros(size(linAccHP));
+linVel_nxp = zeros(size(linAccHP));
+for i = 2:length(linAccHP)
+    linVel(i,:) = linVel(i-1,:) + linAccHP(i,:) * samplePeriod;
+    linVel_nxp(i,:) = linVel_nxp(i-1,:) + linAccHP(i-1,:) * samplePeriod + (linAccHP(i,:) + linAccHP(i-1,:)) * 0.5 * samplePeriod;
 end
 
 % Plot
 figure('NumberTitle', 'off', 'Name', 'Linear Velocity');
+subplot(2,1,1);
 hold on;
 plot(linVel(:,1), 'r');
 plot(linVel(:,2), 'g');
@@ -121,37 +118,23 @@ ylabel('g');
 title('Linear velocity');
 legend('X', 'Y', 'Z');
 
-%% High-pass filter linear velocity to remove drift
-
-order = 2;
-filtCutOff = 0.1;
-[b, a] = butter(order, (2*filtCutOff)/(1/samplePeriod), 'high');
-linVel_filtfilt = filtfilt(b, a, linVel);
-
-% Plot
-figure('NumberTitle', 'off', 'Name', 'High-pass filtered Linear Velocity');
+subplot(2,1,2);
 hold on;
-plot(linVel_filtfilt(:,1), 'r');
-plot(linVel_filtfilt(:,2), 'g');
-plot(linVel_filtfilt(:,3), 'b');
+plot(linVel_nxp(:,1), 'r');
+plot(linVel_nxp(:,2), 'g');
+plot(linVel_nxp(:,3), 'b');
 xlabel('sample');
 ylabel('g');
-title('High-pass filtered linear velocity after');
+title('Linear velocity NXP');
 legend('X', 'Y', 'Z');
+%% Position reintegration
+linPos_ = zeros(size(linVel_nxp));
+linPos_nxp = zeros(size(linVel_nxp));
 
-%% Calculate linear position (integrate velocity)
-
-linPos_ = zeros(size(linVel_filtfilt));
-linPos_a = zeros(size(linVel_filtfilt));
-
-for i = 2:length(linVel_filtfilt)
-    linPos_(i,:) = linPos_(i-1,:) + linVel_filtfilt(i,:) *  samplePeriod; 
+for i = 2:length(linVel_nxp)
+    linPos_(i,:) = linPos_(i-1,:) + linVel(i,:) *  samplePeriod; 
+    linPos_nxp(i,:) = linPos_nxp(i-1,:) + linVel_nxp(i-1,:) * samplePeriod + (linVel_nxp(i,:) + linVel_nxp(i-1,:)) * 0.5 * samplePeriod; 
 end
-
-order = 2;
-filtCutOff = 0.1;
-[b, a] = butter(order, (2*filtCutOff)/(1/samplePeriod), 'high');
-linPos_filtfilt = filtfilt(b, a, linPos_);
 
 % Plot
 figure('NumberTitle', 'off', 'Name', 'Linear Position');
@@ -162,17 +145,17 @@ plot(linPos_(:,2), 'g');
 plot(linPos_(:,3), 'b');
 xlabel('sample');
 ylabel('m');
-title('Linear position');
+title('Linear position ');
 legend('X', 'Y', 'Z');
 
 subplot(2,1,2);
 hold on;
-plot(linPos_filtfilt(:,1), 'r');
-plot(linPos_filtfilt(:,2), 'g');
-plot(linPos_filtfilt(:,3), 'b');
+plot(linPos_nxp(:,1), 'r');
+plot(linPos_nxp(:,2), 'g');
+plot(linPos_nxp(:,3), 'b');
 xlabel('sample');
 ylabel('m');
-title('Linear position HP');
+title('Linear position a');
 legend('X', 'Y', 'Z');
 
 %% Play animation
@@ -180,7 +163,7 @@ legend('X', 'Y', 'Z');
 SamplePlotFreq = 8;
 %%linPosHP_process
 % First animation
-SixDOFanimation(linPos_filtfilt, R, ...
+SixDOFanimation(linPos_nxp, R, ...
                 'SamplePlotFreq', SamplePlotFreq, 'Trail', 'Off', ...
                 'Position', [9 39 1280 720], ...
                 'AxisLength', 0.01, 'ShowArrowHead', false, ...
