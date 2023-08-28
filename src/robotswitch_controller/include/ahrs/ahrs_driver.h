@@ -64,7 +64,10 @@ public:
   ~RobotSwitchBringup();
   void processLoop();
   void calibration(int times);
-  void Update(bool _useFilter);
+  void Update();
+  void Update_X();
+  void Update_Y();
+  void Update_Z();
   void InitFilter(float _imuUpdateRate, float _gyroFilterCutoffFreq, float _accFilterCutoffFreq);
 
   bool ahrs_checkCS8(int len);
@@ -79,6 +82,7 @@ private:
   BiquadFilter_t gyroFilterLPF[3];
   BiquadFilter_t accFilterLPF[3];
   Eigen::Vector3d real_acc;
+  Eigen::Vector3d acc_pre;
   Eigen::Vector3d vel_now;
   Eigen::Vector3d vel_pre;
   Eigen::Vector3d pos_now;

@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # Import data
-ahrs_data = np.loadtxt('ahrs_static1.txt')
+ahrs_data = np.loadtxt('ahrs_static4.txt')
 ahrs = {
     "Time": ahrs_data[:, 0],
     "acc": ahrs_data[:, 1:4],
@@ -22,7 +22,7 @@ plt.plot(ahrs["realacc"][:, 1], 'g', label='Y')
 plt.plot(ahrs["realacc"][:, 2], 'b', label='Z')
 plt.xlabel('sample')
 plt.ylabel('dps')
-plt.title('position')
+plt.title('acc')
 plt.legend()
 plt.show()
 

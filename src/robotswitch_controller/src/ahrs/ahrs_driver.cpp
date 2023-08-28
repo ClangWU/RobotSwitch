@@ -368,7 +368,8 @@ namespace RobotSwitch
                                   imu_data.linear_acceleration.z);
 
           Eigen::Vector3d real_acc = quat2SO3_Matlab(q_out).transpose()*raw_acc;
-          // Update(true);
+          // Update_X();
+          // Update_Y();
           g_calibration += real_acc;
           sum_times++;
         }    
@@ -706,11 +707,13 @@ namespace RobotSwitch
                     imu_data.linear_acceleration.z);
 
           real_acc = quat2SO3_Matlab(q_out).transpose()*raw_acc;
+          // Update_X();
+          // Update_Y();
           // real_acc(0) -=g_calibration(0);
           // real_acc(1) -=g_calibration(1);
           real_acc(2) -=g_calibration(2);
           // real_acc -= g_calibration;
-          Update(true);
+          Update();
 
           // 1st intergration
           vel_now = vel_pre + real_acc * 0.005 ;
@@ -769,14 +772,26 @@ namespace RobotSwitch
     ros::waitForShutdown();
   }
 
-  void RobotSwitchBringup::Update(bool _useFilter)
+  void RobotSwitchBringup::Update()
   {
-      if (_useFilter)
-      {
           real_acc(0) = biquadFilterApply(&accFilterLPF[0], real_acc(0));
           real_acc(1) = biquadFilterApply(&accFilterLPF[1], real_acc(1));
           real_acc(2) = biquadFilterApply(&accFilterLPF[2], real_acc(2));
-      }
+  }
+
+  void RobotSwitchBringup::Update_X()
+  {
+          real_acc(0) = biquadFilterApply(&accFilterLPF[0], real_acc(0));
+  }
+  
+  void RobotSwitchBringup::Update_Y()
+  {
+          real_acc(1) = biquadFilterApply(&accFilterLPF[1], real_acc(1));
+  }
+
+  void RobotSwitchBringup::Update_Z()
+  {
+          real_acc(2) = biquadFilterApply(&accFilterLPF[2], real_acc(2));
   }
 
   void RobotSwitchBringup::ahrs_magCalculateYaw(double roll, double pitch, double &magyaw, double magx, double magy, double magz)
