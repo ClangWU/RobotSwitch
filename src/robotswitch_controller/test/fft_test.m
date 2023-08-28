@@ -34,7 +34,7 @@ filtered_accY = filtfilt(lpFilt, accY);
 filtered_accZ = filtfilt(lpFilt, accZ);
 
 %% FFT and plot for acceleration data
-samplePeriod = ahrs.Time(2) - ahrs.Time(1); % Assuming uniform sampling
+samplePeriod = 0.005; % Assuming uniform sampling
 Fs = 1/samplePeriod; % Sampling frequency
 L = length(ahrs.Time); % Length of signal
 f = Fs*(0:(L/2))/L; % Frequency vector
@@ -99,7 +99,7 @@ legend('X', 'Y', 'Z');
 figure;
 
 % For X-direction
-Y_X = fft(filtered_accX);
+Y_X = fft(accX);
 P2_X = abs(Y_X/L);
 P1_X = P2_X(1:L/2+1);
 P1_X(2:end-1) = 2*P1_X(2:end-1);
@@ -110,7 +110,7 @@ xlabel('Hz')
 ylabel('|Amplitude|')
 
 % For Y-direction
-Y_Y = fft(filtered_accY);
+Y_Y = fft(accY);
 P2_Y = abs(Y_Y/L);
 P1_Y = P2_Y(1:L/2+1);
 P1_Y(2:end-1) = 2*P1_Y(2:end-1);
@@ -121,7 +121,7 @@ xlabel('Hz')
 ylabel('|Amplitude|')
 
 % For Z-direction
-Y_Z = fft(filtered_accZ);
+Y_Z = fft(accZ);
 P2_Z = abs(Y_Z/L);
 P1_Z = P2_Z(1:L/2+1);
 P1_Z(2:end-1) = 2*P1_Z(2:end-1);

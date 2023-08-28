@@ -14,7 +14,7 @@ ahrs.realacc = ahrs_static_data(:, 5:7);
 ahrs.pos     = ahrs_static_data(:, 8:10);
 ahrs.quaternion  = ahrs_static_data(:, 11:14);
 
-samplePeriod = 1/200;
+samplePeriod = 0.005; % Assuming uniform sampling
 figure('NumberTitle', 'off', 'Name', 'Accelerometer');
 hold on;
 plot(ahrs.realacc(:,1), 'r');
@@ -50,27 +50,6 @@ gravity_estimate = mean(tcAcc(:, 3));
 %% Calculate linear acceleration in Earth frame (subtracting gravity)
 
 linAcc = ahrs.realacc;
-% order = 2;
-% filtCutOff = 0.1;
-% [b, a] = butter(order, (2*filtCutOff)/(1/samplePeriod), 'high');
-% linAccHP = filtfilt(b, a, linAcc);
-% linAccHP_process = filtfilt(b, a, linAcc_process);
-
-% figure('NumberTitle', 'off', 'Name', 'Linear Acceleration HP');
-
-% First subplot for linAcc1
-% hold on;
-% % plot(linAcc_process(:,1), 'm');
-% % plot(linAcc_process(:,2), 'y');
-% plot(linAcc_process(:,3), 'k');
-% % plot(linAccHP_process(:,1), 'r');
-% % plot(linAccHP_process(:,2), 'g');
-% plot(linAccHP_process(:,3), 'b');
-% xlabel('sample');
-% ylabel('g');
-% title('Linear acceleration + HP + gravity_estimate');
-% legend('X', 'Y');
-
 figure('NumberTitle', 'off', 'Name', 'Linear Acceleration Analysis');
 hold on;
 plot(linAcc(:,1), 'r');
@@ -104,8 +83,22 @@ legend('X', 'Y', 'Z');
 
 order = 2;
 filtCutOff = 0.1;
+N = 200; % 假设的滤波器阶数，可以根据需要调整
+fCutNormalized = 2*filtCutOff*samplePeriod; % 归一化截止频率
+
+% 设计FIR高通滤波器
+b_fir = fir1(N, fCutNormalized, 'high');
+a_fir = 1; % 对于FIR滤波器，a始终为1
+
+% 使用filter函数进行实时滤波
+linVel_filtfilt = filter(b_fir, a_fir, linVel);
+
 [b, a] = butter(order, (2*filtCutOff)/(1/samplePeriod), 'high');
-linVel_filtfilt = filtfilt(b, a, linVel);
+Hd = dsp.IIRFilter('Numerator', b, 'Denominator', a);
+%linVel_filtfilt = step(Hd, linVel);
+% linVel_filtfilt = filtfilt(b, a, linVel);
+%linVel_filtfilt = filter(b, a, linVel);
+
 
 % Plot
 figure('NumberTitle', 'off', 'Name', 'High-pass filtered Linear Velocity');
@@ -121,17 +114,23 @@ legend('X', 'Y', 'Z');
 %% Calculate linear position (integrate velocity)
 
 linPos_ = zeros(size(linVel_filtfilt));
-linPos_a = zeros(size(linVel_filtfilt));
-
 for i = 2:length(linVel_filtfilt)
     linPos_(i,:) = linPos_(i-1,:) + linVel_filtfilt(i,:) *  samplePeriod; 
 end
-
 order = 2;
 filtCutOff = 0.1;
-[b, a] = butter(order, (2*filtCutOff)/(1/samplePeriod), 'high');
-linPos_filtfilt = filtfilt(b, a, linPos_);
+N = 200; % 假设的滤波器阶数，可以根据需要调整
+fCutNormalized = 2*filtCutOff*samplePeriod; % 归一化截止频率
 
+% 设计FIR高通滤波器
+b_fir = fir1(N, fCutNormalized, 'high');
+a_fir = 1; % 对于FIR滤波器，a始终为1
+linPos_filtfilt = filter(b_fir, a_fir, linPos_);
+[b, a] = butter(order, (2*filtCutOff)/(1/samplePeriod), 'high');
+Hd = dsp.IIRFilter('Numerator', b, 'Denominator', a);
+%linPos_filtfilt = filter(b, a, linPos_);
+% linPos_filtfilt = filtfilt(b, a, linPos_);
+% linPos_filtfilt = step(Hd, linPos_);
 % Plot
 figure('NumberTitle', 'off', 'Name', 'Linear Position');
 subplot(2,1,1);
@@ -193,7 +192,7 @@ xlabel('Hz')
 ylabel('|Amplitude|')
 
 % Adjust layout
-sgtitle('频谱')
+sgtitle('位置滤波后频谱')
 
 %% Play animation
 
