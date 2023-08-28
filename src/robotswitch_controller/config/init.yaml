@@ -1,4 +1,4 @@
 ahrs_config:
   print_flag: true
-  calibration_times: 1000
-  file_path: "/home/yzc/project/robotswitch/src/robotswitch_controller/test/ahrs_static.txt"
+  calibration_times: 2000
+  file_path: "/home/yzc/project/robotswitch/src/robotswitch_controller/test/ahrs_static2.txt"

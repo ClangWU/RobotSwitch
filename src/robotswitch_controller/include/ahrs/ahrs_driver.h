@@ -78,13 +78,12 @@ private:
   Eigen::Quaterniond calibration_quaternion;
   BiquadFilter_t gyroFilterLPF[3];
   BiquadFilter_t accFilterLPF[3];
-  Eigen::Vector3d acc_now;
-  Eigen::Vector3d acc_pre;
+  Eigen::Vector3d real_acc;
   Eigen::Vector3d vel_now;
   Eigen::Vector3d vel_pre;
   Eigen::Vector3d pos_now;
   Eigen::Vector3d pos_pre;
-  double g_calibration = 0;
+  Eigen::Vector3d g_calibration;
 
   std::ofstream matlab_file;
   std::string matlab_path;

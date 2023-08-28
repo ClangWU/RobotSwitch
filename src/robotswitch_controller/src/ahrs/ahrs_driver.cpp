@@ -342,21 +342,6 @@ namespace RobotSwitch
             Eigen::AngleAxisd(PI / 2, Eigen::Vector3d::UnitZ()) *
             Eigen::AngleAxisd(0.00000, Eigen::Vector3d::UnitY()) *
             Eigen::AngleAxisd(PI, Eigen::Vector3d::UnitX());
-        if (device_type_ == 0) // 未经变换的原始数据
-        {
-          imu_data.orientation.w = ahrs_frame_.frame.data.data_pack.Qw;
-          imu_data.orientation.x = ahrs_frame_.frame.data.data_pack.Qx;
-          imu_data.orientation.y = ahrs_frame_.frame.data.data_pack.Qy;
-          imu_data.orientation.z = ahrs_frame_.frame.data.data_pack.Qz;
-          imu_data.angular_velocity.x = imu_frame_.frame.data.data_pack.gyroscope_x;
-          imu_data.angular_velocity.y = imu_frame_.frame.data.data_pack.gyroscope_y;
-          imu_data.angular_velocity.z = imu_frame_.frame.data.data_pack.gyroscope_z;
-          imu_data.linear_acceleration.x = imu_frame_.frame.data.data_pack.accelerometer_x;
-          imu_data.linear_acceleration.y = imu_frame_.frame.data.data_pack.accelerometer_y;
-          imu_data.linear_acceleration.z = imu_frame_.frame.data.data_pack.accelerometer_z;
-        }
-        else if (device_type_ == 1) // imu单品ROS标准下的坐标变换
-        {
 
           Eigen::Quaterniond q_out = q_r * q_ahrs * q_rr;
           imu_data.orientation.w = q_out.w();
@@ -369,7 +354,6 @@ namespace RobotSwitch
           imu_data.linear_acceleration.x = imu_frame_.frame.data.data_pack.accelerometer_x;
           imu_data.linear_acceleration.y = -imu_frame_.frame.data.data_pack.accelerometer_y;
           imu_data.linear_acceleration.z = -imu_frame_.frame.data.data_pack.accelerometer_z;
-        }
         if(!initialized){
           initialized = true;
           std::cout << "quaternion  "<< imu_data.orientation.w << std::endl; 
@@ -378,17 +362,15 @@ namespace RobotSwitch
           std::cout << "quaternion  "<< imu_data.orientation.z << std::endl; 
           continue;
         }else{
-          // Update(true);
+
           Eigen::Vector3d raw_acc(imu_data.linear_acceleration.x, 
                                   imu_data.linear_acceleration.y, 
                                   imu_data.linear_acceleration.z);
-          Eigen::Quaterniond q( imu_data.orientation.w, 
-                                imu_data.orientation.x, 
-                                imu_data.orientation.y, 
-                                imu_data.orientation.z);
-          Eigen::Vector3d real_acc = q.toRotationMatrix().transpose()*raw_acc;
+
+          Eigen::Vector3d real_acc = quat2SO3_Matlab(q_out).transpose()*raw_acc;
+          // Update(true);
+          g_calibration += real_acc;
           sum_times++;
-          g_calibration += real_acc(2);
         }    
       }
       if(sum_times >= times){
@@ -397,10 +379,12 @@ namespace RobotSwitch
         printf("[AHRS DATA] calibration finished.\n");
         break;}
     }
+
   }
 
   void RobotSwitchBringup::processLoop()
   {
+    static int times = 0;
     if (print_flag_)
     {
       logData = new double[13]();
@@ -432,7 +416,7 @@ namespace RobotSwitch
         std::cout << "check_head: " << std::hex << (int)check_head[0] << std::dec << std::endl;
       }
       if (check_head[0] != FRAME_HEAD)
-      {
+      { 
         continue;
       }
       // check head type   检查数据类型
@@ -712,39 +696,38 @@ namespace RobotSwitch
           imu_data.orientation.x = q_out.x();
           imu_data.orientation.y = q_out.y();
           imu_data.orientation.z = q_out.z();
-          imu_data.angular_velocity.x = imu_frame_.frame.data.data_pack.gyroscope_x;
-          imu_data.angular_velocity.y = -imu_frame_.frame.data.data_pack.gyroscope_y;
-          imu_data.angular_velocity.z = -imu_frame_.frame.data.data_pack.gyroscope_z;
           imu_data.linear_acceleration.x = imu_frame_.frame.data.data_pack.accelerometer_x;
           imu_data.linear_acceleration.y = -imu_frame_.frame.data.data_pack.accelerometer_y;
           imu_data.linear_acceleration.z = -imu_frame_.frame.data.data_pack.accelerometer_z;
-
-          // Update(true);
-
+          //After subject calibration term
           Eigen::Vector3d   raw_acc( 
                     imu_data.linear_acceleration.x, 
                     imu_data.linear_acceleration.y, 
                     imu_data.linear_acceleration.z);
 
-          acc_now = quat2SO3_Matlab(q_out).transpose()*raw_acc;
-          acc_now(2) -=g_calibration;
-          // vel_now = vel_pre + acc_pre * 0.005 + (acc_pre + acc_now) * 0.5 * 0.005;
-          // pos_now = pos_pre + vel_pre * 0.005 + (vel_pre + vel_now) * 0.5 * 0.005;
+          real_acc = quat2SO3_Matlab(q_out).transpose()*raw_acc;
+          // real_acc(0) -=g_calibration(0);
+          // real_acc(1) -=g_calibration(1);
+          real_acc(2) -=g_calibration(2);
+          // real_acc -= g_calibration;
+          Update(true);
 
-          vel_now = vel_pre + acc_now * 0.005017 ;
-          pos_now = pos_pre + vel_now * 0.005017 ;
-          acc_pre = acc_now;
+          // 1st intergration
+          vel_now = vel_pre + real_acc * 0.005 ;
+          // 2nd intergration
+          pos_now = pos_pre + vel_now * 0.005 ;
           vel_pre = vel_now;
           pos_pre = pos_now;
+
           imu_pub_.publish(imu_data);
-          // clang
+          // print data to m file  
           if(print_flag_){
             logData[0] = raw_acc(0);
             logData[1] = raw_acc(1);
             logData[2] = raw_acc(2);
-            logData[3] = acc_now(0);
-            logData[4] = acc_now(1);
-            logData[5] = acc_now(2);
+            logData[3] = real_acc(0);
+            logData[4] = real_acc(1);
+            logData[5] = real_acc(2);
             logData[6] = pos_now(0);
             logData[7] = pos_now(1);
             logData[8] = pos_now(2);
@@ -790,9 +773,9 @@ namespace RobotSwitch
   {
       if (_useFilter)
       {
-          imu_data.linear_acceleration.x = biquadFilterApply(&accFilterLPF[0], imu_data.linear_acceleration.x);
-          imu_data.linear_acceleration.y = biquadFilterApply(&accFilterLPF[1], imu_data.linear_acceleration.y);
-          imu_data.linear_acceleration.z = biquadFilterApply(&accFilterLPF[2], imu_data.linear_acceleration.z);
+          real_acc(0) = biquadFilterApply(&accFilterLPF[0], real_acc(0));
+          real_acc(1) = biquadFilterApply(&accFilterLPF[1], real_acc(1));
+          real_acc(2) = biquadFilterApply(&accFilterLPF[2], real_acc(2));
       }
   }
 

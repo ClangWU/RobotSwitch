@@ -239,7 +239,7 @@ void CartesianPoseNodeController::update(const ros::Time & /* time */,
     //             robot_state_.O_T_EE_c,
     //             robot_state_.O_dP_EE_c,
     //             robot_state_.O_ddP_EE_c);
-  double radius = 0.10;
+  double radius = 0.30;
   double angle = M_PI / 4 * (1 - std::cos(M_PI / 5.0 * time_since_last_command.toSec()));
   double delta_x = radius * std::sin(angle);
   double delta_z = radius * (std::cos(angle) - 1);
@@ -258,17 +258,9 @@ void CartesianPoseNodeController::update(const ros::Time & /* time */,
   // new_pose[9] = rotation0(1,2);
   // new_pose[10] = rotation0(2,2);
 
-  new_pose[13] -= delta_x;
+  new_pose[12] -= delta_x;
   new_pose[14] -= delta_z;
   cartesian_pose_handle_->setCommand(new_pose);
-    std::cout << "\033[34mnew_pose_:\033[0m" << std::endl;
-
-    for (size_t row = 0; row < 4; ++row) {
-      for (size_t col = 0; col < 4; ++col) {
-        std::cout << new_pose[col * 4 + row] << " ";
-      }
-      std::cout << std::endl;
-    }
     // cartesian_pose_handle_->setCommand(pose_command_);
 }
 
