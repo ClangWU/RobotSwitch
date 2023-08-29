@@ -20,12 +20,19 @@ namespace RobotSwitch
     pravite_nh.param("ahrs_port", ahrs_serial_port_, std::string("/dev/ttyUSB0"));
     pravite_nh.param("ahrs_baud", ahrs_serial_baud_, 921600);
 
+    nh_.getParam("ahrs_config/filter_order", filter_order_);
+    nh_.getParam("ahrs_config/acc_filter_cutoff", acc_filter_cutoff_);
+    nh_.getParam("ahrs_config/vel_filter_cutoff", vel_filter_cutoff_);
+    nh_.getParam("ahrs_config/pos_filter_cutoff", pos_filter_cutoff_);
     nh_.getParam("ahrs_config/print_flag", print_flag_);
     nh_.getParam("ahrs_config/calibration_times", calibration_times);
     if(nh_.getParam("ahrs_config/file_path", matlab_path))
       ROS_INFO("Got file_path: %s", matlab_path.c_str());
     else
       ROS_ERROR("Failed to get param 'ahrs_config/file_path'");
+
+    vel_filter.InitFilter(filter_order_, 200, vel_filter_cutoff_);
+    pos_filter.InitFilter(filter_order_, 200, pos_filter_cutoff_);
 
     // publisher  创建发布对象
     imu_pub_ = nh_.advertise<sensor_msgs::Imu>(imu_topic_.c_str(), 10);
@@ -50,7 +57,7 @@ namespace RobotSwitch
        ROS_ERROR_STREAM("Unable to open port ");
        exit(0);
      }
-    InitFilter(200, 100, 50);
+    InitFilter(200, acc_filter_cutoff_);
     calibration(calibration_times);
     processLoop();
   }
@@ -368,8 +375,7 @@ namespace RobotSwitch
                                   imu_data.linear_acceleration.z);
 
           Eigen::Vector3d real_acc = quat2SO3_Matlab(q_out).transpose()*raw_acc;
-          // Update_X();
-          // Update_Y();
+
           g_calibration += real_acc;
           sum_times++;
         }    
@@ -388,7 +394,7 @@ namespace RobotSwitch
     static int times = 0;
     if (print_flag_)
     {
-      logData = new double[13]();
+      logData = new double[16]();
       matlab_file.open(matlab_path);
       if (matlab_file.is_open())
         printf("[AHRS DATA] file opened successfully.\n");
@@ -707,40 +713,44 @@ namespace RobotSwitch
                     imu_data.linear_acceleration.z);
 
           real_acc = quat2SO3_Matlab(q_out).transpose()*raw_acc;
-          // Update_X();
-          // Update_Y();
+
           // real_acc(0) -=g_calibration(0);
           // real_acc(1) -=g_calibration(1);
           real_acc(2) -=g_calibration(2);
+          acc_pre = real_acc;
           // real_acc -= g_calibration;
-          Update();
+          Update_Acc();
 
           // 1st intergration
-          vel_now = vel_pre + real_acc * 0.005 ;
-          // 2nd intergration
-          pos_now = pos_pre + vel_now * 0.005 ;
-          vel_pre = vel_now;
-          pos_pre = pos_now;
+          real_vel = real_vel + real_acc * 0.005 ;
+          vel_ft = vel_filter.process(real_vel);
+          real_pos = real_pos + vel_ft * 0.005 ;
+          pos_ft = pos_filter.process(real_pos);
+          real_vel = vel_ft;
+          real_pos = pos_ft;
 
           imu_pub_.publish(imu_data);
           // print data to m file  
           if(print_flag_){
-            logData[0] = raw_acc(0);
-            logData[1] = raw_acc(1);
-            logData[2] = raw_acc(2);
+            logData[0] = acc_pre(0);
+            logData[1] = acc_pre(1);
+            logData[2] = acc_pre(2);
             logData[3] = real_acc(0);
             logData[4] = real_acc(1);
             logData[5] = real_acc(2);
-            logData[6] = pos_now(0);
-            logData[7] = pos_now(1);
-            logData[8] = pos_now(2);
-            logData[9] = imu_data.orientation.w;
-            logData[10] = imu_data.orientation.x;
-            logData[11] = imu_data.orientation.y;
-            logData[12] = imu_data.orientation.z;
+            logData[6] = real_vel(0);
+            logData[7] = real_vel(1);
+            logData[8] = real_vel(2);        
+            logData[9] = real_pos(0);
+            logData[10] = real_pos(1);
+            logData[11] = real_pos(2);
+            logData[12] = imu_data.orientation.w;
+            logData[13] = imu_data.orientation.x;
+            logData[14] = imu_data.orientation.y;
+            logData[15] = imu_data.orientation.z;
 
             matlab_file << ros::Time::now() << " ";
-            stream_array_in(matlab_file, logData, 13);
+            stream_array_in(matlab_file, logData, 16);
             matlab_file << endl;
           }
         //   机械臂四元数:
@@ -772,12 +782,13 @@ namespace RobotSwitch
     ros::waitForShutdown();
   }
 
-  void RobotSwitchBringup::Update()
+  void RobotSwitchBringup::Update_Acc()
   {
           real_acc(0) = biquadFilterApply(&accFilterLPF[0], real_acc(0));
           real_acc(1) = biquadFilterApply(&accFilterLPF[1], real_acc(1));
           real_acc(2) = biquadFilterApply(&accFilterLPF[2], real_acc(2));
   }
+
 
   void RobotSwitchBringup::Update_X()
   {
@@ -920,13 +931,11 @@ namespace RobotSwitch
     serial_->open();
   }
 
-  void RobotSwitchBringup::InitFilter(float _imuUpdateRate,
-                                      float _gyroFilterCutoffFreq,
-                                      float _accFilterCutoffFreq)
+  void RobotSwitchBringup::InitFilter(float _imuUpdateRate, float _accFreq)
   {
       for (int i = 0; i < 3; i++)
       {
-          biquadFilterInitLPF(&accFilterLPF[i], _imuUpdateRate, _accFilterCutoffFreq);
+          biquadFilterInitLPF(&accFilterLPF[i], _imuUpdateRate, _accFreq);
       }
   }
 

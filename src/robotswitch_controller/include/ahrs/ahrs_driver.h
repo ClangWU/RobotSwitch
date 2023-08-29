@@ -64,11 +64,12 @@ public:
   ~RobotSwitchBringup();
   void processLoop();
   void calibration(int times);
-  void Update();
+  // LPF
+  void Update_Acc();
   void Update_X();
   void Update_Y();
   void Update_Z();
-  void InitFilter(float _imuUpdateRate, float _gyroFilterCutoffFreq, float _accFilterCutoffFreq);
+  void InitFilter(float _imuUpdateRate, float _accFreq);
 
   bool ahrs_checkCS8(int len);
   bool ahrs_checkCS16(int len);
@@ -79,14 +80,19 @@ public:
 
 private:
   Eigen::Quaterniond calibration_quaternion;
-  BiquadFilter_t gyroFilterLPF[3];
+  // HPF
+  HighPassFilter vel_filter;
+  HighPassFilter pos_filter;
+  // LPF
   BiquadFilter_t accFilterLPF[3];
+  
   Eigen::Vector3d real_acc;
+  Eigen::Vector3d acc_ft;
   Eigen::Vector3d acc_pre;
-  Eigen::Vector3d vel_now;
-  Eigen::Vector3d vel_pre;
-  Eigen::Vector3d pos_now;
-  Eigen::Vector3d pos_pre;
+  Eigen::Vector3d real_vel;
+  Eigen::Vector3d vel_ft;
+  Eigen::Vector3d real_pos;
+  Eigen::Vector3d pos_ft;
   Eigen::Vector3d g_calibration;
 
   std::ofstream matlab_file;
@@ -95,6 +101,10 @@ private:
   double *logData;
   bool print_flag_;
   bool first_flag_ = true;
+  int filter_order_;
+  float acc_filter_cutoff_;
+  float vel_filter_cutoff_;
+  float pos_filter_cutoff_;
 
   bool if_debug_;
   //sum info
@@ -109,8 +119,6 @@ private:
   std::string ahrs_serial_port_;
   int ahrs_serial_baud_;
   int ahrs_serial_timeout_;
-
-
 
   //data
   sensor_msgs::Imu imu_data;
@@ -144,41 +152,6 @@ private:
   ForceData     _force_handle;
   MoveData        _move_handle;
   InteractData _interact_handle;
-
-  template <typename T>
-    std::vector<T> readStruct(serial::Serial *serial_, unsigned char head, unsigned char tail)
-    {
-    std::vector<T> vec_t;
-    const int LENGTH = 24;
-    const int SIZE = sizeof(T);
-    unsigned char read_buffer[LENGTH] = {0};
-    size_t len_result = serial_->read(read_buffer, LENGTH);
-    for (size_t i = 0; (i + SIZE + 1) < len_result; i++)
-    {
-        if (read_buffer[i] == head && read_buffer[i + SIZE + 1] == tail)
-        { 
-        vec_t.push_back(*(reinterpret_cast<T *>(&read_buffer[i + 1])));
-        }
-    }
-    return vec_t;
-    }
-
-    template <typename T>
-    bool writeStruct(serial::Serial *serial_, T data_struct)
-    {
-        size_t len_result = serial_->write(reinterpret_cast<const uint8_t*>(&data_struct), sizeof(data_struct));
-        return (sizeof(data_struct) == len_result);
-    }
-
-  template <typename T>
-    T filter(const std::vector<T> &dataScope){
-    if (!dataScope.empty())
-    {
-        return dataScope.back();
-    }else{
-        ROS_ERROR_STREAM("Unable to read data ");
-    }
-  }
 
   }; //RobotSwitchBringup
 } // namespace RobotSwitch
