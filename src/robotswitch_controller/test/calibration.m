@@ -7,7 +7,7 @@ clear;                         	% clear all variables
 clc;                          	% clear the command terminal
  
 %% Import data
-ahrs_static_data = dlmread('ahrs_static.txt');
+ahrs_static_data = dlmread('ahrs_dyn_hpf.txt');
 ahrs.Time    = ahrs_static_data(:, 1);
 ahrs.acc  = ahrs_static_data(:, 2:4);
 ahrs.realacc = ahrs_static_data(:, 5:7);
@@ -97,7 +97,7 @@ linVel_filtfilt = filter(b_fir, a_fir, linVel);
 [b, a] = butter(order, (2*filtCutOff)/(1/samplePeriod), 'high');
 Hd = dsp.IIRFilter('Numerator', b, 'Denominator', a);
 %linVel_filtfilt = step(Hd, linVel);
-% linVel_filtfilt = filtfilt(b, a, linVel);
+linVel_filtfilt = filtfilt(b, a, linVel);
 %linVel_filtfilt = filter(b, a, linVel);
 
 
@@ -123,14 +123,10 @@ filtCutOff = 0.1;
 N = 200; % 假设的滤波器阶数，可以根据需要调整
 fCutNormalized = 2*filtCutOff*samplePeriod; % 归一化截止频率
 
-% 设计FIR高通滤波器
-b_fir = fir1(N, fCutNormalized, 'high');
-a_fir = 1; % 对于FIR滤波器，a始终为1
-linPos_filtfilt = filter(b_fir, a_fir, linPos_);
 [b, a] = butter(order, (2*filtCutOff)/(1/samplePeriod), 'high');
 Hd = dsp.IIRFilter('Numerator', b, 'Denominator', a);
 %linPos_filtfilt = filter(b, a, linPos_);
-% linPos_filtfilt = filtfilt(b, a, linPos_);
+linPos_filtfilt = filtfilt(b, a, linPos_);
 % linPos_filtfilt = step(Hd, linPos_);
 % Plot
 figure('NumberTitle', 'off', 'Name', 'Linear Position');
