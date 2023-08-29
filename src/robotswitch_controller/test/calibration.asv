@@ -11,9 +11,8 @@ ahrs_static_data = dlmread('ahrs_static.txt');
 ahrs.Time    = ahrs_static_data(:, 1);
 ahrs.acc  = ahrs_static_data(:, 2:4);
 ahrs.realacc = ahrs_static_data(:, 5:7);
-ahrs.vel     = ahrs_static_data(:, 8:10);
-ahrs.pos     = ahrs_static_data(:, 11:13);
-ahrs.quaternion  = ahrs_static_data(:, 14:17);
+ahrs.pos     = ahrs_static_data(:, 8:10);
+ahrs.quaternion  = ahrs_static_data(:, 11:14);
 
 samplePeriod = 0.005; % Assuming uniform sampling
 figure('NumberTitle', 'off', 'Name', 'Accelerometer');
@@ -46,11 +45,16 @@ for i = 1:length(ahrs.acc)
 end
 
 %%clang
-gravity_estimate = mean(tcAcc(:, 3));
-
+gravity_estimate = mean(ahrs.realacc(:, :));
+gravity_ = [ones(length(tcAcc), 1)*gravity_estimate(:,1), ones(length(tcAcc), 1)*gravity_estimate(:,2), ones(length(tcAcc), 1)*gravity_estimate(:,3)];
+% linAcc = tcAcc - gravity_;
+linAcc = ahrs.realacc(:, :);
+order = 2;
+filtCutOff = 50;
+[b, a] = butter(order, (2*filtCutOff)/(1/samplePeriod), 'low');
+linAcc = filtfilt(b,a,linAcc);
 %% Calculate linear acceleration in Earth frame (subtracting gravity)
 
-linAcc = ahrs.realacc;
 figure('NumberTitle', 'off', 'Name', 'Linear Acceleration Analysis');
 hold on;
 plot(linAcc(:,1), 'r');
@@ -66,6 +70,7 @@ legend('X', 'Y', 'Z');
 linVel = zeros(size(linAcc));
 
 for i = 2:length(linAcc)
+%     samplePeriod = ahrs.Time(i,:)-ahrs.Time(i-1,:);
     linVel(i,:) = linVel(i-1,:) + linAcc(i,:) * samplePeriod ;
 end
 
@@ -84,21 +89,11 @@ legend('X', 'Y', 'Z');
 
 order = 2;
 filtCutOff = 0.1;
-N = 200; % 假设的滤波器阶数，可以根据需要调整
-fCutNormalized = 2*filtCutOff*samplePeriod; % 归一化截止频率
-
-% 设计FIR高通滤波器
-b_fir = fir1(N, fCutNormalized, 'high');
-a_fir = 1; % 对于FIR滤波器，a始终为1
-
-% 使用filter函数进行实时滤波
-linVel_filtfilt = filter(b_fir, a_fir, linVel);
-
 [b, a] = butter(order, (2*filtCutOff)/(1/samplePeriod), 'high');
 Hd = dsp.IIRFilter('Numerator', b, 'Denominator', a);
 %linVel_filtfilt = step(Hd, linVel);
-% linVel_filtfilt = filtfilt(b, a, linVel);
-%linVel_filtfilt = filter(b, a, linVel);
+linVel_filtfilt = filtfilt(b, a, linVel);
+linVel_filtfilt = filter(b, a, linVel);
 
 
 % Plot
@@ -116,21 +111,15 @@ legend('X', 'Y', 'Z');
 
 linPos_ = zeros(size(linVel_filtfilt));
 for i = 2:length(linVel_filtfilt)
+%     samplePeriod = ahrs.Time(i,:)-ahrs.Time(i-1,:);
     linPos_(i,:) = linPos_(i-1,:) + linVel_filtfilt(i,:) *  samplePeriod; 
 end
 order = 2;
 filtCutOff = 0.1;
-N = 200; % 假设的滤波器阶数，可以根据需要调整
-fCutNormalized = 2*filtCutOff*samplePeriod; % 归一化截止频率
-
-% 设计FIR高通滤波器
-b_fir = fir1(N, fCutNormalized, 'high');
-a_fir = 1; % 对于FIR滤波器，a始终为1
-linPos_filtfilt = filter(b_fir, a_fir, linPos_);
 [b, a] = butter(order, (2*filtCutOff)/(1/samplePeriod), 'high');
 Hd = dsp.IIRFilter('Numerator', b, 'Denominator', a);
-%linPos_filtfilt = filter(b, a, linPos_);
-% linPos_filtfilt = filtfilt(b, a, linPos_);
+linPos_filtfilt = filter(b, a, linPos_);
+%linPos_filtfilt = filtfilt(b, a, linPos_);
 % linPos_filtfilt = step(Hd, linPos_);
 % Plot
 figure('NumberTitle', 'off', 'Name', 'Linear Position');
@@ -197,14 +186,14 @@ sgtitle('位置滤波后频谱')
 
 %% Play animation
 
-% SamplePlotFreq = 8;
-% %%linPosHP_process
-% % First animation
-% SixDOFanimation(linPos_filtfilt, R, ...
-%                 'SamplePlotFreq', SamplePlotFreq, 'Trail', 'Off', ...
-%                 'Position', [9 39 1280 720], ...
-%                 'AxisLength', 0.01, 'ShowArrowHead', false, ...
-%                 'Xlabel', 'X (m)', 'Ylabel', 'Y (m)', 'Zlabel', 'Z (m)', 'ShowLegend', false, 'Title', 'Unfiltered',...
-%                 'CreateAVI', false, 'AVIfileNameEnum', false, 'AVIfps', ((1/samplePeriod) / SamplePlotFreq));  
+SamplePlotFreq = 8;
+%%linPosHP_process
+% First animation
+SixDOFanimation(linPos_filtfilt, R, ...
+                'SamplePlotFreq', SamplePlotFreq, 'Trail', 'Off', ...
+                'Position', [9 39 1280 720], ...
+                'AxisLength', 0.01, 'ShowArrowHead', false, ...
+                'Xlabel', 'X (m)', 'Ylabel', 'Y (m)', 'Zlabel', 'Z (m)', 'ShowLegend', false, 'Title', 'Unfiltered',...
+                'CreateAVI', false, 'AVIfileNameEnum', false, 'AVIfps', ((1/samplePeriod) / SamplePlotFreq));  
     
 %% End of script
