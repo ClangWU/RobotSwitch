@@ -120,9 +120,6 @@ for i = 2:length(linVel_filtfilt)
 end
 order = 2;
 filtCutOff = 0.1;
-N = 200; % 假设的滤波器阶数，可以根据需要调整
-fCutNormalized = 2*filtCutOff*samplePeriod; % 归一化截止频率
-
 [b, a] = butter(order, (2*filtCutOff)/(1/samplePeriod), 'high');
 Hd = dsp.IIRFilter('Numerator', b, 'Denominator', a);
 %linPos_filtfilt = filter(b, a, linPos_);
