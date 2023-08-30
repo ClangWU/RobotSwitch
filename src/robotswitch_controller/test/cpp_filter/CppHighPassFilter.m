@@ -29,7 +29,27 @@ classdef CppHighPassFilter < handle
             obj.prev_output2_3f = zeros(3,2);
             obj.order_ = 1;
         end
-        
+        function matlabInitFilter(obj, order, cutoffFreq)
+            obj.order_ = order;
+            [b, a] = butter(order, (2*cutoffFreq)/(200), 'high');
+
+            if obj.order_ == 1
+                obj.b0 = b(1);
+                obj.b1 = b(2);
+                obj.a0 = 1;  % 数字滤波器常常规范化a(1)为1
+                obj.a1 = a(2);
+            elseif obj.order_ == 2
+                obj.b0 = b(1);
+                obj.b1 = b(2);
+                obj.b2 = b(3);
+                obj.a0 = 1;  % 数字滤波器常常规范化a(1)为1
+                obj.a1 = a(2);
+                obj.a2 = a(3);
+            else
+                error('Unsupported filter order.');
+            end
+        end
+
         function InitFilter(obj, order, sampleRate, cutoffFreq)
             obj.order_ = order;
             if obj.order_ == 1
@@ -49,6 +69,28 @@ classdef CppHighPassFilter < handle
                 obj.b2 = obj.b0;
                 obj.a1 = -2 * cos(omega) / obj.a0;
                 obj.a2 = (1 - alpha) / obj.a0;
+            end
+        end
+        function coeffs = getDenominatorCoeffs(obj)
+            if obj.order_ == 1
+                coeffs = [1, -obj.a1];
+            else
+                coeffs = [obj.a0, -obj.a1, -obj.a2];
+            end
+        end
+        function coeffs = getbCoeffs(obj)
+            if obj.order_ == 1
+                coeffs = [obj.b0, obj.b1];
+            else
+                coeffs = [obj.b0, obj.b1, obj.b2];
+            end
+        end
+        
+        function coeffs = getaCoeffs(obj)
+            if obj.order_ == 1
+                coeffs = [obj.a0, obj.a1];
+            else
+                coeffs = [obj.a0, obj.a1, obj.a2];
             end
         end
         

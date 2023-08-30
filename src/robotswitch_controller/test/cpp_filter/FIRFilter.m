@@ -1,0 +1,45 @@
+classdef FIRFilter
+    properties
+        order_
+        b    % Filter coefficients
+        prev_inputs   % Previous input values
+    end
+    
+    methods
+        function obj = FIRFilter(order, sampleRate, cutoffFreq)
+            obj.order_ = order;
+
+            % Design the FIR highpass filter using the fir1 function
+            nyquist = 0.5 * sampleRate;
+            normalizedCutoff = cutoffFreq / nyquist;
+            obj.b = fir1(obj.order_, normalizedCutoff, 'high');
+
+            obj.prev_inputs = zeros(3, numel(obj.b));  % Create storage for past inputs based on coefficients
+        end
+
+        function output = process(obj, input)
+            inputShape = size(input);
+            if isnumeric(input) && numel(input) == 1  % Scalar input
+                % Shift the previous inputs
+                obj.prev_inputs(1,:) = [input, obj.prev_inputs(1,1:end-1)];
+                % Compute the filter output
+                output = sum(obj.b .* obj.prev_inputs(1,:));
+            elseif isnumeric(input) && all(inputShape == [3, 1])  % 3D Column Vector input
+                output = zeros(3,1);
+                for i = 1:3
+                    obj.prev_inputs(i,:) = [input(i), obj.prev_inputs(i,1:end-1)];
+                    output(i) = sum(obj.b .* obj.prev_inputs(i,:));
+                end
+            elseif isnumeric(input) && all(inputShape == [1, 3])  % 3D Row Vector input
+                output = zeros(1,3);
+                for i = 1:3
+                    obj.prev_inputs(i,:) = [input(i), obj.prev_inputs(i,1:end-1)];
+                    output(i) = sum(obj.b .* obj.prev_inputs(i,:));
+                end
+            else
+                error('Input dimension not supported');
+            end
+        end
+
+    end
+end

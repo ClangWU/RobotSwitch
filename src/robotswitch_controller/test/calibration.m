@@ -96,8 +96,8 @@ linVel_filtfilt = filter(b_fir, a_fir, linVel);
 
 [b, a] = butter(order, (2*filtCutOff)/(1/samplePeriod), 'high');
 Hd = dsp.IIRFilter('Numerator', b, 'Denominator', a);
-%linVel_filtfilt = step(Hd, linVel);
-linVel_filtfilt = filtfilt(b, a, linVel);
+linVel_filtfilt = step(Hd, linVel);
+% linVel_filtfilt = filtfilt(b, a, linVel);
 %linVel_filtfilt = filter(b, a, linVel);
 
 
@@ -123,8 +123,8 @@ filtCutOff = 0.1;
 [b, a] = butter(order, (2*filtCutOff)/(1/samplePeriod), 'high');
 Hd = dsp.IIRFilter('Numerator', b, 'Denominator', a);
 %linPos_filtfilt = filter(b, a, linPos_);
-linPos_filtfilt = filtfilt(b, a, linPos_);
-% linPos_filtfilt = step(Hd, linPos_);
+% linPos_filtfilt = filtfilt(b, a, linPos_);
+linPos_filtfilt = step(Hd, linPos_);
 % Plot
 figure('NumberTitle', 'off', 'Name', 'Linear Position');
 subplot(2,1,1);
