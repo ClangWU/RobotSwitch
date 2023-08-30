@@ -170,28 +170,6 @@ float slewFilterApply(slewFilter_t *filter, float input);
 
                     a1 = -2.0 * cos(omega) / a0;
                     a2 = (1.0 - alpha) / a0;
-
-
-
-                    //b0= 0.9978 b1 -1.9956 b2 0.9978
-                    //a0= 1      a1 -1.9956 a2 0.9956
-                    // b0 = 0.9977810;
-                    // b1 = -1.9955620;
-                    // b2 = 0.9977810;
-
-                    // a1 = -1.9955571;
-                    // a2 = 0.9955670;
-                    b0 = 0.9978;
-                    b1 = -1.9956;
-                    b2 = 0.9978;
-                    a1 = -1.9956;
-                    a2 = 0.9956;
-                    std::cout << b0 << std::endl;
-                    std::cout << b1  << std::endl;
-                    std::cout << b2 << std::endl;
-                    std::cout << a1  << std::endl;
-                    std::cout << a2  << std::endl;
-
                 }
             }
 
@@ -232,11 +210,6 @@ float slewFilterApply(slewFilter_t *filter, float input);
 
                     prev_output2_3f[1] = prev_output2_3f[0];
                     prev_output2_3f[0] = output;
-
-                    // std::cout << "v2 "<< std::endl;
-
-                    // std::cout << b1 * prev_input2_3f[0] << std::endl;
-
                     return output;
                 }
             }

@@ -9,7 +9,7 @@ import mpl_toolkits.mplot3d.axes3d
 # dyn 2 circle 50Hz
 # dyn6 no acc filter
 # Import data  
-ahrs_data = np.loadtxt('ahrs_dyn_hpf.txt')
+ahrs_data = np.loadtxt('ahrs_dyn_hpf2_0.1.txt')
 ahrs = {
     "Time": ahrs_data[:, 0],
     "acc": ahrs_data[:, 1:4],
@@ -21,7 +21,7 @@ ahrs = {
 
 
 # Plot
-plt.figure("real acc")
+plt.figure("position")
 # plt.plot(ahrs["vel"][:, 0], 'm', label='X')
 # plt.plot(ahrs["vel"][:, 1], 'k', label='Y')
 # plt.plot(ahrs["vel"][:, 2], 'y', label='Z')
@@ -35,7 +35,7 @@ plt.legend()
 plt.show()
 
 # Plot
-plt.figure("position")
+plt.figure("real acc")
 # plt.plot(ahrs["vel"][:, 0], 'm', label='X')
 # plt.plot(ahrs["vel"][:, 1], 'k', label='Y')
 # plt.plot(ahrs["vel"][:, 2], 'y', label='Z')

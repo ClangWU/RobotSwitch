@@ -65,7 +65,7 @@ public:
   void processLoop();
   void calibration(int times);
   // LPF
-  void Update_Acc();
+  void Update_Acc(bool flag);
   void Update_X();
   void Update_Y();
   void Update_Z();
@@ -106,6 +106,7 @@ private:
   float vel_filter_cutoff_;
   float pos_filter_cutoff_;
 
+  bool if_filter;
   bool if_debug_;
   //sum info
   int sn_lost_ = 0;
