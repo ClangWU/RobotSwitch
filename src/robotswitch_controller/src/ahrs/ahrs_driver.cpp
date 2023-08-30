@@ -20,6 +20,9 @@ namespace RobotSwitch
     pravite_nh.param("ahrs_port", ahrs_serial_port_, std::string("/dev/ttyUSB0"));
     pravite_nh.param("ahrs_baud", ahrs_serial_baud_, 921600);
 
+    if(nh_.getParam("ahrs_config/if_acc_filter", if_filter)){
+      ROS_INFO("Got if_filter: %s", if_filter ? "true" : "false");
+    }
     nh_.getParam("ahrs_config/filter_order", filter_order_);
     nh_.getParam("ahrs_config/acc_filter_cutoff", acc_filter_cutoff_);
     nh_.getParam("ahrs_config/vel_filter_cutoff", vel_filter_cutoff_);
@@ -719,7 +722,7 @@ namespace RobotSwitch
           real_acc(2) -=g_calibration(2);
           acc_pre = real_acc;
           // real_acc -= g_calibration;
-          Update_Acc();
+          Update_Acc(if_filter);
 
           // 1st intergration
           real_vel = real_vel + real_acc * 0.005 ;
@@ -782,11 +785,14 @@ namespace RobotSwitch
     ros::waitForShutdown();
   }
 
-  void RobotSwitchBringup::Update_Acc()
+  void RobotSwitchBringup::Update_Acc(bool flag)
   {
-          real_acc(0) = biquadFilterApply(&accFilterLPF[0], real_acc(0));
-          real_acc(1) = biquadFilterApply(&accFilterLPF[1], real_acc(1));
-          real_acc(2) = biquadFilterApply(&accFilterLPF[2], real_acc(2));
+    if (flag)
+    {
+      real_acc(0) = biquadFilterApply(&accFilterLPF[0], real_acc(0));
+      real_acc(1) = biquadFilterApply(&accFilterLPF[1], real_acc(1));
+      real_acc(2) = biquadFilterApply(&accFilterLPF[2], real_acc(2));
+    }     
   }
 
 
