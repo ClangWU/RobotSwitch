@@ -1,5 +1,5 @@
 ahrs_config:
-  print_flag: true
+  print_flag: false
   calibration_times: 1000
   filter_order: 1
   if_acc_filter : true
