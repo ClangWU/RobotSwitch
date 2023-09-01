@@ -20,22 +20,22 @@ namespace RobotSwitch
     pravite_nh.param("ahrs_port", ahrs_serial_port_, std::string("/dev/ttyUSB0"));
     pravite_nh.param("ahrs_baud", ahrs_serial_baud_, 921600);
 
-    if(nh_.getParam("ahrs_config/if_acc_filter", if_filter)){
-      ROS_INFO("Got if_filter: %s", if_filter ? "true" : "false");
-    }
-    nh_.getParam("ahrs_config/filter_order", filter_order_);
-    nh_.getParam("ahrs_config/acc_filter_cutoff", acc_filter_cutoff_);
-    nh_.getParam("ahrs_config/vel_filter_cutoff", vel_filter_cutoff_);
-    nh_.getParam("ahrs_config/pos_filter_cutoff", pos_filter_cutoff_);
-    nh_.getParam("ahrs_config/print_flag", print_flag_);
-    nh_.getParam("ahrs_config/calibration_times", calibration_times);
-    if(nh_.getParam("ahrs_config/file_path", matlab_path))
-      ROS_INFO("Got file_path: %s", matlab_path.c_str());
-    else
-      ROS_ERROR("Failed to get param 'ahrs_config/file_path'");
 
-    vel_filter.InitFilter(filter_order_, 200, vel_filter_cutoff_);
-    pos_filter.InitFilter(filter_order_, 200, pos_filter_cutoff_);
+    nh_.getParam("ahrs_config/print_flag", print_flag_);
+    if(print_flag_){
+              if(nh_.getParam("ahrs_config/if_acc_filter", if_filter)){
+            ROS_INFO("Got if_filter: %s", if_filter ? "true" : "false");
+          }
+          nh_.getParam("ahrs_config/filter_order", filter_order_);
+          nh_.getParam("ahrs_config/acc_filter_cutoff", acc_filter_cutoff_);
+          nh_.getParam("ahrs_config/vel_filter_cutoff", vel_filter_cutoff_);
+          nh_.getParam("ahrs_config/pos_filter_cutoff", pos_filter_cutoff_);
+          nh_.getParam("ahrs_config/calibration_times", calibration_times);
+          // if(nh_.getParam("ahrs_config/file_path", matlab_path))
+          //   ROS_INFO("Got file_path: %s", matlab_path.c_str());
+          // else
+          //   ROS_ERROR("Failed to get param 'ahrs_config/file_path'");
+    }
 
     // publisher  创建发布对象
     imu_pub_ = nh_.advertise<sensor_msgs::Imu>(imu_topic_.c_str(), 10);
@@ -395,15 +395,15 @@ namespace RobotSwitch
   void RobotSwitchBringup::processLoop()
   {
     static int times = 0;
-    if (print_flag_)
-    {
-      logData = new double[16]();
-      matlab_file.open(matlab_path);
-      if (matlab_file.is_open())
-        printf("[AHRS DATA] file opened successfully.\n");
-      else
-        printf("[AHRS DATA] Failed to open file.\n");
-    }
+    // if (print_flag_)
+    // {
+    //   logData = new double[16]();
+    //   matlab_file.open(matlab_path);
+    //   if (matlab_file.is_open())
+    //     printf("[AHRS DATA] file opened successfully.\n");
+    //   else
+    //     printf("[AHRS DATA] Failed to open file.\n");
+    // }
 
     static bool initialized = false;
     ROS_INFO("RobotSwitchBringup::processLoop: start");
