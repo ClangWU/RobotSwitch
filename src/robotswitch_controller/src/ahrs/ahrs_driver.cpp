@@ -732,12 +732,12 @@ namespace RobotSwitch
         // pose_msg.pose.position.x = 0.3069;
         // pose_msg.pose.position.y = 0.0;
         // pose_msg.pose.position.z = 0.4866;
-        pose_msg.header.stamp = ros::Time::now();
+        // pose_msg.header.stamp = ros::Time::now();
         pose_msg.pose.orientation.x = robot_quaternion.x();
         pose_msg.pose.orientation.y = robot_quaternion.y();
         pose_msg.pose.orientation.z = robot_quaternion.z();
         pose_msg.pose.orientation.w = robot_quaternion.w();
-        ROS_INFO("Published at: %f", pose_msg.header.stamp.toSec());
+        // ROS_INFO("Published at: %f", pose_msg.header.stamp.toSec());
         qtn_publisher.publish(pose_msg);
       }
     }

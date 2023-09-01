@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.0.2)
 
 project(robotswitch_controller)
 
@@ -7,17 +7,16 @@ SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
 find_package(Eigen3 REQUIRED)
 set(Eigen3_INCLUDE_DIRS ${EIGEN3_INCLUDE_DIR})
 find_package(catkin REQUIRED COMPONENTS
-   message_generation
-  # genmsg
-  # geometry_msgs
+  message_generation
   roscpp
   rospy
   sensor_msgs
   std_msgs
   tf
-  # std_srvs
   nav_msgs
   serial
+  geometry_msgs
+  message_filters
 )
 
 find_package(Eigen3 REQUIRED)
@@ -76,5 +75,8 @@ target_link_libraries(ahrs_driver crc_table utils ${catkin_LIBRARIES})# ${SERIAL
 add_executable(imu_tf src/ahrs/imu_tf.cpp)
 target_link_libraries( imu_tf ${catkin_LIBRARIES})# ${SERIAL_LIB}
 
+
+add_executable(imu_handler src/ahrs//imu_handler.cpp)
+target_link_libraries(imu_handler ${catkin_LIBRARIES})
 ## crc_table
 add_library(crc_table src/ahrs/crc_table.cpp)
