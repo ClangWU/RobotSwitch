@@ -75,8 +75,10 @@ target_link_libraries(ahrs_driver crc_table utils ${catkin_LIBRARIES})# ${SERIAL
 add_executable(imu_tf src/ahrs/imu_tf.cpp)
 target_link_libraries( imu_tf ${catkin_LIBRARIES})# ${SERIAL_LIB}
 
+add_executable(rs_tf src/ahrs/rs_tf.cpp)
+target_link_libraries( rs_tf ${catkin_LIBRARIES})# ${SERIAL_LIB}
 
 add_executable(imu_handler src/ahrs//imu_handler.cpp)
-target_link_libraries(imu_handler ${catkin_LIBRARIES})
+target_link_libraries(imu_handler utils ${catkin_LIBRARIES})
 ## crc_table
 add_library(crc_table src/ahrs/crc_table.cpp)

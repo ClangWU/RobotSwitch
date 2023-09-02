@@ -1,4 +1,5 @@
 <launch>
+    <rosparam file="$(find robotswitch_controller)/config/handler_init.yaml" command="load" />
     <node pkg="robotswitch_controller" name="imu_handler" type="imu_handler" output="screen" >
     </node>
 </launch>
