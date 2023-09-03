@@ -1,6 +1,6 @@
 handler_config:
   print_flag: true
   # unit: m
-  forearm_length: 0.22
-  upperarm_length: 0.28
+  forearm_length: 0.66  #0.22
+  upperarm_length: 0.84 #0.28
   file_path: "/home/clang/project/robotswitch/src/robotswitch_controller/test/arm_pos.txt"
