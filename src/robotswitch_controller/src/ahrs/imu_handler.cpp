@@ -56,26 +56,26 @@ namespace RobotSwitch
         qF = qA * qB;
 
         geometry_msgs::PoseStamped upper_pose;
-        upper_pose.pose.position.x = pF(0);
-        upper_pose.pose.position.y = pF(1);
-        upper_pose.pose.position.z = pF(2);
-        upper_pose.pose.orientation.x = qF.x();
-        upper_pose.pose.orientation.y = qF.y();
-        upper_pose.pose.orientation.z = qF.z();
-        upper_pose.pose.orientation.w = qF.w();
+        upper_pose.pose.position.x = pA(0);
+        upper_pose.pose.position.y = pA(1);
+        upper_pose.pose.position.z = pA(2);
+        upper_pose.pose.orientation.x = qA.x();
+        upper_pose.pose.orientation.y = qA.y();
+        upper_pose.pose.orientation.z = qA.z();
+        upper_pose.pose.orientation.w = qA.w();
 
         upper_pose_publisher.publish(upper_pose);
 
-        // geometry_msgs::PoseStamped fore_pose;
-        // fore_pose.pose.position.x = pB(0);
-        // fore_pose.pose.position.y = pB(1);
-        // fore_pose.pose.position.z = pB(2);
-        // fore_pose.pose.orientation.x = qB.x();
-        // fore_pose.pose.orientation.y = qB.y();
-        // fore_pose.pose.orientation.z = qB.z();
-        // fore_pose.pose.orientation.w = qB.w();
+        geometry_msgs::PoseStamped fore_pose;
+        fore_pose.pose.position.x = pB(0);
+        fore_pose.pose.position.y = pB(1);
+        fore_pose.pose.position.z = pB(2);
+        fore_pose.pose.orientation.x = qB.x();
+        fore_pose.pose.orientation.y = qB.y();
+        fore_pose.pose.orientation.z = qB.z();
+        fore_pose.pose.orientation.w = qB.w();
 
-        // fore_pose_publisher.publish(fore_pose);
+        fore_pose_publisher.publish(fore_pose);
     }
 } // namespace RobotSwitch
 

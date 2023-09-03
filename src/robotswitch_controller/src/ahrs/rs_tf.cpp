@@ -33,30 +33,30 @@ int main(int argc, char** argv){
         geometry_msgs::TransformStamped upper_arm_tf, forearm_tf;
 
         // Upper arm TF (Shoulder to Elbow)
-        // upper_arm_tf.header.stamp = ros::Time::now();
-        // upper_arm_tf.header.frame_id = "shoulder_frame"; // This is your fixed frame
-        // upper_arm_tf.child_frame_id = "wrist_frame"; // Upper arm's end
+        upper_arm_tf.header.stamp = ros::Time::now();
+        upper_arm_tf.header.frame_id = "shoulder_frame"; // This is your fixed frame
+        upper_arm_tf.child_frame_id = "elbow_frame"; // Upper arm's end
 
-        // upper_arm_tf.transform.translation.x = upperarmPose.position.x;
-        // upper_arm_tf.transform.translation.y = upperarmPose.position.y;
-        // upper_arm_tf.transform.translation.z = upperarmPose.position.z;
+        upper_arm_tf.transform.translation.x = upperarmPose.position.x;
+        upper_arm_tf.transform.translation.y = upperarmPose.position.y;
+        upper_arm_tf.transform.translation.z = upperarmPose.position.z;
 
-        // upper_arm_tf.transform.rotation = upperarmPose.orientation;
-        // tf_broadcaster.sendTransform(upper_arm_tf);
+        upper_arm_tf.transform.rotation = upperarmPose.orientation;
+        tf_broadcaster.sendTransform(upper_arm_tf);
 
         // Forearm TF (Elbow to Wrist)
-        // forearm_tf.header.stamp = ros::Time::now();
-        // forearm_tf.header.frame_id = "elbow_frame"; // Start from the end of the upper arm
-        // forearm_tf.child_frame_id = "wrist_frame"; // Forearm's end
+        forearm_tf.header.stamp = ros::Time::now();
+        forearm_tf.header.frame_id = "elbow_frame"; // Start from the end of the upper arm
+        forearm_tf.child_frame_id = "wrist_frame"; // Forearm's end
 
-        // forearm_tf.transform.translation.x = forearmPose.position.x;
-        // forearm_tf.transform.translation.y = forearmPose.position.y;
-        // forearm_tf.transform.translation.z = forearmPose.position.z;
+        forearm_tf.transform.translation.x = forearmPose.position.x;
+        forearm_tf.transform.translation.y = forearmPose.position.y;
+        forearm_tf.transform.translation.z = forearmPose.position.z;
 
-        // forearm_tf.transform.rotation = forearmPose.orientation;
+        forearm_tf.transform.rotation = forearmPose.orientation;
 
         // Broadcasting the transforms
-        // tf_broadcaster.sendTransform(forearm_tf);
+        tf_broadcaster.sendTransform(forearm_tf);
 
         rate.sleep();
     }
