@@ -23,10 +23,11 @@ private:
     typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::Imu, sensor_msgs::Imu> syncPolicy;
     message_filters::Synchronizer<syncPolicy> sync_;
 
-    Eigen::Quaterniond qA, qB, qF;
+    Eigen::Quaterniond qA, qB, qB2A, qF, calibration_qA, calibration_qB;
     double fore_len = 0.22; // default values can be changed
     double upper_len = 0.28; // default values can be changed
     Eigen::Vector3d pA, pB, pF, lA, lB;
+    bool initialized = false;
 
 public:
    IMU_Handler();

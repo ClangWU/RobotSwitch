@@ -18,6 +18,7 @@ namespace RobotSwitch
         }
         lA <<  upper_len, 0, 0;
         lB <<  fore_len , 0,0;
+
         pose_publisher = nh_.advertise<geometry_msgs::PoseStamped>("/cartesian_impedance_controller/desired_pose", 10);
         upper_pose_publisher = nh_.advertise<geometry_msgs::PoseStamped>("upperarm/pose", 10);
         fore_pose_publisher = nh_.advertise<geometry_msgs::PoseStamped>("forearm/pose", 10);
@@ -26,38 +27,55 @@ namespace RobotSwitch
     }
     void IMU_Handler::multi_callback(const sensor_msgs::ImuConstPtr& upper_imu, const sensor_msgs::ImuConstPtr& fore_imu)
     {
-        qA = Eigen::Quaterniond(upper_imu->orientation.w, upper_imu->orientation.x, upper_imu->orientation.y, upper_imu->orientation.z);
-        qB = Eigen::Quaterniond(fore_imu->orientation.w, fore_imu->orientation.x, fore_imu->orientation.y, fore_imu->orientation.z);
-        computeTransform();
+
+            // ROS_WARN("Failed to get upperarm_length from the parameter server! Using default value.");
+        if (!initialized) {
+            Eigen::Quaterniond  qA_Raw = Eigen::Quaterniond(upper_imu->orientation.w, upper_imu->orientation.x, upper_imu->orientation.y, upper_imu->orientation.z);
+            Eigen::Quaterniond  qB_Raw = Eigen::Quaterniond(fore_imu->orientation.w, fore_imu->orientation.x, fore_imu->orientation.y, fore_imu->orientation.z);
+            Eigen::Quaterniond robot_initial_quaternion(1, 0, 0, 0);
+            calibration_qA = robot_initial_quaternion * qA_Raw.conjugate();
+            calibration_qB = robot_initial_quaternion * qB_Raw.conjugate();
+            initialized = true;
+        }else
+        {
+            qA = Eigen::Quaterniond(upper_imu->orientation.w, upper_imu->orientation.x, upper_imu->orientation.y, upper_imu->orientation.z);
+            qB = Eigen::Quaterniond(fore_imu->orientation.w, fore_imu->orientation.x, fore_imu->orientation.y, fore_imu->orientation.z);
+            // 计算将 qA_Raw 对齐到 robot_initial_quaternion 的校准四元数
+            qA = calibration_qA * qA;
+            // 对 qB 同样的处理
+            qB = calibration_qB * qB;
+            computeTransform();
+        }
     }
     void IMU_Handler::computeTransform()
     {
+        qB2A = qA.inverse() * qB;
         pA = qA._transformVector(lA);
         pB = qB._transformVector(lB);
         pF = pA + pB;
         qF = qA * qB;
 
         geometry_msgs::PoseStamped upper_pose;
-        upper_pose.pose.position.x = pA(0);
-        upper_pose.pose.position.y = pA(1);
-        upper_pose.pose.position.z = pA(2);
-        upper_pose.pose.orientation.x = qA.x();
-        upper_pose.pose.orientation.y = qA.y();
-        upper_pose.pose.orientation.z = qA.z();
-        upper_pose.pose.orientation.w = qA.w();
+        upper_pose.pose.position.x = pF(0);
+        upper_pose.pose.position.y = pF(1);
+        upper_pose.pose.position.z = pF(2);
+        upper_pose.pose.orientation.x = qF.x();
+        upper_pose.pose.orientation.y = qF.y();
+        upper_pose.pose.orientation.z = qF.z();
+        upper_pose.pose.orientation.w = qF.w();
 
         upper_pose_publisher.publish(upper_pose);
 
-        geometry_msgs::PoseStamped fore_pose;
-        fore_pose.pose.position.x = pF(0);
-        fore_pose.pose.position.y = pF(1);
-        fore_pose.pose.position.z = pF(2);
-        fore_pose.pose.orientation.x = qF.x();
-        fore_pose.pose.orientation.y = qF.y();
-        fore_pose.pose.orientation.z = qF.z();
-        fore_pose.pose.orientation.w = qF.w();
+        // geometry_msgs::PoseStamped fore_pose;
+        // fore_pose.pose.position.x = pB(0);
+        // fore_pose.pose.position.y = pB(1);
+        // fore_pose.pose.position.z = pB(2);
+        // fore_pose.pose.orientation.x = qB.x();
+        // fore_pose.pose.orientation.y = qB.y();
+        // fore_pose.pose.orientation.z = qB.z();
+        // fore_pose.pose.orientation.w = qB.w();
 
-        fore_pose_publisher.publish(fore_pose);
+        // fore_pose_publisher.publish(fore_pose);
     }
 } // namespace RobotSwitch
 
