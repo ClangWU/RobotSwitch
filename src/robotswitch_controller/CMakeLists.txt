@@ -26,6 +26,8 @@ set(H_FILES
 ${INCLUDE_DIR}/rs_common/math_utils.hpp
 ${INCLUDE_DIR}/rs_common/filter_math.h
 ${INCLUDE_DIR}/rs_common/biquad_filter.h
+${INCLUDE_DIR}/rs_common/common_data.h
+${INCLUDE_DIR}/rs_common/serial_node.h
 )
 
 include_directories(
@@ -80,5 +82,16 @@ target_link_libraries( rs_tf ${catkin_LIBRARIES})# ${SERIAL_LIB}
 
 add_executable(imu_handler src/ahrs//imu_handler.cpp)
 target_link_libraries(imu_handler utils ${catkin_LIBRARIES})
+
+add_executable(force_mcu_node 
+              src/force_mcu/force_mcu_serial_node.cpp
+              src/force_mcu/force_mcu_control.cpp)
+target_link_libraries(force_mcu_node ${catkin_LIBRARIES})
+
+add_executable(imu_mcu_node 
+              src/imu_mcu/imu_mcu_serial_node.cpp
+              src/imu_mcu/imu_mcu_control.cpp)
+target_link_libraries(imu_mcu_node ${catkin_LIBRARIES})
+
 ## crc_table
 add_library(crc_table src/ahrs/crc_table.cpp)

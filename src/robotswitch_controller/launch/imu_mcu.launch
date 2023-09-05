@@ -1,0 +1,6 @@
+<launch>
+        <node name = "imu_mcu_node" pkg = "robotswitch_controller" type = "imu_mcu_node" respawn="false" output="screen" >
+                <param name="IMU_port_"  value="/dev/ttyUSB0"/>
+                <param name="IMU_baud_"  value="115200"/>
+        </node>
+</launch>
