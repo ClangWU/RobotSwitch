@@ -2,9 +2,9 @@
     <rosparam file="$(find robotswitch_controller)/config/handler_init.yaml" command="load" />
     <node pkg="robotswitch_controller" name="imu_handler" type="imu_handler" output="screen" >
     </node>
-    <node pkg="robotswitch_controller" name="rs_tf" type="rs_tf" output="screen" >
-    </node>
+    <!-- <node pkg="robotswitch_controller" name="rs_tf" type="rs_tf" output="screen" >
+    </node> -->
 
-    <node name="rviz" pkg="rviz" type="rviz" args="-d  $(find robotswitch_controller)/data/rs_ctrl.rviz" required="true" launch-prefix="bash -c 'sleep 2; $0 $@'">
-    </node>
+    <!-- <node name="rviz" pkg="rviz" type="rviz" args="-d  $(find robotswitch_controller)/data/rs_ctrl.rviz" required="true" launch-prefix="bash -c 'sleep 2; $0 $@'">
+    </node> -->
 </launch>

@@ -76,6 +76,16 @@ namespace RobotSwitch
         fore_pose.pose.orientation.w = qB.w();
 
         fore_pose_publisher.publish(fore_pose);
+
+        geometry_msgs::PoseStamped _pose;
+        _pose.pose.position.x = pF(0) -0.49885;
+        _pose.pose.position.y = pF(1) -0.0186;
+        _pose.pose.position.z = pF(2) -0.00404;
+        _pose.pose.orientation.x = qF.x();
+        _pose.pose.orientation.y = qF.y();
+        _pose.pose.orientation.z = qF.z();
+        _pose.pose.orientation.w = qF.w();
+        pose_publisher.publish(_pose);
     }
 } // namespace RobotSwitch
 

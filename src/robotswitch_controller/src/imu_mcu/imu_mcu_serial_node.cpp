@@ -1,6 +1,6 @@
 #include "imu_mcu/imu_mcu_control.h"
 #include <geometry_msgs/Twist.h>
-#include <sensor_msgs/Imu.h>
+#include <geometry_msgs/PoseStamped.h>
 
 using namespace std;
 // bool flag = false;
@@ -16,7 +16,7 @@ int main(int argc, char** argv)
   private_nh.param("IMU_baud_", IMU_baud_, 115200);
   
   ros::Publisher IMU_publisher = 
-  nh.advertise<sensor_msgs::Imu>("/hand_IMU", 10);
+  nh.advertise<geometry_msgs::PoseStamped>("/hand_IMU", 10);
   IMUControl effector;
   effector.set_port(IMU_baud_, IMU_port_);//end effector
   effector.IMU_port.open();
@@ -25,12 +25,16 @@ int main(int argc, char** argv)
   
   while(ros::ok())
   {
-    effector.IMU_data = effector.port_manager.filter(effector.IMU_port.readStruct<IMUData>(0x44, 0x55, 36));
-    sensor_msgs::Imu IMU_msg;
-    IMU_msg.orientation.w = effector.IMU_data.qw;
-    IMU_msg.orientation.x = effector.IMU_data.qx;
-    IMU_msg.orientation.y = effector.IMU_data.qy;
-    IMU_msg.orientation.z = effector.IMU_data.qz;
+    effector.IMU_data = effector.port_manager.filter(effector.IMU_port.readStruct<IMUData>(0x44, 0x55, 40));
+
+        geometry_msgs::PoseStamped IMU_msg;
+        IMU_msg.pose.position.x = 0.1;
+        IMU_msg.pose.position.y = 0;
+        IMU_msg.pose.position.z = 0;
+        IMU_msg.pose.orientation.x = effector.IMU_data.qx;
+        IMU_msg.pose.orientation.y = effector.IMU_data.qy;
+        IMU_msg.pose.orientation.z = effector.IMU_data.qz;
+        IMU_msg.pose.orientation.w = effector.IMU_data.qw;
 
     IMU_publisher.publish(IMU_msg);
 

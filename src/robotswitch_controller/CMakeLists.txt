@@ -83,6 +83,9 @@ target_link_libraries( rs_tf ${catkin_LIBRARIES})# ${SERIAL_LIB}
 add_executable(imu_handler src/ahrs//imu_handler.cpp)
 target_link_libraries(imu_handler utils ${catkin_LIBRARIES})
 
+add_executable(rs_tf_test src/ahrs/rs_tf_test.cpp)
+target_link_libraries( rs_tf_test ${catkin_LIBRARIES})# ${SERIAL_LIB}
+
 add_executable(force_mcu_node 
               src/force_mcu/force_mcu_serial_node.cpp
               src/force_mcu/force_mcu_control.cpp)
