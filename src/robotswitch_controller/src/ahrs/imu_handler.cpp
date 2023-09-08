@@ -27,7 +27,6 @@ namespace RobotSwitch
     }
     void IMU_Handler::multi_callback(const sensor_msgs::ImuConstPtr& upper_imu, const sensor_msgs::ImuConstPtr& fore_imu)
     {
-
             // ROS_WARN("Failed to get upperarm_length from the parameter server! Using default value.");
         if (!initialized) {
             Eigen::Quaterniond  qA_Raw = Eigen::Quaterniond(upper_imu->orientation.w, upper_imu->orientation.x, upper_imu->orientation.y, upper_imu->orientation.z);

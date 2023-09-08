@@ -5,7 +5,7 @@
     <param name="debug"  value="false"/>
 
     <!-- <param name="port"  value="/dev/robotswitch_controller"/> -->
-    <param name="ahrs_port"  value="/dev/ttyUSB0"/>
+    <param name="ahrs_port"  value="/dev/ttyUSB1"/>
     <!-- 波特率 -->
     <param name="ahrs_baud"  value="921600"/>
 
