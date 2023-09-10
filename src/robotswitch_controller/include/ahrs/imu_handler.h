@@ -17,13 +17,14 @@ private:
     ros::Publisher pose_publisher;
     ros::Publisher  upper_pose_publisher;
     ros::Publisher  fore_pose_publisher;
-
+    ros::Publisher  hand_pose_publisher;
     message_filters::Subscriber<sensor_msgs::Imu> upperarm_sub_;
     message_filters::Subscriber<sensor_msgs::Imu> forearm_sub_;
-    typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::Imu, sensor_msgs::Imu> syncPolicy;
+    message_filters::Subscriber<sensor_msgs::Imu> hand_sub_;
+    typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::Imu, sensor_msgs::Imu, sensor_msgs::Imu> syncPolicy;
     message_filters::Synchronizer<syncPolicy> sync_;
 
-    Eigen::Quaterniond qA, qB, qB2A, qF, calibration_qA, calibration_qB;
+    Eigen::Quaterniond qA, qB, qC, qB2A, qF, calibration_qA, calibration_qB, calibration_qC;
     double fore_len = 0.22; // default values can be changed
     double upper_len = 0.28; // default values can be changed
     Eigen::Vector3d pA, pB, pF, lA, lB;
@@ -32,7 +33,9 @@ private:
 public:
    IMU_Handler();
     ~IMU_Handler(){};
-    void multi_callback(const sensor_msgs::ImuConstPtr& upper_imu, const sensor_msgs::ImuConstPtr& fore_imu);
+    void multi_callback(const sensor_msgs::ImuConstPtr& upper_imu, 
+                        const sensor_msgs::ImuConstPtr& fore_imu, 
+                        const sensor_msgs::ImuConstPtr& hand_imu);
     void computeTransform();
     void run()
     {

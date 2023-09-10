@@ -6,6 +6,7 @@
 // Global variables to store the current pose values
 geometry_msgs::Pose upperarmPose;
 geometry_msgs::Pose forearmPose;
+geometry_msgs::Pose handPose;
 
 // Callbacks
 void upperarmCallback(const geometry_msgs::PoseStamped::ConstPtr& msg){
@@ -16,6 +17,10 @@ void forearmCallback(const geometry_msgs::PoseStamped::ConstPtr& msg){
     forearmPose = msg->pose;
 }
 
+void handCallback(const geometry_msgs::PoseStamped::ConstPtr& msg){
+    handPose = msg->pose;
+}
+
 int main(int argc, char** argv){
     ros::init(argc, argv, "arm_tf_publisher");
     ros::NodeHandle node;
@@ -23,6 +28,7 @@ int main(int argc, char** argv){
     // Subscribers
     ros::Subscriber upperarmSub = node.subscribe("upperarm/pose", 10, upperarmCallback);
     ros::Subscriber forearmSub = node.subscribe("forearm/pose", 10, forearmCallback);
+    ros::Subscriber handSub = node.subscribe("hand/pose", 10, handCallback);
 
     tf2_ros::TransformBroadcaster tf_broadcaster;
     ros::Rate rate(200);  
@@ -30,7 +36,7 @@ int main(int argc, char** argv){
     while(node.ok()){
         ros::spinOnce();
 
-        geometry_msgs::TransformStamped upper_arm_tf, forearm_tf;
+        geometry_msgs::TransformStamped upper_arm_tf, forearm_tf, hand_tf;
 
         // Upper arm TF (Shoulder to Elbow)
         upper_arm_tf.header.stamp = ros::Time::now();
@@ -57,6 +63,20 @@ int main(int argc, char** argv){
 
         // Broadcasting the transforms
         tf_broadcaster.sendTransform(forearm_tf);
+
+        // Forearm TF (Elbow to Wrist)
+        hand_tf.header.stamp = ros::Time::now();
+        hand_tf.header.frame_id = "wrist_frame"; // Start from the end of the fore arm
+        hand_tf.child_frame_id = "hand_frame"; // Hand's end
+
+        hand_tf.transform.translation.x = handPose.position.x;
+        hand_tf.transform.translation.y = handPose.position.y;
+        hand_tf.transform.translation.z = handPose.position.z;
+
+        hand_tf.transform.rotation = handPose.orientation;
+
+        // Broadcasting the transforms
+        tf_broadcaster.sendTransform(hand_tf);
 
         rate.sleep();
     }

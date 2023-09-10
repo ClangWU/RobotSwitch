@@ -4,7 +4,8 @@ namespace RobotSwitch
  IMU_Handler::IMU_Handler()
     : nh_(), private_nh_("~"), upperarm_sub_(nh_, "/upperarm/imu", 1000, ros::TransportHints().tcpNoDelay()),
       forearm_sub_(nh_, "/forearm/imu", 1000, ros::TransportHints().tcpNoDelay()),
-      sync_(syncPolicy(10), upperarm_sub_, forearm_sub_)
+      hand_sub_(nh_, "/hand/imu", 1000, ros::TransportHints().tcpNoDelay()),
+      sync_(syncPolicy(10), upperarm_sub_, forearm_sub_, hand_sub_)
     {
         if (nh_.getParam("handler_config/forearm_length", fore_len)) {
         ROS_INFO_STREAM("\033[1;32mGot forearm_length : " << fore_len << "\033[0m");
@@ -22,27 +23,35 @@ namespace RobotSwitch
         pose_publisher = nh_.advertise<geometry_msgs::PoseStamped>("/cartesian_impedance_controller/desired_pose", 10);
         upper_pose_publisher = nh_.advertise<geometry_msgs::PoseStamped>("upperarm/pose", 10);
         fore_pose_publisher = nh_.advertise<geometry_msgs::PoseStamped>("forearm/pose", 10);
+        hand_pose_publisher = nh_.advertise<geometry_msgs::PoseStamped>("hand/pose", 10);
 
-        sync_.registerCallback(boost::bind(&IMU_Handler::multi_callback, this, _1, _2));
+        sync_.registerCallback(boost::bind(&IMU_Handler::multi_callback, this, _1, _2, _3));
     }
-    void IMU_Handler::multi_callback(const sensor_msgs::ImuConstPtr& upper_imu, const sensor_msgs::ImuConstPtr& fore_imu)
+    void IMU_Handler::multi_callback(const sensor_msgs::ImuConstPtr& upper_imu, const sensor_msgs::ImuConstPtr& fore_imu, const sensor_msgs::ImuConstPtr& hand_imu)
     {
             // ROS_WARN("Failed to get upperarm_length from the parameter server! Using default value.");
         if (!initialized) {
             Eigen::Quaterniond  qA_Raw = Eigen::Quaterniond(upper_imu->orientation.w, upper_imu->orientation.x, upper_imu->orientation.y, upper_imu->orientation.z);
             Eigen::Quaterniond  qB_Raw = Eigen::Quaterniond(fore_imu->orientation.w, fore_imu->orientation.x, fore_imu->orientation.y, fore_imu->orientation.z);
+            Eigen::Quaterniond  qC_Raw = Eigen::Quaterniond(hand_imu->orientation.w, hand_imu->orientation.x, hand_imu->orientation.y, hand_imu->orientation.z);
+
             Eigen::Quaterniond robot_initial_quaternion(1, 0, 0, 0);
             calibration_qA = robot_initial_quaternion * qA_Raw.conjugate();
             calibration_qB = robot_initial_quaternion * qB_Raw.conjugate();
+            calibration_qC = robot_initial_quaternion * qC_Raw.conjugate();
+
             initialized = true;
         }else
         {
             qA = Eigen::Quaterniond(upper_imu->orientation.w, upper_imu->orientation.x, upper_imu->orientation.y, upper_imu->orientation.z);
             qB = Eigen::Quaterniond(fore_imu->orientation.w, fore_imu->orientation.x, fore_imu->orientation.y, fore_imu->orientation.z);
+            qC = Eigen::Quaterniond(hand_imu->orientation.w, hand_imu->orientation.x, hand_imu->orientation.y, hand_imu->orientation.z);
+
             // 计算将 qA_Raw 对齐到 robot_initial_quaternion 的校准四元数
             qA = calibration_qA * qA;
             // 对 qB 同样的处理
             qB = calibration_qB * qB;
+            qC = calibration_qC * qC;
             computeTransform();
         }
     }
@@ -76,15 +85,26 @@ namespace RobotSwitch
 
         fore_pose_publisher.publish(fore_pose);
 
-        geometry_msgs::PoseStamped _pose;
-        _pose.pose.position.x = pF(0) -0.49885;
-        _pose.pose.position.y = pF(1) -0.0186;
-        _pose.pose.position.z = pF(2) -0.00404;
-        _pose.pose.orientation.x = qF.x();
-        _pose.pose.orientation.y = qF.y();
-        _pose.pose.orientation.z = qF.z();
-        _pose.pose.orientation.w = qF.w();
-        pose_publisher.publish(_pose);
+        geometry_msgs::PoseStamped hand_pose;
+        hand_pose.pose.position.x = 0;
+        hand_pose.pose.position.y = 0;
+        hand_pose.pose.position.z = 0;
+        hand_pose.pose.orientation.x = qC.x();
+        hand_pose.pose.orientation.y = qC.y();
+        hand_pose.pose.orientation.z = qC.z();
+        hand_pose.pose.orientation.w = qC.w();
+
+        hand_pose_publisher.publish(hand_pose);
+
+        // geometry_msgs::PoseStamped _pose;
+        // _pose.pose.position.x = pF(0) -0.49885;
+        // _pose.pose.position.y = pF(1) -0.0186;
+        // _pose.pose.position.z = pF(2) -0.00404;
+        // _pose.pose.orientation.x = qF.x();
+        // _pose.pose.orientation.y = qF.y();
+        // _pose.pose.orientation.z = qF.z();
+        // _pose.pose.orientation.w = qF.w();
+        // pose_publisher.publish(_pose);
     }
 } // namespace RobotSwitch
 
