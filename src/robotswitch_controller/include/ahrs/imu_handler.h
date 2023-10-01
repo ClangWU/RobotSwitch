@@ -27,7 +27,7 @@ private:
     Eigen::Quaterniond qA, qB, qC, qB2A, qF, calibration_qA, calibration_qB, calibration_qC;
     double fore_len = 0.22; // default values can be changed
     double upper_len = 0.28; // default values can be changed
-    Eigen::Vector3d pA, pB, pF, lA, lB;
+    Eigen::Vector3d pA, pB, pF, pCal,lA, lB;
     bool initialized = false;
 
 public:

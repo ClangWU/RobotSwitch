@@ -35,11 +35,13 @@ namespace RobotSwitch
             Eigen::Quaterniond  qB_Raw = Eigen::Quaterniond(fore_imu->orientation.w, fore_imu->orientation.x, fore_imu->orientation.y, fore_imu->orientation.z);
             Eigen::Quaterniond  qC_Raw = Eigen::Quaterniond(hand_imu->orientation.w, hand_imu->orientation.x, hand_imu->orientation.y, hand_imu->orientation.z);
 
-            Eigen::Quaterniond robot_initial_quaternion(1, 0, 0, 0);
-            calibration_qA = robot_initial_quaternion * qA_Raw.conjugate();
-            calibration_qB = robot_initial_quaternion * qB_Raw.conjugate();
-            calibration_qC = robot_initial_quaternion * qC_Raw.conjugate();
-
+            Eigen::Quaterniond robot_arm_initial_quaternion(0.7071,0,0.7071,0);
+            Eigen::Quaterniond robot_hand_initial_quaternion(0.0, 1.0, 0, 0);
+            calibration_qA = robot_arm_initial_quaternion * qA_Raw.conjugate();
+            calibration_qB = robot_arm_initial_quaternion * qB_Raw.conjugate();
+            calibration_qC = robot_hand_initial_quaternion * qC_Raw.conjugate();
+            pCal = 
+            robot_arm_initial_quaternion._transformVector(lA)+ robot_arm_initial_quaternion._transformVector(lB);
             initialized = true;
         }else
         {
@@ -47,7 +49,7 @@ namespace RobotSwitch
             qB = Eigen::Quaterniond(fore_imu->orientation.w, fore_imu->orientation.x, fore_imu->orientation.y, fore_imu->orientation.z);
             qC = Eigen::Quaterniond(hand_imu->orientation.w, hand_imu->orientation.x, hand_imu->orientation.y, hand_imu->orientation.z);
 
-            // 计算将 qA_Raw 对齐到 robot_initial_quaternion 的校准四元数
+            // 计算将 qA_Raw 对齐到 robot_arm_initial_quaternion 的校准四元数
             qA = calibration_qA * qA;
             // 对 qB 同样的处理
             qB = calibration_qB * qB;
@@ -60,7 +62,7 @@ namespace RobotSwitch
         qB2A = qA.inverse() * qB;
         pA = qA._transformVector(lA);
         pB = qB._transformVector(lB);
-        pF = pA + pB;
+        pF = pA + pB - pCal;//算出基于初始化坐标的位移变量
         qF = qA * qB;
 
         geometry_msgs::PoseStamped upper_pose;
@@ -96,15 +98,15 @@ namespace RobotSwitch
 
         hand_pose_publisher.publish(hand_pose);
 
-        // geometry_msgs::PoseStamped _pose;
-        // _pose.pose.position.x = pF(0) -0.49885;
-        // _pose.pose.position.y = pF(1) -0.0186;
-        // _pose.pose.position.z = pF(2) -0.00404;
-        // _pose.pose.orientation.x = qF.x();
-        // _pose.pose.orientation.y = qF.y();
-        // _pose.pose.orientation.z = qF.z();
-        // _pose.pose.orientation.w = qF.w();
-        // pose_publisher.publish(_pose);
+        geometry_msgs::PoseStamped _pose;
+        _pose.pose.position.x = pF(0);
+        _pose.pose.position.y = pF(1);
+        _pose.pose.position.z = pF(2);
+        _pose.pose.orientation.x = qC.x();
+        _pose.pose.orientation.y = qC.y();
+        _pose.pose.orientation.z = qC.z();
+        _pose.pose.orientation.w = qC.w();
+        pose_publisher.publish(_pose);
     }
 } // namespace RobotSwitch
 
