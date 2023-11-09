@@ -3,15 +3,14 @@
 #include <std_msgs/Float32.h>
 #include <geometry_msgs/PoseStamped.h>
 using namespace std;
-// bool flag = false;
+static int start_flag = 0;
+static geometry_msgs::PoseStamped delta_arm_pose;
+static geometry_msgs::PoseStamped curr_arm_pose;
+static geometry_msgs::PoseStamped init_arm_pose;
+
 void ArmPoseCallback(const geometry_msgs::PoseStamped::ConstPtr& msg)
 {
-  // Here you would handle the incoming pose message, for example:
-  // Extract the pose data from the message
-  geometry_msgs::PoseStamped arm_pose = *msg;
-
-  // Implement any processing you need on the pose data here
-  // ...
+  curr_arm_pose = *msg;
 }
 int main(int argc, char** argv) 
 {
@@ -22,7 +21,7 @@ int main(int argc, char** argv)
   std::string teleop_port_;
   int teleop_baud_;
   private_nh.param("teleop_port_", teleop_port_, std::string("/dev/ttyACM0"));
-  private_nh.param("teleop_baud_", teleop_baud_, 115200);
+  private_nh.param("teleop_baud_", teleop_baud_, 921600);
   
   ros::Publisher teleop_publisher = 
   nh.advertise<std_msgs::Int32>("/robot_teleop", 10);
@@ -31,7 +30,7 @@ int main(int argc, char** argv)
   nh.advertise<std_msgs::Int32>("/robot_grip", 10);
 
   ros::Publisher  robot_pose_publisher =
-  nh.advertise<geometry_msgs::PoseStamped>("/robot_pose", 10);
+  nh.advertise<geometry_msgs::PoseStamped>("/cartesian_impedance_controller/desired_pose", 10);
 
   ros::Subscriber sub = 
   nh.subscribe("/arm_pose", 10, &ArmPoseCallback);
@@ -47,8 +46,18 @@ int main(int argc, char** argv)
     effector.teleop_data = effector.port_manager.filter(effector.teleop_port.readStruct<TeleopData>(0x44, 0x55, 12));
     std_msgs::Int32 teleop_msg;
     teleop_msg.data = effector.teleop_data._cmd;
+    start_flag = teleop_msg.data;
+    if (start_flag == 0){
+      init_arm_pose = curr_arm_pose;    
+    }
+    else{
+      delta_arm_pose.pose.position.x = curr_arm_pose.pose.position.x - init_arm_pose.pose.position.x;
+      delta_arm_pose.pose.position.y = curr_arm_pose.pose.position.y - init_arm_pose.pose.position.y;
+      delta_arm_pose.pose.position.z = curr_arm_pose.pose.position.z - init_arm_pose.pose.position.z;
+      delta_arm_pose.pose.orientation = curr_arm_pose.pose.orientation;
+      robot_pose_publisher.publish(delta_arm_pose);
+    }
     teleop_publisher.publish(teleop_msg); 
-
     loop_rate.sleep();
   }
   ros::waitForShutdown();

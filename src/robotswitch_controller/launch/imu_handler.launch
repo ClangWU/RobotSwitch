@@ -5,10 +5,9 @@
     <node pkg="robotswitch_controller" name="imu_handler" type="imu_handler" output="screen" >
     </node>
     <group if="$(arg use_imu_handler)">
-        <node pkg="robotswitch_controller" name="rs_tf" type="rs_tf" output="screen" >
+        <node pkg="robotswitch_controller" name="rs_tf_delta" type="rs_tf_delta" output="screen" >
         </node>
-
-        <node name="rviz" pkg="rviz" type="rviz" args="-d  $(find robotswitch_controller)/data/rs_ctrl.rviz" required="true" launch-prefix="bash -c 'sleep 2; $0 $@'">
+        <node name="rviz" pkg="rviz" type="rviz" args="-d  $(find robotswitch_controller)/data/imu_test.rviz" required="true" launch-prefix="bash -c 'sleep 2; $0 $@'">
         </node>
     </group>
 

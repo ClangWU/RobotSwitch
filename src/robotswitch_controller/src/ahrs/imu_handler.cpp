@@ -19,7 +19,7 @@ namespace RobotSwitch
         }
         lA <<  upper_len, 0, 0;
         lB <<  fore_len , 0, 0;
-        pose_publisher = nh_.advertise<geometry_msgs::PoseStamped>("/cartesian_impedance_controller/desired_pose", 10);
+        pose_publisher = nh_.advertise<geometry_msgs::PoseStamped>("/arm_pose", 10);
         upper_pose_publisher = nh_.advertise<geometry_msgs::PoseStamped>("upperarm/pose", 10);
         fore_pose_publisher = nh_.advertise<geometry_msgs::PoseStamped>("forearm/pose", 10);
         hand_pose_publisher = nh_.advertise<geometry_msgs::PoseStamped>("hand/pose", 10);
@@ -67,39 +67,6 @@ namespace RobotSwitch
         pF = pA + pB;//算出基于初始化坐标的位移变量
         qF = qA * qB;
 
-        geometry_msgs::PoseStamped upper_pose;
-        upper_pose.pose.position.x = pA(0);
-        upper_pose.pose.position.y = pA(1);
-        upper_pose.pose.position.z = pA(2);
-        upper_pose.pose.orientation.x = qA.x();
-        upper_pose.pose.orientation.y = qA.y();
-        upper_pose.pose.orientation.z = qA.z();
-        upper_pose.pose.orientation.w = qA.w();
-
-        upper_pose_publisher.publish(upper_pose);
-
-        geometry_msgs::PoseStamped fore_pose;
-        fore_pose.pose.position.x = pB(0);
-        fore_pose.pose.position.y = pB(1);
-        fore_pose.pose.position.z = pB(2);
-        fore_pose.pose.orientation.x = qB.x();
-        fore_pose.pose.orientation.y = qB.y();
-        fore_pose.pose.orientation.z = qB.z();
-        fore_pose.pose.orientation.w = qB.w();
-
-        fore_pose_publisher.publish(fore_pose);
-
-        geometry_msgs::PoseStamped hand_pose;
-        hand_pose.pose.position.x = 0;
-        hand_pose.pose.position.y = 0;
-        hand_pose.pose.position.z = 0;
-        hand_pose.pose.orientation.x = qC.x();
-        hand_pose.pose.orientation.y = qC.y();
-        hand_pose.pose.orientation.z = qC.z();
-        hand_pose.pose.orientation.w = qC.w();
-
-        hand_pose_publisher.publish(hand_pose);
-
         geometry_msgs::PoseStamped _pose;
         _pose.pose.position.x = pF(0);
         _pose.pose.position.y = pF(1);
@@ -109,6 +76,38 @@ namespace RobotSwitch
         _pose.pose.orientation.z = qC.z();
         _pose.pose.orientation.w = qC.w();
         pose_publisher.publish(_pose);
+
+                // geometry_msgs::PoseStamped upper_pose;
+        // upper_pose.pose.position.x = pA(0);
+        // upper_pose.pose.position.y = pA(1);
+        // upper_pose.pose.position.z = pA(2);
+        // upper_pose.pose.orientation.x = qA.x();
+        // upper_pose.pose.orientation.y = qA.y();
+        // upper_pose.pose.orientation.z = qA.z();
+        // upper_pose.pose.orientation.w = qA.w();
+        // upper_pose_publisher.publish(upper_pose);
+
+        // geometry_msgs::PoseStamped fore_pose;
+        // fore_pose.pose.position.x = pB(0);
+        // fore_pose.pose.position.y = pB(1);
+        // fore_pose.pose.position.z = pB(2);
+        // fore_pose.pose.orientation.x = qB.x();
+        // fore_pose.pose.orientation.y = qB.y();
+        // fore_pose.pose.orientation.z = qB.z();
+        // fore_pose.pose.orientation.w = qB.w();
+
+        // fore_pose_publisher.publish(fore_pose);
+
+        // geometry_msgs::PoseStamped hand_pose;
+        // hand_pose.pose.position.x = 0;
+        // hand_pose.pose.position.y = 0;
+        // hand_pose.pose.position.z = 0;
+        // hand_pose.pose.orientation.x = qC.x();
+        // hand_pose.pose.orientation.y = qC.y();
+        // hand_pose.pose.orientation.z = qC.z();
+        // hand_pose.pose.orientation.w = qC.w();
+        // hand_pose_publisher.publish(hand_pose);
+
     }
 } // namespace RobotSwitch
 

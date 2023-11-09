@@ -58,9 +58,7 @@ int main(int argc, char** argv){
         forearm_tf.transform.translation.x = forearmPose.position.x;
         forearm_tf.transform.translation.y = forearmPose.position.y;
         forearm_tf.transform.translation.z = forearmPose.position.z;
-
         forearm_tf.transform.rotation = forearmPose.orientation;
-
         // Broadcasting the transforms
         tf_broadcaster.sendTransform(forearm_tf);
 
