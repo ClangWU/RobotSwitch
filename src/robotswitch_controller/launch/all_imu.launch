@@ -7,7 +7,7 @@
   <group ns="upperarm" if="$(arg start_upperarm_node)">
     <node pkg="robotswitch_controller" name="upper_imu" type="ahrs_driver" output="screen" >
       <param name="debug"  value="false"/>
-      <param name="ahrs_port"  value="/dev/ttyUSB0"/>
+      <param name="ahrs_port"  value="/dev/ttyUSB1"/>
       <param name="ahrs_baud"  value="921600"/>
       <param name="imu_topic"  value="imu"/>
       <param name="imu_frame"  value="gyro_link"/>
@@ -25,7 +25,7 @@
   <group ns="forearm" if="$(arg start_forearm_node)">
     <node pkg="robotswitch_controller" name="fore_imu" type="ahrs_driver" output="screen" >
       <param name="debug"  value="false"/>
-      <param name="ahrs_port"  value="/dev/ttyUSB1"/>
+      <param name="ahrs_port"  value="/dev/ttyUSB2"/>
       <param name="ahrs_baud"  value="921600"/>
       <param name="imu_topic"  value="imu"/>
       <param name="imu_frame"  value="gyro_link"/>
@@ -43,7 +43,7 @@
   <group ns="hand" if="$(arg start_hand_node)">
     <node pkg="robotswitch_controller" name="hand_imu" type="ahrs_driver" output="screen" >
       <param name="debug"  value="false"/>
-      <param name="ahrs_port"  value="/dev/ttyUSB2"/>
+      <param name="ahrs_port"  value="/dev/ttyUSB3"/>
       <param name="ahrs_baud"  value="921600"/>
       <param name="imu_topic"  value="imu"/>
       <param name="imu_frame"  value="gyro_link"/>

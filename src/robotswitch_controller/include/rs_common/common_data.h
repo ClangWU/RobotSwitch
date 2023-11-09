@@ -14,6 +14,11 @@ struct ForceData
     float _force;  
 } __attribute__((packed));
 
+struct TeleopData
+{
+    int _cmd;  
+} __attribute__((packed));
+
 struct IMUData
 {
     float qw;  

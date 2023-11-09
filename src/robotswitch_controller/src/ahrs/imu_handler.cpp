@@ -18,13 +18,11 @@ namespace RobotSwitch
             ROS_WARN("Failed to get upperarm_length from the parameter server! Using default value.");
         }
         lA <<  upper_len, 0, 0;
-        lB <<  fore_len , 0,0;
-
+        lB <<  fore_len , 0, 0;
         pose_publisher = nh_.advertise<geometry_msgs::PoseStamped>("/cartesian_impedance_controller/desired_pose", 10);
         upper_pose_publisher = nh_.advertise<geometry_msgs::PoseStamped>("upperarm/pose", 10);
         fore_pose_publisher = nh_.advertise<geometry_msgs::PoseStamped>("forearm/pose", 10);
         hand_pose_publisher = nh_.advertise<geometry_msgs::PoseStamped>("hand/pose", 10);
-
         sync_.registerCallback(boost::bind(&IMU_Handler::multi_callback, this, _1, _2, _3));
     }
     void IMU_Handler::multi_callback(const sensor_msgs::ImuConstPtr& upper_imu, const sensor_msgs::ImuConstPtr& fore_imu, const sensor_msgs::ImuConstPtr& hand_imu)
@@ -35,14 +33,18 @@ namespace RobotSwitch
             Eigen::Quaterniond  qB_Raw = Eigen::Quaterniond(fore_imu->orientation.w, fore_imu->orientation.x, fore_imu->orientation.y, fore_imu->orientation.z);
             Eigen::Quaterniond  qC_Raw = Eigen::Quaterniond(hand_imu->orientation.w, hand_imu->orientation.x, hand_imu->orientation.y, hand_imu->orientation.z);
 
-            Eigen::Quaterniond robot_arm_initial_quaternion(0.7071,0,0.7071,0);
+            Eigen::Quaterniond robot_upper_arm_initial_quaternion(1,0,0,0);
+            Eigen::Quaterniond robot_fore_arm_initial_quaternion(1,0,0,0);
+            // Eigen::Quaterniond robot_arm_initial_quaternion(0.7071,0,0.7071,0);
+            // Eigen::Quaterniond robot_arm_initial_quaternion(0,0,0,0);
             Eigen::Quaterniond robot_hand_initial_quaternion(0.0, 1.0, 0, 0);
-            calibration_qA = robot_arm_initial_quaternion * qA_Raw.conjugate();
-            calibration_qB = robot_arm_initial_quaternion * qB_Raw.conjugate();
+            calibration_qA = robot_upper_arm_initial_quaternion * qA_Raw.conjugate();
+            calibration_qB = robot_fore_arm_initial_quaternion * qB_Raw.conjugate();
             calibration_qC = robot_hand_initial_quaternion * qC_Raw.conjugate();
             pCal = 
-            robot_arm_initial_quaternion._transformVector(lA)+ robot_arm_initial_quaternion._transformVector(lB);
+            robot_upper_arm_initial_quaternion._transformVector(lA)+ robot_fore_arm_initial_quaternion._transformVector(lB);
             initialized = true;
+            pF = pCal;
         }else
         {
             qA = Eigen::Quaterniond(upper_imu->orientation.w, upper_imu->orientation.x, upper_imu->orientation.y, upper_imu->orientation.z);
@@ -62,7 +64,7 @@ namespace RobotSwitch
         qB2A = qA.inverse() * qB;
         pA = qA._transformVector(lA);
         pB = qB._transformVector(lB);
-        pF = pA + pB - pCal;//算出基于初始化坐标的位移变量
+        pF = pA + pB;//算出基于初始化坐标的位移变量
         qF = qA * qB;
 
         geometry_msgs::PoseStamped upper_pose;

@@ -91,6 +91,12 @@ add_executable(force_mcu_node
               src/force_mcu/force_mcu_control.cpp)
 target_link_libraries(force_mcu_node ${catkin_LIBRARIES})
 
+add_executable(teleop_mcu_node 
+              src/teleop_mcu/teleop_mcu_serial_node.cpp
+              src/teleop_mcu/teleop_mcu_control.cpp)
+target_link_libraries(teleop_mcu_node ${catkin_LIBRARIES})
+
+
 add_executable(imu_mcu_node 
               src/imu_mcu/imu_mcu_serial_node.cpp
               src/imu_mcu/imu_mcu_control.cpp)

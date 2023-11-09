@@ -1,0 +1,6 @@
+<launch>
+        <node name = "teleop_mcu_node" pkg = "robotswitch_controller" type = "teleop_mcu_node" respawn="false" output="screen" >
+                <param name="teleop_port_"  value="/dev/ttyUSB0"/>
+                <param name="teleop_baud_"  value="921600"/>
+        </node>
+</launch>

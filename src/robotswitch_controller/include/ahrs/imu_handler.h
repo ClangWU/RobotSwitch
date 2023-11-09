@@ -1,4 +1,5 @@
 #include <ros/ros.h>
+#include "std_msgs/Int32.h"
 #include <geometry_msgs/PoseStamped.h>
 #include <sensor_msgs/Imu.h>
 #include <message_filters/subscriber.h>
@@ -21,6 +22,7 @@ private:
     message_filters::Subscriber<sensor_msgs::Imu> upperarm_sub_;
     message_filters::Subscriber<sensor_msgs::Imu> forearm_sub_;
     message_filters::Subscriber<sensor_msgs::Imu> hand_sub_;
+    ros::Subscriber cmd_subscriber;
     typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::Imu, sensor_msgs::Imu, sensor_msgs::Imu> syncPolicy;
     message_filters::Synchronizer<syncPolicy> sync_;
 
@@ -29,7 +31,7 @@ private:
     double upper_len = 0.28; // default values can be changed
     Eigen::Vector3d pA, pB, pF, pCal,lA, lB;
     bool initialized = false;
-
+    int _cmd;
 public:
    IMU_Handler();
     ~IMU_Handler(){};
@@ -38,7 +40,7 @@ public:
                         const sensor_msgs::ImuConstPtr& hand_imu);
     void computeTransform();
     void run()
-    {
+    {        
         std::cout << "正在等待同步的IMU消息..." << std::endl;
         ros::spin();
     }
