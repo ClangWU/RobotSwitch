@@ -1,6 +1,6 @@
 <launch>
     <!-- 1 启动franka控制器 franka_interactive_bringup.launch -->
-    <include file="$(find franka_interactive_controllers)/launch/franka_interactive_bringup.launch"/>
+    <!-- <include file="$(find franka_interactive_controllers)/launch/franka_interactive_bringup.launch"/> -->
     <!-- 2 读取所有imu数据 all_imu.launch -->
     <include file="$(find robotswitch_controller)/launch/all_imu.launch">
         <arg name="upper_imu_ahrs_port" value="/dev/ttyUSB1" />
@@ -10,6 +10,7 @@
     <!-- 3 处理imu数据 imu_handler.launch -->
     <include file="$(find robotswitch_controller)/launch/imu_handler.launch">
         <arg name="use_imu_handler"    value="true" />
+        <arg name="use_imu_handler_debug"        value="false" />
     </include>
 
     <!-- 4 总MCU控制器 teleop_mcu.launch -->

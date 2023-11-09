@@ -31,15 +31,15 @@ int main(int argc, char** argv){
         geometry_msgs::TransformStamped delta_tf, hand_tf;
 
         // Upper arm TF (Shoulder to Elbow)
-        delta_tf.header.stamp = ros::Time::now();
-        delta_tf.header.frame_id = "base_frame"; // This is your fixed frame
-        delta_tf.child_frame_id = "delta_frame"; // Upper arm's end
+        // delta_tf.header.stamp = ros::Time::now();
+        // delta_tf.header.frame_id = "base_frame"; // This is your fixed frame
+        // delta_tf.child_frame_id = "delta_frame"; // Upper arm's end
 
-        delta_tf.transform.translation.x = deltaPose.position.x;
-        delta_tf.transform.translation.y = deltaPose.position.y;
-        delta_tf.transform.translation.z = deltaPose.position.z;
-        delta_tf.transform.rotation = deltaPose.orientation;
-        tf_broadcaster.sendTransform(delta_tf);
+        // delta_tf.transform.translation.x = deltaPose.position.x;
+        // delta_tf.transform.translation.y = deltaPose.position.y;
+        // delta_tf.transform.translation.z = deltaPose.position.z;
+        // delta_tf.transform.rotation = deltaPose.orientation;
+        // tf_broadcaster.sendTransform(delta_tf);
 
         // Forearm TF (Elbow to Wrist)
         hand_tf.header.stamp = ros::Time::now();

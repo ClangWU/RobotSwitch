@@ -1,5 +1,6 @@
 <launch>
     <arg name="use_imu_handler"        default="true" />
+    <arg name="use_imu_handler_debug"        default="false" />
 
     <rosparam file="$(find robotswitch_controller)/config/handler_init.yaml" command="load" />
     <node pkg="robotswitch_controller" name="imu_handler" type="imu_handler" output="screen" >
@@ -10,5 +11,12 @@
         <node name="rviz" pkg="rviz" type="rviz" args="-d  $(find robotswitch_controller)/data/imu_test.rviz" required="true" launch-prefix="bash -c 'sleep 2; $0 $@'">
         </node>
     </group>
+    <group if="$(arg use_imu_handler_debug)">
+        <node pkg="robotswitch_controller" name="rs_tf" type="rs_tf" output="screen" >
+        </node>
+        <node name="rviz_debug" pkg="rviz" type="rviz" args="-d  $(find robotswitch_controller)/data/rs_ctrl.rviz" required="true" launch-prefix="bash -c 'sleep 2; $0 $@'">
+        </node>
+    </group>
+
 
 </launch>
