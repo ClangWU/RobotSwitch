@@ -9,7 +9,7 @@
     </include>
     <!-- 3 处理imu数据 imu_handler.launch -->
     <include file="$(find robotswitch_controller)/launch/imu_handler.launch">
-        <arg name="use_imu_handler"    value="true" />
+        <arg name="use_imu_handler"    value="false" />
         <arg name="use_imu_handler_debug"        value="false" />
     </include>
 

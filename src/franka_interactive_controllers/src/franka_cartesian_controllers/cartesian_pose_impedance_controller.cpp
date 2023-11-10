@@ -336,9 +336,18 @@ void CartesianPoseImpedanceController::complianceParamCallback(
 void CartesianPoseImpedanceController::desiredPoseCallback(
     const geometry_msgs::PoseStampedConstPtr& msg) {
   //pose sequence cannot change！
-  position_d_target_ << position_init_(0) + msg->pose.position.y, position_init_(1) - msg->pose.position.x, position_init_(2) + msg->pose.position.z;
+
   // ROS_INFO_STREAM("[CALLBACK] Desired ee position from DS: " << position_d_target_);
-  
+  if (msg->pose.position.y > 0.1 || msg->pose.position.y < -0.1)
+  {
+  }
+  else if (msg->pose.position.z > 0.1 || msg->pose.position.z < -0.1)
+  {
+  }else if(msg->pose.position.x > 0.1 || msg->pose.position.x < -0.1)
+  {
+  }else{
+      position_d_target_ << position_init_(0) + msg->pose.position.x, position_init_(1) - msg->pose.position.y, position_init_(2) + msg->pose.position.z;
+    }
   Eigen::Quaterniond last_orientation_d_target(orientation_d_target_);
 
   orientation_d_target_.coeffs() << msg->pose.orientation.x, msg->pose.orientation.y,
