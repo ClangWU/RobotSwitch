@@ -52,7 +52,7 @@ int main(int argc, char** argv)
     }
     else{
       delta_arm_pose.pose.position.x = curr_arm_pose.pose.position.x - init_arm_pose.pose.position.x;
-      delta_arm_pose.pose.position.y = curr_arm_pose.pose.position.y - init_arm_pose.pose.position.y;
+      delta_arm_pose.pose.position.y = -(curr_arm_pose.pose.position.y - init_arm_pose.pose.position.y);
       delta_arm_pose.pose.position.z = curr_arm_pose.pose.position.z - init_arm_pose.pose.position.z;
       delta_arm_pose.pose.orientation = curr_arm_pose.pose.orientation;
       robot_pose_publisher.publish(delta_arm_pose);

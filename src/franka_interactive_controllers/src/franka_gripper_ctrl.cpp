@@ -13,7 +13,7 @@
 int human_tele = 0;
 
 void TeleCallback(const std_msgs::Int32::ConstPtr& msg) {
-    ROS_INFO("Received Tele message: %f", msg->data);
+    // ROS_INFO("Received Tele message: %f", msg->data);
     human_tele = msg->data;
   }
 
@@ -40,7 +40,7 @@ int main(int argc, char** argv) {
 while (ros::ok())
 {
     /* code */
-    if (human_tele == 2 && in_open_state ==false)
+    if (human_tele == 1 && in_open_state ==false)
     {
       std::cout << "Opening gripper" << std::endl;
       // Creating goal for moving action
@@ -65,7 +65,7 @@ while (ros::ok())
         in_close_state = true;
         in_open_state = false;
         //wait for the action to return
-        // success = ac_grasp.waitForResult(ros::Duration(10.0));
+        ac_grasp.waitForResult(ros::Duration(3.0));
     }
       ros::spinOnce();
       rate.sleep();
