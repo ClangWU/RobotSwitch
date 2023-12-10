@@ -14,7 +14,7 @@
 #include <ros/node_handle.h>
 #include <ros/time.h>
 #include <Eigen/Dense>
-
+#include <fstream>
 #include <franka_interactive_controllers/minimal_compliance_paramConfig.h>
 #include <franka_hw/franka_model_interface.h>
 #include <franka_hw/franka_state_interface.h>
@@ -74,6 +74,9 @@ class CartesianPoseImpedanceController : public controller_interface::MultiInter
   // Desireds pose subscriber
   ros::Subscriber sub_desired_pose_;
   void desiredPoseCallback(const geometry_msgs::PoseStampedConstPtr& msg);
+
+  std::ofstream _file;
+  bool _print_flag;
 };
 
 }  // namespace franka_interactive_controllers

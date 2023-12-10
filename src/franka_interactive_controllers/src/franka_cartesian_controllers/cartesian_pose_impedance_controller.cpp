@@ -129,7 +129,7 @@ bool CartesianPoseImpedanceController::init(hardware_interface::RobotHW* robot_h
   }
   // Damping ratio = 1
   default_cart_stiffness_target_ << 300, 300, 300, 50, 50, 50;
-  for (int i = 0; i < 6; i ++) {
+  for (int i = 0; i < 6; i ++) {      
     if (cartesian_stiffness_target_yaml[i] == 0.0)
       cartesian_damping_target_(i,i) = 2.0 * sqrt(default_cart_stiffness_target_[i]);
     else
@@ -185,6 +185,15 @@ void CartesianPoseImpedanceController::starting(const ros::Time& /*time*/) {
   franka::RobotState initial_state = state_handle_->getRobotState();
   Eigen::Map<Eigen::Matrix<double, 7, 1>> q_initial(initial_state.q.data());
 
+  _print_flag = true;
+  if (_print_flag) {
+      _file.open("/home/yzc/project/robotswitch/src/franka_interactive_controllers/doc/scope.txt");
+      if (_file.is_open())
+          printf("[Controller] file opened successfully.\n");
+      else
+          printf("[Controller] Failed to open file.\n");
+
+  }
   // get jacobian
   std::array<double, 42> jacobian_array =
       model_handle_->getZeroJacobian(franka::Frame::kEndEffector);
@@ -229,7 +238,13 @@ void CartesianPoseImpedanceController::update(const ros::Time& /*time*/,
   Eigen::Vector3d position(transform.translation());
   Eigen::Quaterniond orientation(transform.linear());
 
-
+  if(_print_flag)
+  {
+    for (int i = 0; i < robot_state.q.size(); i++) {
+          _file << robot_state.q[i] << "  ";
+        }
+    _file << std::endl;
+  }
   //////////////////////////////////////////////////////////////////////////////////////////////////
   //////////////////////              COMPUTING TASK CONTROL TORQUE           //////////////////////
   //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -337,15 +352,15 @@ void CartesianPoseImpedanceController::desiredPoseCallback(
     const geometry_msgs::PoseStampedConstPtr& msg) {
   //pose sequence cannot change！
   // ROS_INFO_STREAM("[CALLBACK] Desired ee position from DS: " << position_d_target_);
-  if (msg->pose.position.y > 0.1 || msg->pose.position.y < -0.1)
+  if (msg->pose.position.y > 0.2 || msg->pose.position.y < -0.2)
   {
   }
-  else if (msg->pose.position.z > 0.1 || msg->pose.position.z < -0.1)
+  else if (msg->pose.position.z > 0.2 || msg->pose.position.z < -0.2)
   {
-  }else if(msg->pose.position.x > 0.1 || msg->pose.position.x < -0.1)
+  }else if(msg->pose.position.x > 0.2 || msg->pose.position.x < -0.2)
   {
   }else{
-      position_d_target_ << position_init_(0) + msg->pose.position.x, position_init_(1) - msg->pose.position.y, position_init_(2) + msg->pose.position.z;
+      position_d_target_ << position_init_(0) - msg->pose.position.y, position_init_(1) + msg->pose.position.x, position_init_(2) + msg->pose.position.z;
     }
   Eigen::Quaterniond last_orientation_d_target(orientation_d_target_);
 

@@ -34,7 +34,11 @@ namespace RobotSwitch
             Eigen::Quaterniond  qC_Raw = Eigen::Quaterniond(hand_imu->orientation.w, hand_imu->orientation.x, hand_imu->orientation.y, hand_imu->orientation.z);
 
             Eigen::Quaterniond robot_upper_arm_initial_quaternion(1,0,0,0);
-            Eigen::Quaterniond robot_fore_arm_initial_quaternion(1,0,0,0);
+            //手伸直时，前臂与上臂平行
+            // Eigen::Quaterniond robot_fore_arm_initial_quaternion(1,0,0,0);
+            //前臂与上臂垂直
+            Eigen::Quaterniond robot_fore_arm_initial_quaternion(0.7071,0,0,0.7071);
+
             // Eigen::Quaterniond robot_arm_initial_quaternion(0.7071,0,0.7071,0);
             // Eigen::Quaterniond robot_arm_initial_quaternion(0,0,0,0);
             Eigen::Quaterniond robot_hand_initial_quaternion(0.0, 1.0, 0, 0);
@@ -77,7 +81,7 @@ namespace RobotSwitch
         _pose.pose.orientation.w = qC.w();
         pose_publisher.publish(_pose);
 
-                geometry_msgs::PoseStamped upper_pose;
+        geometry_msgs::PoseStamped upper_pose;
         upper_pose.pose.position.x = pA(0);
         upper_pose.pose.position.y = pA(1);
         upper_pose.pose.position.z = pA(2);
@@ -95,7 +99,6 @@ namespace RobotSwitch
         fore_pose.pose.orientation.y = qB.y();
         fore_pose.pose.orientation.z = qB.z();
         fore_pose.pose.orientation.w = qB.w();
-
         fore_pose_publisher.publish(fore_pose);
 
         geometry_msgs::PoseStamped hand_pose;

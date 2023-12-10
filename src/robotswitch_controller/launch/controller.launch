@@ -1,0 +1,4 @@
+<launch>
+    <!-- 1 启动franka控制器 franka_interactive_bringup.launch -->
+    <include file="$(find franka_interactive_controllers)/launch/franka_interactive_bringup.launch"/>
+</launch>
