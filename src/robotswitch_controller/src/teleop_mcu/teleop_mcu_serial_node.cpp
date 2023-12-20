@@ -12,6 +12,14 @@ void ArmPoseCallback(const geometry_msgs::PoseStamped::ConstPtr& msg)
 {
   curr_arm_pose = *msg;
 }
+
+void FextCallback(const geometry_msgs::WrenchStamped::ConstPtr& msg)
+{
+  geometry_msgs::WrenchStamped fext_msg;
+  fext_msg = *msg;
+  
+}
+
 int main(int argc, char** argv) 
 {
   ros::init(argc, argv, "teleop_mcu_node"); //初始化节点
@@ -31,7 +39,7 @@ int main(int argc, char** argv)
 
   ros::Publisher  robot_pose_publisher =
   nh.advertise<geometry_msgs::PoseStamped>("/cartesian_impedance_controller/desired_pose", 10);
-
+  nh.advertise<geometry_msgs::WrenchStamped>("/franka_state_controller/F_ext", 10);
   ros::Subscriber sub = 
   nh.subscribe("/arm_pose", 10, &ArmPoseCallback);
 
@@ -49,11 +57,9 @@ int main(int argc, char** argv)
     std_msgs::Int32 teleop_msg;
     teleop_msg.data = effector.teleop_data._cmd;
     start_flag = teleop_msg.data;
+
     if (start_flag == 0){
       init_arm_pose = curr_arm_pose; 
-      // robot_hand_initial_quaternion;
-      // = Eigen::Quaterniond( curr_arm_pose.pose.orientation.w, curr_arm_pose.pose.orientation.x, 
-      //                       curr_arm_pose.pose.orientation.y, curr_arm_pose.pose.orientation.z);
     }
     else{
       /*
