@@ -1,22 +1,21 @@
 #pragma once
 #include "ros/ros.h"
 #include <vector>
+#include <bits/types.h>
+#include <memory>
 
 #pragma pack(1)
-struct ForceDataStruct
+struct ForceData
 {
-    float force_send_data;
+    float _force_y;
+    float _force_z;  
 };
 #pragma pack()
 
-struct ForceData
-{
-    float _force;  
-} __attribute__((packed));
-
 struct TeleopData
 {
-    int _cmd;  
+    int _start;
+    int _grip;  
 } __attribute__((packed));
 
 struct IMUData
@@ -49,8 +48,9 @@ public:
     if (!data.empty())
     {
         return data.back();
-    }else{
-        ROS_ERROR_STREAM("Unable to read data ");
     }
+    // else{
+    //     ROS_ERROR_STREAM("Unable to read data ");
+    // }
   }
 };

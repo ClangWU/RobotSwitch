@@ -5,7 +5,6 @@ class ForceControl
 {
 public:
     ForceData force_data;                           // 接收数据
-    ForceDataStruct cmd_data;                         // 发送数据
     dataScope port_manager;                    // 串口管理对象
     SerialPort force_port;    // 串口对象
 

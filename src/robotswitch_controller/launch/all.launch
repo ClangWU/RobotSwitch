@@ -1,6 +1,6 @@
 <launch>
     <arg name="use_teleop" default="true" />
-    <arg name="use_imu" default="true" />
+    <arg name="use_imu" default="false" />
     <arg name="use_imu_handler"    value="true" />
 
     <!-- 1 启动franka控制器 franka_interactive_bringup.launch -->
@@ -12,12 +12,14 @@
             <arg name="fore_imu_ahrs_port" value="/dev/ttyUSB2" />
             <arg name="hand_imu_ahrs_port" value="/dev/ttyUSB3" />
         </include>
+
+        <!-- 3 处理imu数据 imu_handler.launch -->
+        <include file="$(find robotswitch_controller)/launch/imu_handler.launch">
+            <arg name="use_imu_handler"    value="true" />
+            <arg name="use_imu_handler_debug"        value="false" />
+        </include>
     </group>
-    <!-- 3 处理imu数据 imu_handler.launch -->
-    <include file="$(find robotswitch_controller)/launch/imu_handler.launch">
-        <arg name="use_imu_handler"    value="true" />
-        <arg name="use_imu_handler_debug"        value="false" />
-    </include>
+
 
     <!-- 4 总MCU控制器 teleop_mcu.launch -->
     <group if="$(arg use_teleop)">

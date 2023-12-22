@@ -2,11 +2,14 @@
 #include <geometry_msgs/Twist.h>
 #include <std_msgs/Float32.h>
 #include <geometry_msgs/PoseStamped.h>
+#include <geometry_msgs/WrenchStamped.h>
 using namespace std;
 static int start_flag = 0;
 static geometry_msgs::PoseStamped delta_arm_pose;
 static geometry_msgs::PoseStamped curr_arm_pose;
 static geometry_msgs::PoseStamped init_arm_pose;
+static geometry_msgs::WrenchStamped fext_msg;
+static SerialPort* forceband_port_ptr = nullptr;
 
 void ArmPoseCallback(const geometry_msgs::PoseStamped::ConstPtr& msg)
 {
@@ -15,9 +18,7 @@ void ArmPoseCallback(const geometry_msgs::PoseStamped::ConstPtr& msg)
 
 void FextCallback(const geometry_msgs::WrenchStamped::ConstPtr& msg)
 {
-  geometry_msgs::WrenchStamped fext_msg;
   fext_msg = *msg;
-  
 }
 
 int main(int argc, char** argv) 
@@ -28,7 +29,7 @@ int main(int argc, char** argv)
 
   std::string teleop_port_;
   int teleop_baud_;
-  private_nh.param("teleop_port_", teleop_port_, std::string("/dev/ttyACM0"));
+  private_nh.param("teleop_port_", teleop_port_, std::string("/dev/ttyUSB0"));
   private_nh.param("teleop_baud_", teleop_baud_, 921600);
   
   ros::Publisher teleop_publisher = 
@@ -39,24 +40,32 @@ int main(int argc, char** argv)
 
   ros::Publisher  robot_pose_publisher =
   nh.advertise<geometry_msgs::PoseStamped>("/cartesian_impedance_controller/desired_pose", 10);
-  nh.advertise<geometry_msgs::WrenchStamped>("/franka_state_controller/F_ext", 10);
-  ros::Subscriber sub = 
+  ros::Subscriber armpose_sub = 
   nh.subscribe("/arm_pose", 10, &ArmPoseCallback);
+  ros::Subscriber fext_sub = 
+  nh.subscribe("/franka_state_controller/F_ext", 10, &FextCallback);
 
-  TeleopControl effector;
-  effector.set_port(teleop_baud_, teleop_port_);//end effector
-  effector.teleop_port.open();
+  TeleopControl forceband;
+  forceband.set_port(teleop_baud_, teleop_port_);//forceband
+  forceband.teleop_port.open();
+  forceband_port_ptr = &forceband.teleop_port;
 
-  // Eigen::Quaterniond robot_hand_initial_quaternion(0.0, 1.0, 0, 0);
-  // Eigen::Quaterniond q_
-  ros::Rate loop_rate(200); // 5 ms
+  ros::Rate loop_rate(10); // 5 ms
   
   while(ros::ok())
   {
-    effector.teleop_data = effector.port_manager.filter(effector.teleop_port.readStruct<TeleopData>(0x44, 0x55, 12));
+    forceband.teleop_data = forceband.port_manager.filter(forceband.teleop_port.readStruct<TeleopData>(0x44, 0x55, 20));
     std_msgs::Int32 teleop_msg;
-    teleop_msg.data = effector.teleop_data._cmd;
+    teleop_msg.data = forceband.teleop_data._grip;
     start_flag = teleop_msg.data;
+
+    ForceData _data;
+    _data._force_y = fext_msg.wrench.force.y;
+    _data._force_z = fext_msg.wrench.force.z;
+    if (forceband_port_ptr != nullptr)
+    {
+        forceband_port_ptr->writeStruct(_data);
+    }
 
     if (start_flag == 0){
       init_arm_pose = curr_arm_pose; 

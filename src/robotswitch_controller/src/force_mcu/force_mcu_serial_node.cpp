@@ -26,7 +26,6 @@ int main(int argc, char** argv)
   {
     effector.force_data = effector.port_manager.filter(effector.force_port.readStruct<ForceData>(0x44, 0x55, 12));
     std_msgs::Float32 force_msg;
-    force_msg.data = effector.force_data._force + 1.35f;
     force_publisher.publish(force_msg);
 
     // ros::Time current_time = ros::Time::now();
