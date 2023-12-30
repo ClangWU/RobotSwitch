@@ -7,8 +7,8 @@
 #pragma pack(1)
 struct ForceData
 {
-    float _force_y;
-    float _force_z;  
+    float _force;
+    float _theta;  
 };
 #pragma pack()
 

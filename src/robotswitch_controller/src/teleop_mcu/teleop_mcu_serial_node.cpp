@@ -29,6 +29,8 @@ int main(int argc, char** argv)
 
   std::string teleop_port_;
   int teleop_baud_;
+  float force_y;
+  float force_z;
   private_nh.param("teleop_port_", teleop_port_, std::string("/dev/ttyUSB0"));
   private_nh.param("teleop_baud_", teleop_baud_, 921600);
   
@@ -60,8 +62,20 @@ int main(int argc, char** argv)
     start_flag = teleop_msg.data;
 
     ForceData _data;
-    _data._force_y = fext_msg.wrench.force.y;
-    _data._force_z = fext_msg.wrench.force.z;
+    force_y = fext_msg.wrench.force.y;
+    force_z = fext_msg.wrench.force.z;
+
+    // Calculate the resultant force using Pythagorean theorem
+    double resultant_force = sqrt(pow(force_y, 2) + pow(force_z, 2));
+    // Calculate the angle with the horizontal in degrees
+    double angle_with_horizontal = atan2(force_z, force_y) * (180.0 / M_PI);
+    // Adjust angle to be in the range 0 to 359 degrees
+    if (angle_with_horizontal < 0) {
+        angle_with_horizontal += 360.0;
+    }
+    _data._force = resultant_force;
+    _data._theta = angle_with_horizontal;
+
     if (forceband_port_ptr != nullptr)
     {
         forceband_port_ptr->writeStruct(_data);
