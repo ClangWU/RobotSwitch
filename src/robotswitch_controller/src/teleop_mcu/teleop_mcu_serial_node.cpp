@@ -37,9 +37,6 @@ int main(int argc, char** argv)
   ros::Publisher teleop_publisher = 
   nh.advertise<std_msgs::Int32>("/robot_teleop", 10);
 
-  ros::Publisher grip_publisher = 
-  nh.advertise<std_msgs::Int32>("/robot_grip", 10);
-
   ros::Publisher  robot_pose_publisher =
   nh.advertise<geometry_msgs::PoseStamped>("/cartesian_impedance_controller/desired_pose", 10);
   ros::Subscriber armpose_sub = 
@@ -52,27 +49,34 @@ int main(int argc, char** argv)
   forceband.teleop_port.open();
   forceband_port_ptr = &forceband.teleop_port;
 
-  ros::Rate loop_rate(10); // 5 ms
+  ros::Rate loop_rate(200); // 5 ms
   
   while(ros::ok())
   {
     forceband.teleop_data = forceband.port_manager.filter(forceband.teleop_port.readStruct<TeleopData>(0x44, 0x55, 20));
     std_msgs::Int32 teleop_msg;
     teleop_msg.data = forceband.teleop_data._grip;
-    start_flag = teleop_msg.data;
+    start_flag = forceband.teleop_data._start;
+
+// ROS_INFO("startflag: %d", start_flag);
+// ROS_INFO("grip: %d", teleop_msg.data);
 
     ForceData _data;
     force_y = fext_msg.wrench.force.y;
     force_z = fext_msg.wrench.force.z;
 
     // Calculate the resultant force using Pythagorean theorem
-    double resultant_force = sqrt(pow(force_y, 2) + pow(force_z, 2));
+    float resultant_force = sqrt(pow(force_y, 2) + pow(force_z, 2));
     // Calculate the angle with the horizontal in degrees
-    double angle_with_horizontal = atan2(force_z, force_y) * (180.0 / M_PI);
+    float angle_with_horizontal = atan2(force_z, force_y) * (180.0 / M_PI);
+
+
     // Adjust angle to be in the range 0 to 359 degrees
     if (angle_with_horizontal < 0) {
         angle_with_horizontal += 360.0;
     }
+    // ROS_INFO("Resultant Force: %f", resultant_force);
+    // ROS_INFO("Angle with Horizontal: %f degrees", angle_with_horizontal);
     _data._force = resultant_force;
     _data._theta = angle_with_horizontal;
 
@@ -81,10 +85,10 @@ int main(int argc, char** argv)
         forceband_port_ptr->writeStruct(_data);
     }
 
-    if (start_flag == 0){
-      init_arm_pose = curr_arm_pose; 
+    if (start_flag == 0){ //no msg publish
+      init_arm_pose = curr_arm_pose; //
     }
-    else{
+    else if(start_flag != 0x00){
       /*
             //前臂与上臂垂直
             Eigen::Quaterniond robot_fore_arm_initial_quaternion(0.7071,0,0,0.7071);

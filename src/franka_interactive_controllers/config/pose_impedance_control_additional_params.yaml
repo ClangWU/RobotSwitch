@@ -11,8 +11,8 @@ nullspace_stiffness: 0.1 #Used in MIT MUSEUM DEMO
 # q_nullspace: [0.0, -0.1516284550464292, 0.0, -2.1602991589328693, 0.0063609233109487425, 2.030401506252017, 0.8428664707532099]
 
 # F_ext wrench to compensate for camera or tool on end-effector
-external_tool_compensation: [0.21, 0.1, -1.42, 0, 0.0, 0.0] #Check F_ext
-
+# external_tool_compensation: [0.21, 0.1, -1.42, 0, 0.0, 0.0] #Check F_ext fork
+external_tool_compensation: [0, 0, -1.8, 0, 0, 0.0]
 #### OLD VALUES FROM LTLDS-RSS PAPER (Keeping them here for historical reasons)!!
 # RSS: teach, can only move along y,z or rotate around y:
 # cartesian_stiffness_target: [1000, 0, 0, 50, 0, 50]

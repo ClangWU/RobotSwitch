@@ -35,51 +35,37 @@ int main(int argc, char** argv) {
   ac_grasp.waitForServer();
   franka_gripper::MoveGoal move_goal;
   franka_gripper::GraspGoal grasp_goal;
-  ros::Rate rate(200); 
+  ros::Rate rate(100); 
 
 while (ros::ok())
 {
     /* code */
-    if (human_tele == 1 && in_close_state ==false)
-    {
-      // std::cout << "Opening gripper" << std::endl;
-      // Creating goal for moving action
-      // move_goal.width = 0.08;
-      // move_goal.speed = 0.5;
-      // ac_move.sendGoal(move_goal);
-      // in_open_state = true;
-      // in_close_state = false;
-        // close gripper
-      std::cout << "Closing gripper" << std::endl;
-      
-      // Creating goal for grasping action with 50N force
-      grasp_goal.width = 0.0;
-      grasp_goal.speed = 0.5;
-      grasp_goal.force = 50;
-      grasp_goal.epsilon.inner = 0.2;
-      grasp_goal.epsilon.outer = 0.2;
-      ac_grasp.sendGoal(grasp_goal);
-      in_close_state = true;
-      in_open_state = false;
-      //wait for the action to return
-      ac_grasp.waitForResult(ros::Duration(3.0));
-    }
-    else if(human_tele == 3 && in_close_state ==false)
+    
+    if(human_tele == 1 && in_close_state ==false) // close gripper
     {
         // close gripper
         std::cout << "Closing gripper" << std::endl;
         
-        // Creating goal for grasping action with 50N force
-        // grasp_goal.width = 0.0;
-        // grasp_goal.speed = 0.5;
-        // grasp_goal.force = 50;
-        // grasp_goal.epsilon.inner = 0.2;
-        // grasp_goal.epsilon.outer = 0.2;
-        // ac_grasp.sendGoal(grasp_goal);
-        // in_close_state = true;
-        // in_open_state = false;
-        //wait for the action to return
-        // ac_grasp.waitForResult(ros::Duration(3.0));
+        grasp_goal.width = 0.0;
+        grasp_goal.speed = 0.5;
+        grasp_goal.force = 50;
+        grasp_goal.epsilon.inner = 0.2;
+        grasp_goal.epsilon.outer = 0.2;
+        ac_grasp.sendGoal(grasp_goal);
+        in_close_state = true;
+        in_open_state = false;
+
+        ac_grasp.waitForResult(ros::Duration(3.0));
+    }    
+    else if (human_tele == 2 && in_open_state ==false)  // open gripper
+    {
+      std::cout << "Opening gripper" << std::endl;
+      move_goal.width = 0.08;
+      move_goal.speed = 0.5;
+      ac_move.sendGoal(move_goal);
+      in_open_state = true;
+      in_close_state = false;
+      ac_grasp.waitForResult(ros::Duration(3.0));
     }
       ros::spinOnce();
       rate.sleep();
