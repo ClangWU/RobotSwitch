@@ -1,10 +1,15 @@
 <launch>
+    <arg name="use_franka" default="true" />
+    <arg name="use_imu" default="true" />
     <arg name="use_teleop" default="true" />
-    <arg name="use_imu" default="false" />
+
     <arg name="use_imu_handler"    value="true" />
 
     <!-- 1 启动franka控制器 franka_interactive_bringup.launch -->
-    <include file="$(find franka_interactive_controllers)/launch/franka_interactive_bringup.launch"/>
+    <group if="$(arg use_franka)">
+        <include file="$(find franka_interactive_controllers)/launch/franka_interactive_bringup.launch"/>
+    </group>
+
     <!-- 2 读取所有imu数据 all_imu.launch -->
     <group if="$(arg use_imu)">
         <include file="$(find robotswitch_controller)/launch/all_imu.launch">
@@ -19,7 +24,6 @@
             <arg name="use_imu_handler_debug"        value="false" />
         </include>
     </group>
-
 
     <!-- 4 总MCU控制器 teleop_mcu.launch -->
     <group if="$(arg use_teleop)">

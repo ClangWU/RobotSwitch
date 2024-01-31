@@ -355,7 +355,7 @@ void CartesianPoseImpedanceController::desiredPoseCallback(
   if (msg->pose.position.y > 0.2 || msg->pose.position.y < -0.2)
   {
   }
-  else if (msg->pose.position.z > 0.2 || msg->pose.position.z < -0.2)
+  else if (msg->pose.position.z > 0.25 || msg->pose.position.z < -0.25)
   {
   }else if(msg->pose.position.x > 0.2 || msg->pose.position.x < -0.2)
   {

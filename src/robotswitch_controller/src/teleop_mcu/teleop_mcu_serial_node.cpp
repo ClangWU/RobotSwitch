@@ -3,6 +3,7 @@
 #include <std_msgs/Float32.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/WrenchStamped.h>
+#include <fstream> // 添加用于文件操作的头文件
 using namespace std;
 static int start_flag = 0;
 static geometry_msgs::PoseStamped delta_arm_pose;
@@ -48,7 +49,8 @@ int main(int argc, char** argv)
   forceband.set_port(teleop_baud_, teleop_port_);//forceband
   forceband.teleop_port.open();
   forceband_port_ptr = &forceband.teleop_port;
-
+  std::ofstream outfile("./force_data.txt");
+  
   ros::Rate loop_rate(200); // 5 ms
   
   while(ros::ok())
@@ -58,13 +60,12 @@ int main(int argc, char** argv)
     teleop_msg.data = forceband.teleop_data._grip;
     start_flag = forceband.teleop_data._start;
 
-// ROS_INFO("startflag: %d", start_flag);
-// ROS_INFO("grip: %d", teleop_msg.data);
-
     ForceData _data;
     force_y = fext_msg.wrench.force.y;
     force_z = fext_msg.wrench.force.z;
-
+    if (outfile.is_open()) {
+      outfile  << force_y << " " << force_z << "\n";
+    }
     // Calculate the resultant force using Pythagorean theorem
     float resultant_force = sqrt(pow(force_y, 2) + pow(force_z, 2));
     // Calculate the angle with the horizontal in degrees
@@ -77,18 +78,18 @@ int main(int argc, char** argv)
     }
     // ROS_INFO("Resultant Force: %f", resultant_force);
     // ROS_INFO("Angle with Horizontal: %f degrees", angle_with_horizontal);
-    _data._force = resultant_force;
+    _data._force = resultant_force;       
     _data._theta = angle_with_horizontal;
 
     if (forceband_port_ptr != nullptr)
     {
-        forceband_port_ptr->writeStruct(_data);
+      forceband_port_ptr->writeStruct(_data);
     }
 
-    if (start_flag == 0){ //no msg publish
+    if (start_flag == 0x00){ //no msg publish
       init_arm_pose = curr_arm_pose; //
     }
-    else if(start_flag != 0x00){
+    else if(start_flag == 0x01){
       /*
             //前臂与上臂垂直
             Eigen::Quaterniond robot_fore_arm_initial_quaternion(0.7071,0,0,0.7071);
@@ -99,11 +100,15 @@ int main(int argc, char** argv)
       delta_arm_pose.pose.position.z = (curr_arm_pose.pose.position.z - init_arm_pose.pose.position.z);
       delta_arm_pose.pose.orientation = curr_arm_pose.pose.orientation;
       robot_pose_publisher.publish(delta_arm_pose);
-      // ROS_INFO("\033[32mThis text will be green!\033[0m");
-    }
+    }    
+    else {}
+
     teleop_publisher.publish(teleop_msg); 
     ros::spinOnce();
     loop_rate.sleep();
+  }
+  if (outfile.is_open()) {
+      outfile.close();
   }
   ros::waitForShutdown();
 }
