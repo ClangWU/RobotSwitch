@@ -80,6 +80,7 @@ class CartesianPoseImpedanceController : public controller_interface::MultiInter
   bool _print_flag;
   int _episode_counter;
   int _update_counter;
+  int _action_counter;
   Eigen::Vector3d _Gravity;
   std_msgs::Float32MultiArray obs_array;
   Eigen::Vector3d force_in_world = Eigen::Vector3d::Zero();

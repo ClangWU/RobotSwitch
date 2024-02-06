@@ -212,7 +212,6 @@ if __name__ == '__main__':
     #     print('Game:', id+1, 'Score:', score)
     print('msg_pose', msg_pose)
 
-    rospy.spin()
     # games = list(range(1, n_games + 1))
 
     # # 绘制得分曲线图

@@ -187,6 +187,7 @@ void CartesianPoseImpedanceController::starting(const ros::Time& /*time*/) {
   
   _Gravity<< 0.0, 0.0, -2.9;
   _update_counter = 0;
+  _action_counter = -100;
   _episode_counter = 0;
   _print_flag = true;
   std::string action_csv = "/home/yzc/project/robotswitch/src/franka_interactive_controllers/doc/actions.csv";
@@ -244,70 +245,72 @@ void CartesianPoseImpedanceController::update(const ros::Time& /*time*/,
   Eigen::Vector3d position(transform.translation());
   Eigen::Quaterniond orientation(transform.linear());
 
+if (position(2) < 0.18)
+{
   if(_print_flag)
   {
-    // 当遥操作位置到达初始位置时，开始记录数据
-    if (position(2) > 0)
-    {
-      // 20Hz记录一次
-      if (_update_counter % 50 == 0)
+      if (_action_counter >= 0 && _action_counter % 100 == 0)
       {
+        action_file << "\"[";
+        action_file << position(0) - position_init_(0)<< ", "
+                     << position(1) - position_init_(1)<< ", "
+                     << position(2) - position_init_(2)<< ", "
+                     << orientation.w() << ", "
+                     << orientation.x() << ", "
+                     << orientation.y() << ", "
+                     << orientation.z() << "]\"" << std::endl;
+      }
+      _action_counter += 1;
+  }
 
+  // episode end record
+  if (position(2) < 0.075){// cutting to end threshold = 0.07m
+    episode_end_file << _episode_counter << std::endl;
+    _print_flag = false;
+  }
 
-        // action record
-          action_file << "\"[";
-          for (int i = 0; i < robot_state.q.size(); i++){
-            if (i == robot_state.q.size() - 1){
-              action_file << robot_state.q[i];
-              break;
-            }
-            action_file << robot_state.q[i] << ", ";
-          }
-          action_file << "]\"";
-          action_file << std::endl;
+  if(_print_flag)
+  {
+      // 10Hz记录一次
+      if (_update_counter % 100 == 0)
+      {
         // state record
-          state_file << "\"[";
-          for (int i = 0; i < robot_state.q.size(); i++){
-            state_file << robot_state.q[i] << ", ";
-          }
-
           Eigen::Matrix3d rotation_matrix = transform.rotation();
           Eigen::Vector3d GinF = rotation_matrix.transpose() * _Gravity;
           Eigen::Vector3d compensated_force(
               robot_state.K_F_ext_hat_K[0] + GinF[0],
               robot_state.K_F_ext_hat_K[1] + GinF[1],
               robot_state.K_F_ext_hat_K[2] + GinF[2]);
-          // std::cout << robot_state.K_F_ext_hat_K[0] << ", " 
-          //           << robot_state.K_F_ext_hat_K[1] << ", " 
-          //           << robot_state.K_F_ext_hat_K[2] << std::endl;
           force_in_world = rotation_matrix * compensated_force; // compensate force 
-          
-          state_file << force_in_world[0] << ", " 
+          state_file << "\"[";
+          state_file << position(0) - position_init_(0)<< ", "
+                     << position(1) - position_init_(1)<< ", "
+                     << position(2) - position_init_(2)<< ", "
+                     << orientation.w() << ", "
+                     << orientation.x() << ", "
+                     << orientation.y() << ", "
+                     << orientation.z() << ", "
+                     << force_in_world[0] << ", " 
                      << force_in_world[1] << ", " 
                      << force_in_world[2] << "]\"";
           state_file << std::endl;
-        // episode end record
-          if (position(2) < 0.07){// cutting to end threshold = 0.07m
-            episode_end_file << _episode_counter << std::endl;
-          }
-          _episode_counter += 1;
       }
       _update_counter += 1;
-    }  
+      _episode_counter += 1;
   }
-
-    obs_array.data.clear();
-    obs_array.data.push_back(position(0));
-    obs_array.data.push_back(position(1));
-    obs_array.data.push_back(position(2));
-    obs_array.data.push_back(orientation.w());
-    obs_array.data.push_back(orientation.x());
-    obs_array.data.push_back(orientation.y());
-    obs_array.data.push_back(orientation.z());
-    obs_array.data.push_back(force_in_world[0]);
-    obs_array.data.push_back(force_in_world[1]);
-    obs_array.data.push_back(force_in_world[2]);
-    pub_observation.publish(obs_array);
+}
+    // obs_array.data.clear();
+    // obs_array.data.push_back(position(0));
+    // obs_array.data.push_back(position(1));
+    // obs_array.data.push_back(position(2));
+    // obs_array.data.push_back(orientation.w());
+    // obs_array.data.push_back(orientation.x());
+    // obs_array.data.push_back(orientation.y());
+    // obs_array.data.push_back(orientation.z());
+    // obs_array.data.push_back(force_in_world[0]);
+    // obs_array.data.push_back(force_in_world[1]);
+    // obs_array.data.push_back(force_in_world[2]);
+    // pub_observation.publish(obs_array);
   //////////////////////////////////////////////////////////////////////////////////////////////////
   //////////////////////              COMPUTING TASK CONTROL TORQUE           //////////////////////
   //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -423,7 +426,7 @@ void CartesianPoseImpedanceController::desiredPoseCallback(
   }else if(msg->pose.position.x > 0.2 || msg->pose.position.x < -0.2)
   {
   }else{
-      position_d_target_ << position_init_(0) - msg->pose.position.y, position_init_(1) + msg->pose.position.x, position_init_(2) + msg->pose.position.z;
+      position_d_target_ << position_init_(0) + msg->pose.position.x, position_init_(1) + msg->pose.position.y, position_init_(2) + msg->pose.position.z;
     }
   Eigen::Quaterniond last_orientation_d_target(orientation_d_target_);
 
