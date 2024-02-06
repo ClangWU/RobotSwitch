@@ -1,11 +1,9 @@
 // Copyright (c) 2017 Franka Emika GmbH
 // Use of this source code is governed by the Apache-2.0 license, see LICENSE
 #pragma once
-
 #include <memory>
 #include <string>
 #include <vector>
-
 #include <controller_interface/multi_interface_controller.h>
 #include <dynamic_reconfigure/server.h>
 #include <geometry_msgs/PoseStamped.h>
@@ -18,6 +16,7 @@
 #include <franka_interactive_controllers/minimal_compliance_paramConfig.h>
 #include <franka_hw/franka_model_interface.h>
 #include <franka_hw/franka_state_interface.h>
+#include "std_msgs/Float32MultiArray.h"
 
 namespace franka_interactive_controllers {
 
@@ -29,7 +28,7 @@ class CartesianPoseImpedanceController : public controller_interface::MultiInter
   bool init(hardware_interface::RobotHW* robot_hw, ros::NodeHandle& node_handle) override;
   void starting(const ros::Time&) override;
   void update(const ros::Time&, const ros::Duration& period) override;
-
+  ros::Publisher pub_observation;
  private:
   // Saturation
   Eigen::Matrix<double, 7, 1> saturateTorqueRate(
@@ -75,8 +74,15 @@ class CartesianPoseImpedanceController : public controller_interface::MultiInter
   ros::Subscriber sub_desired_pose_;
   void desiredPoseCallback(const geometry_msgs::PoseStampedConstPtr& msg);
 
-  std::ofstream _file;
+  std::ofstream action_file;
+  std::ofstream state_file;
+  std::ofstream episode_end_file;
   bool _print_flag;
+  int _episode_counter;
+  int _update_counter;
+  Eigen::Vector3d _Gravity;
+  std_msgs::Float32MultiArray obs_array;
+  Eigen::Vector3d force_in_world = Eigen::Vector3d::Zero();
 };
 
 }  // namespace franka_interactive_controllers

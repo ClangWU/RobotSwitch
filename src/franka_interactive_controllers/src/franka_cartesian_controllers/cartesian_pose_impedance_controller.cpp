@@ -26,7 +26,7 @@ bool CartesianPoseImpedanceController::init(hardware_interface::RobotHW* robot_h
   sub_desired_pose_ = node_handle.subscribe(
       "/cartesian_impedance_controller/desired_pose", 20, &CartesianPoseImpedanceController::desiredPoseCallback, this,
       ros::TransportHints().reliable().tcpNoDelay());
-
+  pub_observation = node_handle.advertise<std_msgs::Float32MultiArray>("/observation", 1000);
   // Getting ROSParams
   std::string arm_id;
   if (!node_handle.getParam("arm_id", arm_id)) {
@@ -184,16 +184,22 @@ void CartesianPoseImpedanceController::starting(const ros::Time& /*time*/) {
   // Get robot current/initial joint state
   franka::RobotState initial_state = state_handle_->getRobotState();
   Eigen::Map<Eigen::Matrix<double, 7, 1>> q_initial(initial_state.q.data());
-
+  
+  _Gravity<< 0.0, 0.0, -2.9;
+  _update_counter = 0;
+  _episode_counter = 0;
   _print_flag = true;
-  if (_print_flag) {
-      _file.open("/home/yzc/project/robotswitch/src/franka_interactive_controllers/doc/scope.txt");
-      if (_file.is_open())
-          printf("[Controller] file opened successfully.\n");
-      else
-          printf("[Controller] Failed to open file.\n");
+  std::string action_csv = "/home/yzc/project/robotswitch/src/franka_interactive_controllers/doc/actions.csv";
+  action_file = std::ofstream(action_csv, std::ios::out);
+  action_file << "action" << std::endl;
 
-  }
+  std::string observation_csv = "/home/yzc/project/robotswitch/src/franka_interactive_controllers/doc/observations.csv";
+  state_file = std::ofstream(observation_csv, std::ios::out);
+  state_file << "observation" << std::endl;
+
+  std::string episode_end_csv = "/home/yzc/project/robotswitch/src/franka_interactive_controllers/doc/episode_ends.csv";
+  episode_end_file = std::ofstream(episode_end_csv, std::ios::out);
+  episode_end_file << "episode_ends" << std::endl;
   // get jacobian
   std::array<double, 42> jacobian_array =
       model_handle_->getZeroJacobian(franka::Frame::kEndEffector);
@@ -240,11 +246,68 @@ void CartesianPoseImpedanceController::update(const ros::Time& /*time*/,
 
   if(_print_flag)
   {
-    for (int i = 0; i < robot_state.q.size(); i++) {
-          _file << robot_state.q[i] << "  ";
-        }
-    _file << std::endl;
+    // 当遥操作位置到达初始位置时，开始记录数据
+    if (position(2) > 0)
+    {
+      // 20Hz记录一次
+      if (_update_counter % 50 == 0)
+      {
+
+
+        // action record
+          action_file << "\"[";
+          for (int i = 0; i < robot_state.q.size(); i++){
+            if (i == robot_state.q.size() - 1){
+              action_file << robot_state.q[i];
+              break;
+            }
+            action_file << robot_state.q[i] << ", ";
+          }
+          action_file << "]\"";
+          action_file << std::endl;
+        // state record
+          state_file << "\"[";
+          for (int i = 0; i < robot_state.q.size(); i++){
+            state_file << robot_state.q[i] << ", ";
+          }
+
+          Eigen::Matrix3d rotation_matrix = transform.rotation();
+          Eigen::Vector3d GinF = rotation_matrix.transpose() * _Gravity;
+          Eigen::Vector3d compensated_force(
+              robot_state.K_F_ext_hat_K[0] + GinF[0],
+              robot_state.K_F_ext_hat_K[1] + GinF[1],
+              robot_state.K_F_ext_hat_K[2] + GinF[2]);
+          // std::cout << robot_state.K_F_ext_hat_K[0] << ", " 
+          //           << robot_state.K_F_ext_hat_K[1] << ", " 
+          //           << robot_state.K_F_ext_hat_K[2] << std::endl;
+          force_in_world = rotation_matrix * compensated_force; // compensate force 
+          
+          state_file << force_in_world[0] << ", " 
+                     << force_in_world[1] << ", " 
+                     << force_in_world[2] << "]\"";
+          state_file << std::endl;
+        // episode end record
+          if (position(2) < 0.07){// cutting to end threshold = 0.07m
+            episode_end_file << _episode_counter << std::endl;
+          }
+          _episode_counter += 1;
+      }
+      _update_counter += 1;
+    }  
   }
+
+    obs_array.data.clear();
+    obs_array.data.push_back(position(0));
+    obs_array.data.push_back(position(1));
+    obs_array.data.push_back(position(2));
+    obs_array.data.push_back(orientation.w());
+    obs_array.data.push_back(orientation.x());
+    obs_array.data.push_back(orientation.y());
+    obs_array.data.push_back(orientation.z());
+    obs_array.data.push_back(force_in_world[0]);
+    obs_array.data.push_back(force_in_world[1]);
+    obs_array.data.push_back(force_in_world[2]);
+    pub_observation.publish(obs_array);
   //////////////////////////////////////////////////////////////////////////////////////////////////
   //////////////////////              COMPUTING TASK CONTROL TORQUE           //////////////////////
   //////////////////////////////////////////////////////////////////////////////////////////////////

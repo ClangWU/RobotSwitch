@@ -63,9 +63,7 @@ int main(int argc, char** argv)
     ForceData _data;
     force_y = fext_msg.wrench.force.y;
     force_z = fext_msg.wrench.force.z;
-    if (outfile.is_open()) {
-      outfile  << force_y << " " << force_z << "\n";
-    }
+
     // Calculate the resultant force using Pythagorean theorem
     float resultant_force = sqrt(pow(force_y, 2) + pow(force_z, 2));
     // Calculate the angle with the horizontal in degrees
@@ -106,9 +104,6 @@ int main(int argc, char** argv)
     teleop_publisher.publish(teleop_msg); 
     ros::spinOnce();
     loop_rate.sleep();
-  }
-  if (outfile.is_open()) {
-      outfile.close();
   }
   ros::waitForShutdown();
 }
