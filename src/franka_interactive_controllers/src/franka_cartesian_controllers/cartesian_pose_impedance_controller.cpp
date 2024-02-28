@@ -190,17 +190,17 @@ void CartesianPoseImpedanceController::starting(const ros::Time& /*time*/) {
   _action_counter = -100;
   _episode_counter = 0;
   _print_flag = true;
-  std::string action_csv = "/home/yzc/project/robotswitch/src/franka_interactive_controllers/doc/actions.csv";
+  std::string action_csv = "/home/yzc/project/robotswitch/src/franka_interactive_controllers/doc/actions1.csv";
   action_file = std::ofstream(action_csv, std::ios::out);
-  action_file << "action" << std::endl;
+  // action_file << "action" << std::endl;
 
-  std::string observation_csv = "/home/yzc/project/robotswitch/src/franka_interactive_controllers/doc/observations.csv";
+  std::string observation_csv = "/home/yzc/project/robotswitch/src/franka_interactive_controllers/doc/observations1.csv";
   state_file = std::ofstream(observation_csv, std::ios::out);
-  state_file << "observation" << std::endl;
+  // state_file << "observation" << std::endl;
 
-  std::string episode_end_csv = "/home/yzc/project/robotswitch/src/franka_interactive_controllers/doc/episode_ends.csv";
+  std::string episode_end_csv = "/home/yzc/project/robotswitch/src/franka_interactive_controllers/doc/episode_ends1.csv";
   episode_end_file = std::ofstream(episode_end_csv, std::ios::out);
-  episode_end_file << "episode_ends" << std::endl;
+  // episode_end_file << "episode_ends" << std::endl;
   // get jacobian
   std::array<double, 42> jacobian_array =
       model_handle_->getZeroJacobian(franka::Frame::kEndEffector);
@@ -245,6 +245,15 @@ void CartesianPoseImpedanceController::update(const ros::Time& /*time*/,
   Eigen::Vector3d position(transform.translation());
   Eigen::Quaterniond orientation(transform.linear());
 
+  Eigen::Matrix3d rotation_matrix = transform.rotation();
+  Eigen::Vector3d GinF = rotation_matrix.transpose() * _Gravity;
+  Eigen::Vector3d compensated_force(
+      robot_state.K_F_ext_hat_K[0] + GinF[0],
+      robot_state.K_F_ext_hat_K[1] + GinF[1],
+      robot_state.K_F_ext_hat_K[2] + GinF[2]);
+  force_in_world = rotation_matrix * compensated_force; // compensate force 
+
+
 if (position(2) < 0.18)
 {
   if(_print_flag)
@@ -259,14 +268,13 @@ if (position(2) < 0.18)
                      << orientation.x() << ", "
                      << orientation.y() << ", "
                      << orientation.z() << "]\"" << std::endl;
+        // episode end record
+        if (position(2) < 0.075){// cutting to end threshold = 0.07m
+          episode_end_file << _episode_counter/100 << std::endl;
+          _print_flag = false;
+        }
       }
       _action_counter += 1;
-  }
-
-  // episode end record
-  if (position(2) < 0.075){// cutting to end threshold = 0.07m
-    episode_end_file << _episode_counter << std::endl;
-    _print_flag = false;
   }
 
   if(_print_flag)
@@ -275,14 +283,7 @@ if (position(2) < 0.18)
       if (_update_counter % 100 == 0)
       {
         // state record
-          Eigen::Matrix3d rotation_matrix = transform.rotation();
-          Eigen::Vector3d GinF = rotation_matrix.transpose() * _Gravity;
-          Eigen::Vector3d compensated_force(
-              robot_state.K_F_ext_hat_K[0] + GinF[0],
-              robot_state.K_F_ext_hat_K[1] + GinF[1],
-              robot_state.K_F_ext_hat_K[2] + GinF[2]);
-          force_in_world = rotation_matrix * compensated_force; // compensate force 
-          state_file << "\"[";
+                    state_file << "\"[";
           state_file << position(0) - position_init_(0)<< ", "
                      << position(1) - position_init_(1)<< ", "
                      << position(2) - position_init_(2)<< ", "
