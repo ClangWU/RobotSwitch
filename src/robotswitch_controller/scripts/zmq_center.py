@@ -29,7 +29,6 @@ def zmq_client():
         time.sleep(0.00075)
         # 等待服务器响应
         reply = socket.recv_string()
-        print(f"Received reply: {reply}")
         # 收到消息后，发送消息
         obs_array = np.array(msg_obs)
         message = json.dumps(obs_array.tolist())

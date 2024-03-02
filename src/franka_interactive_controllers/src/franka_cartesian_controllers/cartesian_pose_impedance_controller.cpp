@@ -189,7 +189,7 @@ void CartesianPoseImpedanceController::starting(const ros::Time& /*time*/) {
   _update_counter = 0;
   _action_counter = -100;
   _episode_counter = 0;
-  _print_flag = true;
+  _print_flag = false;
   std::string action_csv = "/home/yzc/project/robotswitch/src/franka_interactive_controllers/doc/actions1.csv";
   action_file = std::ofstream(action_csv, std::ios::out);
   // action_file << "action" << std::endl;
@@ -300,18 +300,18 @@ if (position(2) < 0.18)
       _episode_counter += 1;
   }
 }
-    // obs_array.data.clear();
-    // obs_array.data.push_back(position(0));
-    // obs_array.data.push_back(position(1));
-    // obs_array.data.push_back(position(2));
-    // obs_array.data.push_back(orientation.w());
-    // obs_array.data.push_back(orientation.x());
-    // obs_array.data.push_back(orientation.y());
-    // obs_array.data.push_back(orientation.z());
-    // obs_array.data.push_back(force_in_world[0]);
-    // obs_array.data.push_back(force_in_world[1]);
-    // obs_array.data.push_back(force_in_world[2]);
-    // pub_observation.publish(obs_array);
+    obs_array.data.clear();
+    obs_array.data.push_back(position(0) - position_init_(0));
+    obs_array.data.push_back(position(1) - position_init_(1));
+    obs_array.data.push_back(position(2) - position_init_(2));
+    obs_array.data.push_back(orientation.w());
+    obs_array.data.push_back(orientation.x());
+    obs_array.data.push_back(orientation.y());
+    obs_array.data.push_back(orientation.z());
+    obs_array.data.push_back(force_in_world[0]);
+    obs_array.data.push_back(force_in_world[1]);
+    obs_array.data.push_back(force_in_world[2]);
+    pub_observation.publish(obs_array);
   //////////////////////////////////////////////////////////////////////////////////////////////////
   //////////////////////              COMPUTING TASK CONTROL TORQUE           //////////////////////
   //////////////////////////////////////////////////////////////////////////////////////////////////

@@ -1,0 +1,8 @@
+<launch>
+    <arg name="use_franka" default="true" />
+
+    <!-- 1 启动franka控制器 franka_interactive_bringup.launch -->
+    <group if="$(arg use_franka)">
+        <include file="$(find franka_interactive_controllers)/launch/franka_interactive_bringup.launch"/>
+    </group>
+</launch>

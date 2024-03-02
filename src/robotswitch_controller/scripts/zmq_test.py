@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import zmq
 import time
 import rospy
@@ -21,8 +23,6 @@ def message_thread():
     rospy.spin()
 
 def zmq_action(socket):
-
-
     # 定义一个浮点数数组
     # float_array = [4.4, 5.5]
     # 将浮点数数组编码为JSON字符串
@@ -47,7 +47,6 @@ def zmq_obs(socket):
     # 等待客户端消息
     message = socket.recv_string()
     # obs = json.loads(message)  # 将接收到的字符串转换回浮点数数组
-    print(message)
     obs_array = np.array(msg_obs)
     message = json.dumps(obs_array.tolist())
     socket.send_string(message)
@@ -57,14 +56,15 @@ if __name__ == "__main__":
     action_pub = rospy.Publisher('/cartesian_impedance_controller/desired_pose', PoseStamped, queue_size=10)
     msg_thread = threading.Thread(target=message_thread)
     msg_thread.start()
-    context = zmq.Context()
-    socket_obs = context.socket(zmq.REP)
+    context_rep = zmq.Context()
+    socket_obs = context_rep.socket(zmq.REP)
     socket_obs.bind("tcp://*:5555")  # 绑定端口5555
     
-    context = zmq.Context()
-    socket_act = context.socket(zmq.REQ)
+    context_req = zmq.Context()
+    socket_act = context_req.socket(zmq.REQ)
     socket_act.connect("tcp://192.168.1.102:5555")  # 连接到服务器
 
+    print("Connecting to server...")
     while True:
         zmq_action(socket_act)
         zmq_obs(socket_obs)
