@@ -81,7 +81,7 @@ int main(int argc, char** argv) {
 
        case 4  :
         std::cout << "Selected q_release as goal" << std::endl;
-          q_goal = {{0, -M_PI_4, 0, -3 * M_PI_4, 0, M_PI_2, M_PI_4}};
+          q_goal = {{-0.03759925351929442, 0.12360458655611062, 0.037031054337296566, -2.353748173964651, -0.006288687164894137, 2.475533258795473, 0.7901252797675048}};
           break;
        // case 4  :
        //  std::cout << "Selected q_center_plate as goal" << std::endl;
