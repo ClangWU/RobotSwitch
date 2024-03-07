@@ -255,9 +255,9 @@ void CartesianPoseImpedanceController::update(const ros::Time& /*time*/,
 
   Eigen::Vector3d euler_angles = orientation.toRotationMatrix().eulerAngles(2, 1, 0);
 
-  std::cout << "Yaw (Z): " << euler_angles[0] << std::endl;
+  std::cout << "Yaw (Z)  : " << euler_angles[0] << std::endl;
   std::cout << "Pitch (Y): " << euler_angles[1] << std::endl;
-  std::cout << "Roll (X): " << euler_angles[2] << std::endl;
+  std::cout << "Roll (X) : " << euler_angles[2] << std::endl;
 
 if (position(2) < 0.18)
 {
