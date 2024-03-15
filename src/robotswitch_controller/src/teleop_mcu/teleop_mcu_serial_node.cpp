@@ -3,6 +3,7 @@
 #include <std_msgs/Float32.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/WrenchStamped.h>
+#include <Eigen/Dense>
 #include <fstream> // 添加用于文件操作的头文件
 using namespace std;
 static int start_flag = 0;
@@ -50,7 +51,10 @@ int main(int argc, char** argv)
   forceband.teleop_port.open();
   forceband_port_ptr = &forceband.teleop_port;
   std::ofstream outfile("./force_data.txt");
-  
+  Eigen::Quaterniond q2angle;
+  double _w,_x,_y,_z;
+  double cy, sy, cp, sp, cr, sr;
+  double roll, pitch, yaw;
   ros::Rate loop_rate(200); // 5 ms
   
   while(ros::ok())
@@ -68,7 +72,6 @@ int main(int argc, char** argv)
     float resultant_force = sqrt(pow(force_y, 2) + pow(force_z, 2));
     // Calculate the angle with the horizontal in degrees
     float angle_with_horizontal = atan2(force_z, force_y) * (180.0 / M_PI);
-
 
     // Adjust angle to be in the range 0 to 359 degrees
     if (angle_with_horizontal < 0) {
@@ -93,9 +96,31 @@ int main(int argc, char** argv)
             //前臂与上臂垂直
             Eigen::Quaterniond robot_fore_arm_initial_quaternion(0.7071,0,0,0.7071);
       */
-      delta_arm_pose.pose.position.x = -(curr_arm_pose.pose.position.y - init_arm_pose.pose.position.y);
+      delta_arm_pose.pose.position.x = 0;
       delta_arm_pose.pose.position.y = (curr_arm_pose.pose.position.x - init_arm_pose.pose.position.x);
       delta_arm_pose.pose.position.z = (curr_arm_pose.pose.position.z - init_arm_pose.pose.position.z);
+      _w = curr_arm_pose.pose.orientation.w;
+      _x = curr_arm_pose.pose.orientation.x;
+      _y = curr_arm_pose.pose.orientation.y;
+      _z = curr_arm_pose.pose.orientation.z;
+
+      roll = std::atan2(2.0 * (_w * _x + _y * _z), 1.0 - 2.0 * (_x * _x + _y * _y));
+      pitch = 0;
+      yaw = 0;
+
+      cy = cos(yaw * 0.5);
+      sy = sin(yaw * 0.5);
+      cp = cos(pitch * 0.5);
+      sp = sin(pitch * 0.5);
+      cr = cos(roll * 0.5);
+      sr = sin(roll * 0.5);
+
+      curr_arm_pose.pose.orientation.w = cr * cp * cy + sr * sp * sy;
+      curr_arm_pose.pose.orientation.x = sr * cp * cy - cr * sp * sy;
+      curr_arm_pose.pose.orientation.y = cr * sp * cy + sr * cp * sy;
+      curr_arm_pose.pose.orientation.z = cr * cp * sy - sr * sp * cy;
+      // euler_angle[2]
+      printf("roll %f\n", roll);
       delta_arm_pose.pose.orientation = curr_arm_pose.pose.orientation;
       robot_pose_publisher.publish(delta_arm_pose);
     }    

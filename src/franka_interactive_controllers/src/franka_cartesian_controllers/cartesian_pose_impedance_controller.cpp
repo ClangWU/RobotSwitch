@@ -104,6 +104,7 @@ bool CartesianPoseImpedanceController::init(hardware_interface::RobotHW* robot_h
 
   // Initializing variables
   position_d_.setZero();
+  position_prev_.setZero();
   orientation_d_.coeffs() << 0.0, 0.0, 0.0, 1.0;
   position_d_target_.setZero();
   orientation_d_target_.coeffs() << 0.0, 0.0, 0.0, 1.0;
@@ -185,7 +186,7 @@ void CartesianPoseImpedanceController::starting(const ros::Time& /*time*/) {
   franka::RobotState initial_state = state_handle_->getRobotState();
   Eigen::Map<Eigen::Matrix<double, 7, 1>> q_initial(initial_state.q.data());
   
-  _Gravity<< 0.0, 0.0, -2.9;
+  _Gravity<< 0.0, 0.0, -2.18;
   _update_counter = 0;
   _action_counter = -100;
   _episode_counter = 0;
@@ -251,29 +252,38 @@ void CartesianPoseImpedanceController::update(const ros::Time& /*time*/,
       robot_state.K_F_ext_hat_K[0] + GinF[0],
       robot_state.K_F_ext_hat_K[1] + GinF[1],
       robot_state.K_F_ext_hat_K[2] + GinF[2]);
-  force_in_world = rotation_matrix * compensated_force; // compensate force 
+  // force_in_world = rotation_matrix * compensated_force; // compensate force 
 
-  Eigen::Vector3d euler_angles = orientation.toRotationMatrix().eulerAngles(2, 1, 0);
+double w = orientation.w();
+double x = orientation.x();
+double y = orientation.y();
+double z = orientation.z();
 
-  std::cout << "Yaw (Z)  : " << euler_angles[0] << std::endl;
-  std::cout << "Pitch (Y): " << euler_angles[1] << std::endl;
-  std::cout << "Roll (X) : " << euler_angles[2] << std::endl;
+// double yaw = std::atan2(2.0 * (w * z + x * y), 1.0 - 2.0 * (y * y + z * z));
+// double pitch = std::asin(2.0 * (w * y - z * x));
+double roll = std::atan2(2.0 * (w * x + y * z), 1.0 - 2.0 * (x * x + y * y));
+double roll_degrees = roll * 180.0 / M_PI + 180.0; 
+// printf("roll_degrees: %f\n", roll_degrees);
 
-if (position(2) < 0.18)
+
+// printf("pos %f", position(2));
+
+// printf("q: %f, %f, %f, %f, %f, %f, %f\n", q(0), q(1), q(2), q(3), q(4), q(5), q(6));
+if (position(2) < 0.125)
 {
   if(_print_flag)
   {
       if (_action_counter >= 0 && _action_counter % 100 == 0)
       {
-        action_file << "\"[";
-        action_file  << position(1) - position_init_(1)<< ", "
-                     << position(2) - position_init_(2)<< ", "
-                     << orientation.z() << "]\"" << std::endl;
         // episode end record
-        if (position(2) < 0.075){// cutting to end threshold = 0.07m
+        if (position(2) < 0.025){// cutting to end threshold = 0.07m
           episode_end_file << _episode_counter/100 << std::endl;
           _print_flag = false;
         }
+          action_file << "\"[";
+          action_file  << position(1) - position_init_(1)<< ", "
+                        << position(2) - position_init_(2)<< ", "
+                        << roll_degrees << "]\"" << std::endl;
       }
       _action_counter += 1;
   }
@@ -287,7 +297,7 @@ if (position(2) < 0.18)
                     state_file << "\"[";
           state_file << position(1) - position_init_(1)<< ", "
                      << position(2) - position_init_(2)<< ", "
-                     << orientation.w() << ", "
+                     << roll_degrees << ", "
                      << force_in_world[1] << ", " 
                      << force_in_world[2] << "]\"";
           state_file << std::endl;
@@ -297,16 +307,16 @@ if (position(2) < 0.18)
   }
 }
     obs_array.data.clear();
-    obs_array.data.push_back(position(0) - position_init_(0));
     obs_array.data.push_back(position(1) - position_init_(1));
     obs_array.data.push_back(position(2) - position_init_(2));
+    obs_array.data.push_back(roll_degrees);
+
     obs_array.data.push_back(orientation.w());
     obs_array.data.push_back(orientation.x());
     obs_array.data.push_back(orientation.y());
     obs_array.data.push_back(orientation.z());
-    obs_array.data.push_back(force_in_world[0]);
-    obs_array.data.push_back(force_in_world[1]);
-    obs_array.data.push_back(force_in_world[2]);
+    obs_array.data.push_back(compensated_force[1]);
+    obs_array.data.push_back(compensated_force[2]);
     pub_observation.publish(obs_array);
   //////////////////////////////////////////////////////////////////////////////////////////////////
   //////////////////////              COMPUTING TASK CONTROL TORQUE           //////////////////////
@@ -415,16 +425,13 @@ void CartesianPoseImpedanceController::desiredPoseCallback(
     const geometry_msgs::PoseStampedConstPtr& msg) {
   //pose sequence cannot change！
   // ROS_INFO_STREAM("[CALLBACK] Desired ee position from DS: " << position_d_target_);
-  if (msg->pose.position.y > 0.2 || msg->pose.position.y < -0.2)
-  {
+  if (msg->pose.position.y - position_prev_(1) > 0.02 || msg->pose.position.z - position_prev_(2) > 0.02)
+  {}
+  else{// no x motion
+    position_d_target_ << position_init_(0) , position_init_(1) + msg->pose.position.y, position_init_(2) + msg->pose.position.z;
+    position_prev_(1) = msg->pose.position.y;
+    position_prev_(2) = msg->pose.position.z;
   }
-  else if (msg->pose.position.z > 0.25 || msg->pose.position.z < -0.25)
-  {
-  }else if(msg->pose.position.x > 0.2 || msg->pose.position.x < -0.2)
-  {
-  }else{
-      position_d_target_ << position_init_(0) + msg->pose.position.x, position_init_(1) + msg->pose.position.y, position_init_(2) + msg->pose.position.z;
-    }
   Eigen::Quaterniond last_orientation_d_target(orientation_d_target_);
 
   orientation_d_target_.coeffs() << msg->pose.orientation.x, msg->pose.orientation.y,
@@ -439,3 +446,43 @@ void CartesianPoseImpedanceController::desiredPoseCallback(
 
 PLUGINLIB_EXPORT_CLASS(franka_interactive_controllers::CartesianPoseImpedanceController,
                        controller_interface::ControllerBase)
+
+//     double cy = cos(yaw * 0.5);
+//     double sy = sin(yaw * 0.5);
+//     double cp = cos(pitch * 0.5);
+//     double sp = sin(pitch * 0.5);
+//     double cr = cos(roll * 0.5);
+//     double sr = sin(roll * 0.5);
+
+//     // 使用四元数乘法规则来组合旋转
+//     Eigen::Quaterniond _q;
+//     _q.w() = cr * cp * cy + sr * sp * sy;
+//     _q.x() = sr * cp * cy - cr * sp * sy;
+//     _q.y() = cr * sp * cy + sr * cp * sy;
+//     _q.z() = cr * cp * sy - sr * sp * cy;
+
+// double w1 = _q.w();
+// double x1 = _q.x();
+// double y1 = _q.y();
+// double z1 = _q.z();
+
+// double yaw1 = std::atan2(2.0 * (w1 * z1 + x1 * y1), 1.0 - 2.0 * (y1 * y1 + z1 * z1));
+// double pitch1 = std::asin(2.0 * (w1 * y1 - z1 * x1));
+// double roll1 = std::atan2(2.0 * (w1 * x1 + y1 * z1), 1.0 - 2.0 * (x1 * x1 + y1 * y1));
+// // 将角度从弧度转换为度
+// double yaw_degrees = yaw * 180.0 / M_PI;
+// double pitch_degrees = pitch * 180.0 / M_PI;
+// double roll_degrees = roll * 180.0 / M_PI;
+
+
+// double yaw_degrees1 = yaw1 * 180.0 / M_PI;
+// double pitch_degrees1 = pitch1 * 180.0 / M_PI;
+// double roll_degrees1 = roll1 * 180.0 / M_PI;
+
+// 打印结果
+// std::cout << "Yaw (in degrees): " << yaw_degrees << std::endl;
+// std::cout << "Pitch (in degrees): " << pitch_degrees << std::endl;
+// std::cout << "Roll (in degrees): " << roll_degrees << std::endl;
+// std::cout << "Yaw1 (in degrees): " << yaw_degrees1 << std::endl;
+// std::cout << "Pitch1 (in degrees): " << pitch_degrees1 << std::endl;
+// std::cout << "Roll1 (in degrees): " << roll_degrees1 << std::endl;
