@@ -187,6 +187,7 @@ void CartesianPoseImpedanceController::starting(const ros::Time& /*time*/) {
   Eigen::Map<Eigen::Matrix<double, 7, 1>> q_initial(initial_state.q.data());
   
   _Gravity<< 0.0, 0.0, -2.18;
+  roll_degrees = 0.0;
   _update_counter = 0;
   _action_counter = -100;
   _episode_counter = 0;
@@ -262,21 +263,24 @@ double z = orientation.z();
 // double yaw = std::atan2(2.0 * (w * z + x * y), 1.0 - 2.0 * (y * y + z * z));
 // double pitch = std::asin(2.0 * (w * y - z * x));
 double roll = std::atan2(2.0 * (w * x + y * z), 1.0 - 2.0 * (x * x + y * y));
-double roll_degrees = roll * 180.0 / M_PI + 180.0; 
+
+  roll_degrees = roll * 180.0 / M_PI + 180.0; 
+  if(roll_degrees > 180.0)
+    roll_degrees = 0.01;
 // printf("roll_degrees: %f\n", roll_degrees);
 
 
 // printf("pos %f", position(2));
 
 // printf("q: %f, %f, %f, %f, %f, %f, %f\n", q(0), q(1), q(2), q(3), q(4), q(5), q(6));
-if (position(2) < 0.125)
+if (position(2) < 0.13)
 {
   if(_print_flag)
   {
       if (_action_counter >= 0 && _action_counter % 100 == 0)
       {
         // episode end record
-        if (position(2) < 0.025){// cutting to end threshold = 0.07m
+        if (position(2) < 0.025){// cutting to end threshold = 0.025
           episode_end_file << _episode_counter/100 << std::endl;
           _print_flag = false;
         }
@@ -309,8 +313,8 @@ if (position(2) < 0.125)
     obs_array.data.clear();
     obs_array.data.push_back(position(1) - position_init_(1));
     obs_array.data.push_back(position(2) - position_init_(2));
+    obs_array.data.push_back(position(2));
     obs_array.data.push_back(roll_degrees);
-
     obs_array.data.push_back(orientation.w());
     obs_array.data.push_back(orientation.x());
     obs_array.data.push_back(orientation.y());

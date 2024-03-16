@@ -81,7 +81,7 @@ class CartesianPoseImpedanceController : public controller_interface::MultiInter
   int _episode_counter;
   int _update_counter;
   int _action_counter;
-
+  double roll_degrees;
   Eigen::Vector3d position_prev_;
   Eigen::Vector3d _Gravity;
   std_msgs::Float32MultiArray obs_array;
