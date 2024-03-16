@@ -191,18 +191,18 @@ void CartesianPoseImpedanceController::starting(const ros::Time& /*time*/) {
   _update_counter = 0;
   _action_counter = -100;
   _episode_counter = 0;
-  _print_flag = false;
-  std::string action_csv = "/home/yzc/project/robotswitch/src/franka_interactive_controllers/doc/actions1.csv";
+  _print_flag = true;
+  std::string action_csv = "/home/yzc/project/robotswitch/src/franka_interactive_controllers/doc/actions.csv";
   action_file = std::ofstream(action_csv, std::ios::out);
-  // action_file << "action" << std::endl;
+  action_file << "action" << std::endl;
 
-  std::string observation_csv = "/home/yzc/project/robotswitch/src/franka_interactive_controllers/doc/observations1.csv";
+  std::string observation_csv = "/home/yzc/project/robotswitch/src/franka_interactive_controllers/doc/observations.csv";
   state_file = std::ofstream(observation_csv, std::ios::out);
-  // state_file << "observation" << std::endl;
+  state_file << "observation" << std::endl;
 
-  std::string episode_end_csv = "/home/yzc/project/robotswitch/src/franka_interactive_controllers/doc/episode_ends1.csv";
+  std::string episode_end_csv = "/home/yzc/project/robotswitch/src/franka_interactive_controllers/doc/episode_ends.csv";
   episode_end_file = std::ofstream(episode_end_csv, std::ios::out);
-  // episode_end_file << "episode_ends" << std::endl;
+  episode_end_file << "episode_ends" << std::endl;
   // get jacobian
   std::array<double, 42> jacobian_array =
       model_handle_->getZeroJacobian(franka::Frame::kEndEffector);
@@ -260,8 +260,8 @@ double x = orientation.x();
 double y = orientation.y();
 double z = orientation.z();
 
-// double yaw = std::atan2(2.0 * (w * z + x * y), 1.0 - 2.0 * (y * y + z * z));
-// double pitch = std::asin(2.0 * (w * y - z * x));
+double yaw = std::atan2(2.0 * (w * z + x * y), 1.0 - 2.0 * (y * y + z * z));
+double pitch = std::asin(2.0 * (w * y - z * x));
 double roll = std::atan2(2.0 * (w * x + y * z), 1.0 - 2.0 * (x * x + y * y));
 
   roll_degrees = roll * 180.0 / M_PI + 180.0; 
@@ -269,25 +269,21 @@ double roll = std::atan2(2.0 * (w * x + y * z), 1.0 - 2.0 * (x * x + y * y));
     roll_degrees = 0.01;
 // printf("roll_degrees: %f\n", roll_degrees);
 
-
-// printf("pos %f", position(2));
-
-// printf("q: %f, %f, %f, %f, %f, %f, %f\n", q(0), q(1), q(2), q(3), q(4), q(5), q(6));
 if (position(2) < 0.13)
 {
   if(_print_flag)
   {
       if (_action_counter >= 0 && _action_counter % 100 == 0)
       {
+          action_file << "\"[";
+          action_file  << position(1) - position_init_(1)<< ", "
+                        << position(2) - position_init_(2)<< ", "
+                        << roll_degrees << "]\"" << std::endl;
         // episode end record
         if (position(2) < 0.025){// cutting to end threshold = 0.025
           episode_end_file << _episode_counter/100 << std::endl;
           _print_flag = false;
         }
-          action_file << "\"[";
-          action_file  << position(1) - position_init_(1)<< ", "
-                        << position(2) - position_init_(2)<< ", "
-                        << roll_degrees << "]\"" << std::endl;
       }
       _action_counter += 1;
   }
@@ -302,8 +298,8 @@ if (position(2) < 0.13)
           state_file << position(1) - position_init_(1)<< ", "
                      << position(2) - position_init_(2)<< ", "
                      << roll_degrees << ", "
-                     << force_in_world[1] << ", " 
-                     << force_in_world[2] << "]\"";
+                     << compensated_force[1] << ", " 
+                     << compensated_force[2] << "]\"";
           state_file << std::endl;
       }
       _update_counter += 1;
@@ -313,14 +309,13 @@ if (position(2) < 0.13)
     obs_array.data.clear();
     obs_array.data.push_back(position(1) - position_init_(1));
     obs_array.data.push_back(position(2) - position_init_(2));
-    obs_array.data.push_back(position(2));
     obs_array.data.push_back(roll_degrees);
-    obs_array.data.push_back(orientation.w());
-    obs_array.data.push_back(orientation.x());
-    obs_array.data.push_back(orientation.y());
-    obs_array.data.push_back(orientation.z());
     obs_array.data.push_back(compensated_force[1]);
     obs_array.data.push_back(compensated_force[2]);
+    // obs_array.data.push_back(orientation.w());
+    // obs_array.data.push_back(orientation.x());
+    // obs_array.data.push_back(orientation.y());
+    // obs_array.data.push_back(orientation.z());
     pub_observation.publish(obs_array);
   //////////////////////////////////////////////////////////////////////////////////////////////////
   //////////////////////              COMPUTING TASK CONTROL TORQUE           //////////////////////
@@ -451,19 +446,20 @@ void CartesianPoseImpedanceController::desiredPoseCallback(
 PLUGINLIB_EXPORT_CLASS(franka_interactive_controllers::CartesianPoseImpedanceController,
                        controller_interface::ControllerBase)
 
-//     double cy = cos(yaw * 0.5);
-//     double sy = sin(yaw * 0.5);
-//     double cp = cos(pitch * 0.5);
-//     double sp = sin(pitch * 0.5);
-//     double cr = cos(roll * 0.5);
-//     double sr = sin(roll * 0.5);
+    // double cy = cos(yaw * 0.5);
+    // double sy = sin(yaw * 0.5);
+    // double cp = cos(pitch * 0.5);
+    // double sp = sin(pitch * 0.5);
+    // double cr = cos(roll * 0.5);
+    // double sr = sin(roll * 0.5);
 
-//     // 使用四元数乘法规则来组合旋转
-//     Eigen::Quaterniond _q;
-//     _q.w() = cr * cp * cy + sr * sp * sy;
-//     _q.x() = sr * cp * cy - cr * sp * sy;
-//     _q.y() = cr * sp * cy + sr * cp * sy;
-//     _q.z() = cr * cp * sy - sr * sp * cy;
+    // // 使用四元数乘法规则来组合旋转  ****注意此时得出的四元数是跟原来的四元数相反的
+    // Eigen::Quaterniond _q;
+    // _q.w() = cr * cp * cy + sr * sp * sy;
+    // _q.x() = sr * cp * cy - cr * sp * sy;
+    // _q.y() = cr * sp * cy + sr * cp * sy;
+    // _q.z() = cr * cp * sy - sr * sp * cy;
+
 
 // double w1 = _q.w();
 // double x1 = _q.x();
@@ -490,3 +486,9 @@ PLUGINLIB_EXPORT_CLASS(franka_interactive_controllers::CartesianPoseImpedanceCon
 // std::cout << "Yaw1 (in degrees): " << yaw_degrees1 << std::endl;
 // std::cout << "Pitch1 (in degrees): " << pitch_degrees1 << std::endl;
 // std::cout << "Roll1 (in degrees): " << roll_degrees1 << std::endl;
+
+
+// 打印两个四元数，每个元素wxyz并列对比一下
+// std::cout << "orientation: w " << orientation.w() << " " << _q.w() << std::endl;
+// std::cout << "orientation: x " << orientation.x() << " " << _q.x() << std::endl;
+// std::cout << "orientation: y " << orientation.y() << " " << _q.y() << std::endl;
