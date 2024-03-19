@@ -266,9 +266,8 @@ double roll = std::atan2(2.0 * (w * x + y * z), 1.0 - 2.0 * (x * x + y * y));
 
   roll_degrees = roll * 180.0 / M_PI + 180.0; 
   if(roll_degrees > 180.0)
-    roll_degrees = 0.01;
+    roll_degrees = roll_degrees - 360.0;
 // printf("roll_degrees: %f\n", roll_degrees);
-
 if (position(2) < 0.13)
 {
   if(_print_flag)

@@ -4,6 +4,7 @@
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/WrenchStamped.h>
 #include <Eigen/Dense>
+#include <math.h>
 #include <fstream> // 添加用于文件操作的头文件
 using namespace std;
 static int start_flag = 0;
@@ -71,15 +72,16 @@ int main(int argc, char** argv)
     // Calculate the resultant force using Pythagorean theorem
     float resultant_force = sqrt(pow(force_y, 2) + pow(force_z, 2));
     // Calculate the angle with the horizontal in degrees
-    float angle_with_horizontal = atan2(force_z, force_y) * (180.0 / M_PI);
-
+    float angle_with_horizontal = 180 + atan2(force_z, force_y) * (180.0 / M_PI);
+    printf("angle_with_horizontal: %f\n", angle_with_horizontal);
+    printf("resultant_force: %f\n", resultant_force);
     // Adjust angle to be in the range 0 to 359 degrees
-    if (angle_with_horizontal < 0) {
-        angle_with_horizontal += 360.0;
-    }
+    // if (angle_with_horizontal < 0) {
+    //     angle_with_horizontal += 360.0;
+    // }
     // ROS_INFO("Resultant Force: %f", resultant_force);
     // ROS_INFO("Angle with Horizontal: %f degrees", angle_with_horizontal);
-    _data._force = resultant_force;       
+    _data._force = 5;       
     _data._theta = angle_with_horizontal;
 
     if (forceband_port_ptr != nullptr)
@@ -105,6 +107,12 @@ int main(int argc, char** argv)
       _z = curr_arm_pose.pose.orientation.z;
 
       roll = std::atan2(2.0 * (_w * _x + _y * _z), 1.0 - 2.0 * (_x * _x + _y * _y));
+      double roll_degrees = roll * 180.0 / M_PI + 180.0; 
+      if (roll_degrees > 180.0 && roll_degrees < 355.0)//左偏
+      {
+        roll = M_PI - 0.0873; 
+      }
+      
       pitch = 0;
       yaw = 0;
 
