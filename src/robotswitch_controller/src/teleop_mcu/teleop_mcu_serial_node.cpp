@@ -73,15 +73,15 @@ int main(int argc, char** argv)
     float resultant_force = sqrt(pow(force_y, 2) + pow(force_z, 2));
     // Calculate the angle with the horizontal in degrees
     float angle_with_horizontal = 180 + atan2(force_z, force_y) * (180.0 / M_PI);
-    printf("angle_with_horizontal: %f\n", angle_with_horizontal);
-    printf("resultant_force: %f\n", resultant_force);
+    // printf("angle_with_horizontal: %f\n", angle_with_horizontal);
+    // printf("resultant_force: %f\n", resultant_force);
     // Adjust angle to be in the range 0 to 359 degrees
     // if (angle_with_horizontal < 0) {
     //     angle_with_horizontal += 360.0;
     // }
     // ROS_INFO("Resultant Force: %f", resultant_force);
     // ROS_INFO("Angle with Horizontal: %f degrees", angle_with_horizontal);
-    _data._force = 5;       
+    _data._force = resultant_force;       
     _data._theta = angle_with_horizontal;
 
     if (forceband_port_ptr != nullptr)

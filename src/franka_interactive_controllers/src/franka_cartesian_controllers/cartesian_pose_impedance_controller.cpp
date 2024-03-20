@@ -308,13 +308,9 @@ if (position(2) < 0.13)
     obs_array.data.clear();
     obs_array.data.push_back(position(1) - position_init_(1));
     obs_array.data.push_back(position(2) - position_init_(2));
-    obs_array.data.push_back(roll_degrees);
+    obs_array.data.push_back(position(2)*100);
     obs_array.data.push_back(compensated_force[1]);
     obs_array.data.push_back(compensated_force[2]);
-    // obs_array.data.push_back(orientation.w());
-    // obs_array.data.push_back(orientation.x());
-    // obs_array.data.push_back(orientation.y());
-    // obs_array.data.push_back(orientation.z());
     pub_observation.publish(obs_array);
   //////////////////////////////////////////////////////////////////////////////////////////////////
   //////////////////////              COMPUTING TASK CONTROL TORQUE           //////////////////////
@@ -423,13 +419,13 @@ void CartesianPoseImpedanceController::desiredPoseCallback(
     const geometry_msgs::PoseStampedConstPtr& msg) {
   //pose sequence cannot change！
   // ROS_INFO_STREAM("[CALLBACK] Desired ee position from DS: " << position_d_target_);
-  if (msg->pose.position.y - position_prev_(1) > 0.02 || msg->pose.position.z - position_prev_(2) > 0.02)
-  {}
-  else{// no x motion
+  // if (msg->pose.position.y - position_prev_(1) > 0.02 || msg->pose.position.z - position_prev_(2) > 0.02)
+  // {}
+  // else{// no x motion
     position_d_target_ << position_init_(0) , position_init_(1) + msg->pose.position.y, position_init_(2) + msg->pose.position.z;
-    position_prev_(1) = msg->pose.position.y;
-    position_prev_(2) = msg->pose.position.z;
-  }
+    // position_prev_(1) = msg->pose.position.y;
+    // position_prev_(2) = msg->pose.position.z;
+  // }
   Eigen::Quaterniond last_orientation_d_target(orientation_d_target_);
 
   orientation_d_target_.coeffs() << msg->pose.orientation.x, msg->pose.orientation.y,

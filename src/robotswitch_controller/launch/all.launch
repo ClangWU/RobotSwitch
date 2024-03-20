@@ -1,6 +1,6 @@
 <launch>
     <arg name="use_franka" default="true" />
-    <arg name="use_imu" default="false" />
+    <arg name="use_imu" default="true" />
     <arg name="use_imu_handler"    value="true" />
 
     <arg name="use_teleop" default="true" />
