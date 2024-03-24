@@ -99,6 +99,8 @@ int main(int argc, char** argv)
             Eigen::Quaterniond robot_fore_arm_initial_quaternion(0.7071,0,0,0.7071);
       */
       delta_arm_pose.pose.position.x = 0;
+      // delta_arm_pose.pose.position.y = 0;
+      // delta_arm_pose.pose.position.z = +0.005;
       delta_arm_pose.pose.position.y = (curr_arm_pose.pose.position.x - init_arm_pose.pose.position.x);
       delta_arm_pose.pose.position.z = (curr_arm_pose.pose.position.z - init_arm_pose.pose.position.z);
       _w = curr_arm_pose.pose.orientation.w;
@@ -107,15 +109,17 @@ int main(int argc, char** argv)
       _z = curr_arm_pose.pose.orientation.z;
 
       roll = std::atan2(2.0 * (_w * _x + _y * _z), 1.0 - 2.0 * (_x * _x + _y * _y));
+        // roll = M_PI - 0.01; 
       double roll_degrees = roll * 180.0 / M_PI + 180.0; 
       if (roll_degrees > 180.0 && roll_degrees < 355.0)//左偏
       {
         roll = M_PI - 0.0873; 
       }
       
-      pitch = 0;
-      yaw = 0;
-
+      // pitch = 20 / 180.0;
+      // yaw = - 10.0 / 180.0;
+      pitch = 0.0;
+      yaw = 0.0;
       cy = cos(yaw * 0.5);
       sy = sin(yaw * 0.5);
       cp = cos(pitch * 0.5);
