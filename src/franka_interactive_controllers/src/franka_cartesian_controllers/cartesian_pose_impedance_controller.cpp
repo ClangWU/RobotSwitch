@@ -192,6 +192,10 @@ void CartesianPoseImpedanceController::starting(const ros::Time& /*time*/) {
   _action_counter = -100;
   _episode_counter = 0;
   _print_flag = true;
+
+  std::string record_txt = "/home/yzc/project/robotswitch/src/franka_interactive_controllers/doc/record_data.txt";
+  matlab_file = std::ofstream(record_txt, std::ios::out);
+  
   std::string action_csv = "/home/yzc/project/robotswitch/src/franka_interactive_controllers/doc/actions.csv";
   action_file = std::ofstream(action_csv, std::ios::out);
   action_file << "action" << std::endl;
@@ -260,8 +264,8 @@ double x = orientation.x();
 double y = orientation.y();
 double z = orientation.z();
 
-double yaw = std::atan2(2.0 * (w * z + x * y), 1.0 - 2.0 * (y * y + z * z));
-double pitch = std::asin(2.0 * (w * y - z * x));
+// double yaw = std::atan2(2.0 * (w * z + x * y), 1.0 - 2.0 * (y * y + z * z));
+// double pitch = std::asin(2.0 * (w * y - z * x));
 double roll = std::atan2(2.0 * (w * x + y * z), 1.0 - 2.0 * (x * x + y * y));
 
   roll_degrees = roll * 180.0 / M_PI + 180.0; 
@@ -279,7 +283,7 @@ if (position(2) < 0.13)
                         << position(2) - position_init_(2)<< ", "
                         << roll_degrees << "]\"" << std::endl;
         // episode end record
-        if (position(2) < 0.025){// cutting to end threshold = 0.025
+        if (position(2) < 0.03){// cutting to end threshold = 0.035
           episode_end_file << _episode_counter/100 << std::endl;
           _print_flag = false;
         }
@@ -289,6 +293,23 @@ if (position(2) < 0.13)
 
   if(_print_flag)
   {
+      logData = new double[10];
+      logData[0] = (position(1) - position_init_(1));
+      logData[1] = (position(2) - position_init_(2));
+      logData[2] = (position_d_(1) - position_init_(1));
+      logData[3] = (position_d_(2) - position_init_(2));
+      logData[4] = (position(1) - position_d_(1));
+      logData[5] = (position(2) - position_d_(2));
+      logData[6] = position(1);
+      logData[7] = position(2);
+      logData[8] = compensated_force[1];
+      logData[9] = compensated_force[2];
+      matlab_file << ros::Time::now() << " ";
+      for (int i = 0; i < 10; i++)
+      {
+        matlab_file << logData[i] << " ";
+      }
+      matlab_file << std::endl;
       // 10Hz记录一次
       if (_update_counter % 100 == 0)
       {
@@ -299,20 +320,25 @@ if (position(2) < 0.13)
                      << roll_degrees << ", "
                      << compensated_force[1] << ", " 
                      << compensated_force[2] << "]\"";
+                     
           state_file << std::endl;
       }
       _update_counter += 1;
       _episode_counter += 1;
   }
 }
-    obs_array.data.clear();
-    obs_array.data.push_back(position(1) - position_init_(1));
-    obs_array.data.push_back(position(2) - position_init_(2));
-    obs_array.data.push_back(position(2)*100);
-    obs_array.data.push_back(compensated_force[1]);
-    obs_array.data.push_back(compensated_force[2]);
-    pub_observation.publish(obs_array);
-  //////////////////////////////////////////////////////////////////////////////////////////////////
+// print joint position
+  // std::cout << "joint position: " << q << std::endl;
+    
+    // obs_array.data.clear();
+    // obs_array.data.push_back((position(1) - position_init_(1))*100);
+    // obs_array.data.push_back((position(2) - position_init_(2))*100);
+    // obs_array.data.push_back(position(2)*100);
+    // obs_array.data.push_back(compensated_force[1]);
+    // obs_array.data.push_back(compensated_force[2]);
+    // pub_observation.publish(obs_array);
+
+      //////////////////////////////////////////////////////////////////////////////////////////////////
   //////////////////////              COMPUTING TASK CONTROL TORQUE           //////////////////////
   //////////////////////////////////////////////////////////////////////////////////////////////////
 

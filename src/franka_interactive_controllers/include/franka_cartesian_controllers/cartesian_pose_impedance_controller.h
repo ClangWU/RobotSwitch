@@ -86,6 +86,10 @@ class CartesianPoseImpedanceController : public controller_interface::MultiInter
   Eigen::Vector3d _Gravity;
   std_msgs::Float32MultiArray obs_array;
   Eigen::Vector3d force_in_world = Eigen::Vector3d::Zero();
+
+  std::string matlab_path;
+  std::ofstream matlab_file;
+  double *logData;
 };
 
 }  // namespace franka_interactive_controllers
