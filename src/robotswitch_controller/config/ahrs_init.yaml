@@ -1,0 +1,28 @@
+ahrs_config:
+  print_flag: false
+  calibration_times: 1000
+  filter_order: 1
+  if_acc_filter : true
+  acc_filter_cutoff: 50
+  vel_filter_cutoff: 0.02
+  pos_filter_cutoff: 0.2
+  file_path: "/home/yzc/project/robotswitch/src/robotswitch_controller/test/ahrs_dyn_hpf2_0.1.txt"
+# 2 order
+# 0.08  2000 0.05  fs
+# 0.05  2000 0.015 fs
+# 0.02  2000 0.010 fs
+# 0.01  2000 0.010 fs
+# 0.005  2000 0.010 fs
+
+# 1 order
+# 0.005  2000 0.005 fs
+
+
+# 2 order
+# v 0.01 p 0.1 2000  0.00000  fs  收敛慢 zd
+# v 0.1 p 0.01 2000  0.00000  fs  收敛慢 zd
+
+# final plan:
+# 1 order
+# v 0.1 p 0.01 2000  0.00000 no fs  收敛慢 zd
+# v 0.01 p 0.1 2000  0.00000 no fs  收敛慢 zd

@@ -1,0 +1,3 @@
+<launch> 
+    <node name="rviz" pkg="rviz" type="rviz" args="-d  $(find robotswitch_controller)/data/rs_ctrl.rviz" required="true"/>
+</launch> 
