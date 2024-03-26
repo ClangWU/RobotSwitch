@@ -82,7 +82,6 @@ set(H_FILES ${INCLUDE_DIR}/franka_cartesian_controllers/cartesian_pose_impedance
 include_directories(include/franka_cartesian_controllers include/franka_joint_controllers include/franka_motion_generators include/franka_utils ${catkin_INCLUDE_DIRS})
 include_directories(${dynamic_reconfigure_PACKAGE_PATH}/cmake/cfgbuild.cmake)
 
-
 ## Declare a C++ executable
 set(SRCS
   src/franka_cartesian_controllers/cartesian_pose_impedance_controller.cpp

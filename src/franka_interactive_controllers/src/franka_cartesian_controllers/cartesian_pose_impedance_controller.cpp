@@ -293,7 +293,7 @@ if (position(2) < 0.13)
 
   if(_print_flag)
   {
-      logData = new double[10];
+      logData = new double[11];
       logData[0] = (position(1) - position_init_(1));
       logData[1] = (position(2) - position_init_(2));
       logData[2] = (position_d_(1) - position_init_(1));
@@ -304,8 +304,9 @@ if (position(2) < 0.13)
       logData[7] = position(2);
       logData[8] = compensated_force[1];
       logData[9] = compensated_force[2];
+      logData[10] = roll_degrees;
       matlab_file << ros::Time::now() << " ";
-      for (int i = 0; i < 10; i++)
+      for (int i = 0; i < 11; i++)
       {
         matlab_file << logData[i] << " ";
       }
