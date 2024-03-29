@@ -193,7 +193,7 @@ void CartesianPoseImpedanceController::starting(const ros::Time& /*time*/) {
   _episode_counter = 0;
   _print_flag = true;
 
-  std::string record_txt = "/home/yzc/project/robotswitch/src/franka_interactive_controllers/doc/record_data.txt";
+  std::string record_txt = "/home/yzc/project/robotswitch/src/franka_interactive_controllers/doc/record_data4.txt";
   matlab_file = std::ofstream(record_txt, std::ios::out);
   
   std::string action_csv = "/home/yzc/project/robotswitch/src/franka_interactive_controllers/doc/actions.csv";
@@ -264,14 +264,26 @@ double x = orientation.x();
 double y = orientation.y();
 double z = orientation.z();
 
+double w1= orientation_d_.w();
+double x1= orientation_d_.x();
+double y1= orientation_d_.y();
+double z1= orientation_d_.z();
+
 // double yaw = std::atan2(2.0 * (w * z + x * y), 1.0 - 2.0 * (y * y + z * z));
 // double pitch = std::asin(2.0 * (w * y - z * x));
 double roll = std::atan2(2.0 * (w * x + y * z), 1.0 - 2.0 * (x * x + y * y));
+double roll1 = std::atan2(2.0 * (w1 * x1 + y1 * z1), 1.0 - 2.0 * (x1 * x1 + y1 * y1));
 
   roll_degrees = roll * 180.0 / M_PI + 180.0; 
+ double roll_degrees1 = roll1 * 180.0 / M_PI + 180.0;
+
   if(roll_degrees > 180.0)
     roll_degrees = roll_degrees - 360.0;
-// printf("roll_degrees: %f\n", roll_degrees);
+
+  if(roll_degrees1 > 180.0)
+    roll_degrees1 = roll_degrees1 - 360.0;
+
+// printf("roll_degrees: %f\n", roll_degrees1);
 if (position(2) < 0.13)
 {
   if(_print_flag)
@@ -293,7 +305,7 @@ if (position(2) < 0.13)
 
   if(_print_flag)
   {
-      logData = new double[11];
+      logData = new double[12];
       logData[0] = (position(1) - position_init_(1));
       logData[1] = (position(2) - position_init_(2));
       logData[2] = (position_d_(1) - position_init_(1));
@@ -305,8 +317,9 @@ if (position(2) < 0.13)
       logData[8] = compensated_force[1];
       logData[9] = compensated_force[2];
       logData[10] = roll_degrees;
+      logData[11] = roll_degrees1;
       matlab_file << ros::Time::now() << " ";
-      for (int i = 0; i < 11; i++)
+      for (int i = 0; i < 12; i++)
       {
         matlab_file << logData[i] << " ";
       }

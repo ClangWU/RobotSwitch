@@ -69,15 +69,6 @@ private:
             case State::CHOP:
                 chopAction();
                 break;
-
-
-
-
-
-
-
-
-                
             case State::COLLIDE:
                 collideAction();
                 break;

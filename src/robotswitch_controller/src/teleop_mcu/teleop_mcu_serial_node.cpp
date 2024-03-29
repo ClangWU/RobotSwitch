@@ -93,7 +93,7 @@ int main(int argc, char** argv)
       init_arm_pose = curr_arm_pose; //
     }
     else if(start_flag == 0x01){
-      printf("start_flag: %d\n", start_flag);
+      // printf("start_flag: %d\n", start_flag);
       /*
             //前臂与上臂垂直
             Eigen::Quaterniond robot_fore_arm_initial_quaternion(0.7071,0,0,0.7071);
@@ -132,7 +132,7 @@ int main(int argc, char** argv)
       curr_arm_pose.pose.orientation.y = cr * sp * cy + sr * cp * sy;
       curr_arm_pose.pose.orientation.z = cr * cp * sy - sr * sp * cy;
       // euler_angle[2]
-      printf("roll %f\n", roll);
+      // printf("roll %f\n", roll);
       delta_arm_pose.pose.orientation = curr_arm_pose.pose.orientation;
       robot_pose_publisher.publish(delta_arm_pose);
     }    
