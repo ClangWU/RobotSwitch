@@ -32,28 +32,19 @@ public:
     double fz_t_1 = 0;
     double fz_t_2 = 0;
     double theta = 0;
-    // move delta
-    double move_delta_y = 0.000001;
-    double move_delta_z = 0.000005;
-    double posz_maxgap = 0.008;
-    double posz_mingap = 0.0005 ; 
-    double fz_gap = 10.0;     
-
-    bool fz_gap_flag = false;      // fz reach high value
-    bool posz_stuck_flag = false;  //curr z keep same
-    bool posz_mingap_flag = false; // delta z reach low value    
-    bool posz_maxgap_flag = false; // delta z reach high value
-
-    Autocut() : currentState(State::CHOP) {}
+    double delta = 0.000
+    Autocut() : currentState(State::CHOP) {
+    }
 // obs - posy  posz    fy    fz
 // act - posdy posdz theta
     void update(double *obs, double *act) {
         switch (currentState) {
             case State::CHOP:
-                if (pos_zt - posd_zt > posz_gap){
-                    posz_maxgap_flag = true;
-                }else
-                currentState = State::COLLIDE;
+                if (posd_zt - > )
+                {
+                    /* code */
+                    currentState = State::COLLIDE;
+                }
                 break;
             case State::COLLIDE:
                 currentState = State::RETRACT;

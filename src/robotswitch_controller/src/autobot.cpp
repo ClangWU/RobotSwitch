@@ -16,7 +16,7 @@ void ObsCallback((const std_msgs::Float32MultiArray::ConstPtr& msg))
   state = msg;
 }
 
-ros::Rate loop_rate(10); // 5 ms
+ros::Rate loop_rate(200); // 5 ms
 
 int main() {
     ros::init(argc, argv, "teleop_mcu_node"); //初始化节点
