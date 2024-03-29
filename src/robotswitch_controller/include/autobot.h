@@ -52,8 +52,7 @@ public:
             case State::CHOP:
                 if (pos_zt - posd_zt > posz_gap){
                     posz_maxgap_flag = true;
-                }
-
+                }else
                 currentState = State::COLLIDE;
                 break;
             case State::COLLIDE:
