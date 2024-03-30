@@ -12,36 +12,36 @@ enum class State {
 
 class Autocut {
 public:
-    double pos_yt = 0;
-    double pos_zt = 0;
-    double pos_yt_1 = 0;
-    double pos_yt_2 = 0;
-    double pos_zt_1 = 0;
-    double pos_zt_2 = 0;
+    float pos_yt = 0;
+    float pos_zt = 0;
+    float pos_yt_1 = 0;
+    float pos_yt_2 = 0;
+    float pos_zt_1 = 0;
+    float pos_zt_2 = 0;
 
-    double posd_yt = 0;
-    double posd_zt = 0;
-    double posd_yt_1 = 0;
-    double posd_zt_1 = 0;
+    float posd_yt = 0;
+    float posd_zt = 0;
+    float posd_yt_1 = 0;
+    float posd_zt_1 = 0;
 
-    double fy_t = 0;
-    double fy_t_1 = 0;
-    double fy_t_2 = 0;
+    float fy_t = 0;
+    float fy_t_1 = 0;
+    float fy_t_2 = 0;
 
-    double fz_t = 0;
-    double fz_t_1 = 0;
-    double fz_t_2 = 0;
+    float fz_t = 0;
+    float fz_t_1 = 0;
+    float fz_t_2 = 0;
 
-    double theta = 0;
-    double thetad = 0;    
+    float theta = 0;
+    float thetad = 0;    
     // move delta
-    double move_delta_y = 0.00001;
-    double move_delta_z = 0.00005;
-    double epsilon = 0.00001;
-    double posz_maxgap = 0.008;
-    double posz_mingap = 0.0002; 
-    double fz_gap = 8.0;   
-    double fy_gap = 5.0;
+    float move_delta_y = 0.00001;
+    float move_delta_z = 0.00005;
+    float epsilon = 0.00001;
+    float posz_maxgap = 0.008;
+    float posz_mingap = 0.0002; 
+    float fz_gap = 8.0;   
+    float fy_gap = 5.0;
 
 
     short posy_add_times = 0;
@@ -62,7 +62,7 @@ public:
     Autocut() : currentState(State::CHOP) {}
 // obs - posy  posz   fy  fz theta
 // act - posdy posdz theta
-    void update(double *obs, double *act) {
+    void update(const std::vector<float>& obs, std::vector<float>& act)  {
 
         theta = obs[2];
         switch (currentState) {
@@ -76,9 +76,7 @@ public:
                 if (fz_t > fz_gap && fz_t_1 > fz_gap && fz_t_2 > fz_gap)
                     fz_gap_flag = true; // fz reach high value
 
-                if (fy_t > fy_gap && fy_t_1 > fy_gap && fy_t_2 > fy_gap)
-
-                }
+                // if (fy_t > fy_gap && fy_t_1 > fy_gap && fy_t_2 > fy_gap)
                 
 
                 if (posz_maxgap_flag && posz_stuck_flag && fz_gap_flag){
@@ -134,19 +132,19 @@ public:
 private:
     State currentState;
     State nextState;
-    void performAction(double *act) {
+    void performAction(std::vector<float>& act) {
         switch (currentState) {
             case State::CHOP:
-                chopAction(double *act);
+                chopAction(act);
                 break;
             case State::COLLIDE:
-                collideAction(double *act);
+                collideAction(act);
                 break;
             case State::ROTATE:
-                rotateAction(double *act);
+                rotateAction(act);
                 break;
             case State::RETRACT:
-                retractAction(double *act);
+                retractAction(act);
                 break;
             case State::FINAL:
                 std::cout << "Reached final state." << std::endl;
@@ -158,7 +156,7 @@ private:
     }
 // act - posdy posdz theta
 
-    void chopAction(double *act) {
+    void chopAction(std::vector<float>& act) {
         std::cout << "\033[1;32mPerforming chop action\033[0m" << std::endl;
         if (currentState == State::FINAL){
             posd_yt = posd_yt;
@@ -201,7 +199,7 @@ private:
         }
     }
 
-    void retractAction(double *act) {
+    void retractAction(std::vector<float>& act) {
         std::cout << "\033[1;34mPerforming retract action\033[0m" << std::endl;
         if (!posz_retract_flag)
         {
@@ -226,28 +224,21 @@ private:
         }else{
             posd_yt = posd_yt;
         }
-        thetad = thetad;
         act[0] = posd_yt;
         act[1] = posd_zt;
         act[2] = thetad;
     }
 
-    void rotateAction(double *act) {
+    void rotateAction(std::vector<float>& act) {
         std::cout << "\033[1;33mPerforming rotate action\033[0m" << std::endl;
-
-        posd_yt = posd_yt;
-        posd_zt = posd_zt;
         thetad = thetad + 0.1;
         act[0] = posd_yt;
         act[1] = posd_zt;
         act[2] = thetad;
     }
 
-    void collideAction(double *act) {
+    void collideAction(std::vector<float>& act) {
         std::cout << "\033[1;31mPerforming collide action\033[0m" << std::endl;
-        posd_yt = posd_yt;
-        posd_zt = posd_zt;
-        thetad = thetad;
         act[0] = posd_yt;
         act[1] = posd_zt;
         act[2] = thetad;

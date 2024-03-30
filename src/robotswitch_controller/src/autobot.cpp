@@ -14,6 +14,7 @@
 
 // 使用vector来自动管理内存
 static std::vector<float> state;
+static std::vector<float> act = {0, 0, 0}; 
 
 // 假设Autocut类有合适的接口
 static Autocut obj;
@@ -26,7 +27,7 @@ void ObsCallback(const std_msgs::Float32MultiArray::ConstPtr& msg) {
 }
 
 int main(int argc, char **argv) {
-    ros::init(argc, argv, "teleop_mcu_node"); // 初始化节点
+    ros::init(argc, argv, "autobot"); // 初始化节点
     ros::NodeHandle nh;
     ros::Publisher robot_pose_publisher = nh.advertise<geometry_msgs::PoseStamped>("/cartesian_impedance_controller/desired_pose", 10);
     ros::Subscriber obs_sub = nh.subscribe("/observation", 10, ObsCallback);
@@ -35,10 +36,9 @@ int main(int argc, char **argv) {
     while (ros::ok()) {            
         // 假设update方法现在接受std::vector<float>类型
         // 并且我们有一个方法来生成所需的PoseStamped消息
-         obj.update(state);
+        obj.update(state, act);
         robot_pose_publisher.publish(desired_pose);
         ros::spinOnce();
         loop_rate.sleep();
     }
-    // 不需要手动调用ros::waitForShutdown();
 }
