@@ -1,39 +1,44 @@
-#include "teleop_mcu/teleop_mcu_control.h"
+#include "ros/ros.h"
 #include <geometry_msgs/Twist.h>
 #include <std_msgs/Float32.h>
 #include <geometry_msgs/WrenchStamped.h>
 #include <std_msgs/Float32MultiArray.h>
+#include <geometry_msgs/PoseStamped.h>
+// 假设autobot.h存在且定义了Autocut类
 #include "autobot.h"
 #include <Eigen/Dense>
-#include <math.h>
+#include <vector>
 #include <iostream>
 #include <chrono>
 #include <thread>
-static double *state = NULL;
-static double *action = NULL;
-void ObsCallback((const std_msgs::Float32MultiArray::ConstPtr& msg))
-{
-  state = msg;
+
+// 使用vector来自动管理内存
+static std::vector<float> state;
+
+// 假设Autocut类有合适的接口
+static Autocut obj;
+
+void ObsCallback(const std_msgs::Float32MultiArray::ConstPtr& msg) {
+    state.clear();
+    for (auto val : msg->data) {
+        state.push_back(val);
+    }
 }
 
-ros::Rate loop_rate(200); // 5 ms
-
-int main() {
-    ros::init(argc, argv, "teleop_mcu_node"); //初始化节点
+int main(int argc, char **argv) {
+    ros::init(argc, argv, "teleop_mcu_node"); // 初始化节点
     ros::NodeHandle nh;
-    ros::NodeHandle private_nh("~"); 
-    ros::Publisher  robot_pose_publisher =
-    nh.advertise<geometry_msgs::PoseStamped>("/cartesian_impedance_controller/desired_pose", 10);
-    ros::Subscriber obs_sub = 
-    nh.subscribe("/observation", 10, &ObsCallback);
-    Autocut obj;
-
-  while(ros::ok())
-  {
-    obj.update(state, action);
-    robot_pose_publisher.publish
-    ros::spinOnce();
-    loop_rate.sleep();
-  }
-  ros::waitForShutdown();
+    ros::Publisher robot_pose_publisher = nh.advertise<geometry_msgs::PoseStamped>("/cartesian_impedance_controller/desired_pose", 10);
+    ros::Subscriber obs_sub = nh.subscribe("/observation", 10, ObsCallback);
+    ros::Rate loop_rate(10); // 设置循环频率
+    
+    while (ros::ok()) {            
+        // 假设update方法现在接受std::vector<float>类型
+        // 并且我们有一个方法来生成所需的PoseStamped消息
+         obj.update(state);
+        robot_pose_publisher.publish(desired_pose);
+        ros::spinOnce();
+        loop_rate.sleep();
+    }
+    // 不需要手动调用ros::waitForShutdown();
 }

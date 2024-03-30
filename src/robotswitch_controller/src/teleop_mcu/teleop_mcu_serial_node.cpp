@@ -116,9 +116,9 @@ int main(int argc, char** argv)
         roll = M_PI - 0.0873; 
       }
       
-      // pitch = 20 / 180.0;
+      pitch = 20 / 180.0;
       // yaw = - 10.0 / 180.0;
-      pitch = 0.0;
+      // pitch = 0.0;
       yaw = 0.0;
       cy = cos(yaw * 0.5);
       sy = sin(yaw * 0.5);
