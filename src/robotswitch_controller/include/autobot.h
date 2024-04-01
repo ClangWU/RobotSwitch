@@ -45,7 +45,7 @@ public:
     float posz_maxgap = 0.008;
     float posz_mingap = 0.0002; 
     float posy_retract_distance = 0.005;
-    float posz_retract_distance = 0.01;
+    float posz_retract_distance = 0.008;
 
     float fy_before_collide = 101.0;
     float fz_before_collide = 101.0;
@@ -255,13 +255,13 @@ private:
             posy_before_chop = pos_yt;
         
         if (currentState == State::FINAL){
-            posd_zt = posd_zt - move_delta_z;
+            posd_zt = posd_zt - move_delta_z * 2;
                 if (theta > 0.0){
                     thetad = thetad - rotate_delta; 
                 }else{
                     if (thetad < -1.0)
                     {
-                        thetad = + rotate_delta;
+                        thetad = thetad + rotate_delta;
                     } 
                 }  
         }
