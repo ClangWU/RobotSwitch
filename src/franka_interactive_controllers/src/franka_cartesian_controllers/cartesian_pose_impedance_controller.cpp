@@ -193,7 +193,7 @@ void CartesianPoseImpedanceController::starting(const ros::Time& /*time*/) {
   _episode_counter = 0;
   _print_flag = true;
 
-  std::string record_txt = "/home/yzc/project/robotswitch/src/franka_interactive_controllers/doc/record_data4.txt";
+  std::string record_txt = "/home/yzc/project/robotswitch/src/franka_interactive_controllers/doc/record_data5.txt";
   matlab_file = std::ofstream(record_txt, std::ios::out);
   
   std::string action_csv = "/home/yzc/project/robotswitch/src/franka_interactive_controllers/doc/actions.csv";
@@ -259,6 +259,9 @@ void CartesianPoseImpedanceController::update(const ros::Time& /*time*/,
       robot_state.K_F_ext_hat_K[2] + GinF[2]);
   // force_in_world = rotation_matrix * compensated_force; // compensate force 
 
+// print joint 
+// std::cout << "joint position: " << q << std::endl;
+
 double w = orientation.w();
 double x = orientation.x();
 double y = orientation.y();
@@ -305,25 +308,26 @@ if (position(2) < 0.13)
 
   if(_print_flag)
   {
-      logData = new double[12];
-      logData[0] = (position(1) - position_init_(1));
-      logData[1] = (position(2) - position_init_(2));
-      logData[2] = (position_d_(1) - position_init_(1));
-      logData[3] = (position_d_(2) - position_init_(2));
-      logData[4] = (position(1) - position_d_(1));
-      logData[5] = (position(2) - position_d_(2));
-      logData[6] = position(1);
-      logData[7] = position(2);
-      logData[8] = compensated_force[1];
-      logData[9] = compensated_force[2];
-      logData[10] = roll_degrees;
-      logData[11] = roll_degrees1;
-      matlab_file << ros::Time::now() << " ";
-      for (int i = 0; i < 12; i++)
-      {
-        matlab_file << logData[i] << " ";
-      }
-      matlab_file << std::endl;
+      // logData = new double[12];
+      // logData[0] = (position(1) - position_init_(1));
+      // logData[1] = (position(2) - position_init_(2));
+      // logData[2] = (position_d_(1) - position_init_(1));
+      // logData[3] = (position_d_(2) - position_init_(2));
+      // logData[4] = (position(1) - position_d_(1));
+      // logData[5] = (position(2) - position_d_(2));
+      // logData[6] = position(1);
+      // logData[7] = position(2);
+      // logData[8] = compensated_force[1];
+      // logData[9] = compensated_force[2];
+      // logData[10] = roll_degrees;
+      // logData[11] = roll_degrees1;
+      // matlab_file << ros::Time::now() << " ";
+      // for (int i = 0; i < 12; i++)
+      // {
+      //   matlab_file << logData[i] << " ";
+      // }
+      // matlab_file << std::endl;
+
       // 10Hz记录一次
       if (_update_counter % 100 == 0)
       {
@@ -344,13 +348,14 @@ if (position(2) < 0.13)
 // print joint position
   // std::cout << "joint position: " << q << std::endl;
     
-    // obs_array.data.clear();
-    // obs_array.data.push_back((position(1) - position_init_(1))*100);
-    // obs_array.data.push_back((position(2) - position_init_(2))*100);
-    // obs_array.data.push_back(position(2)*100);
-    // obs_array.data.push_back(compensated_force[1]);
-    // obs_array.data.push_back(compensated_force[2]);
-    // pub_observation.publish(obs_array);
+    obs_array.data.clear();
+    obs_array.data.push_back((position(1) - position_init_(1)));
+    obs_array.data.push_back((position(2) - position_init_(2)));
+    // obs_array.data.push_back(position(2));
+    obs_array.data.push_back(compensated_force[1]);
+    obs_array.data.push_back(compensated_force[2]);
+    obs_array.data.push_back(roll_degrees);
+    pub_observation.publish(obs_array);
 
       //////////////////////////////////////////////////////////////////////////////////////////////////
   //////////////////////              COMPUTING TASK CONTROL TORQUE           //////////////////////

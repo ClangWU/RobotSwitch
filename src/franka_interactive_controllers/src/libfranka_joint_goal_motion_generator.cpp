@@ -91,7 +91,12 @@ int main(int argc, char** argv) {
         break;
        case 7 :
         std::cout << "Selected q_knife as goal" << std::endl;
-        q_goal = {{-0.0133481, -0.128973, -0.0548055, -2.31734, -0.0430293, 2.21409, 0.762126}};
+        q_goal = {{-0.0174359, 0.260923, 0.012301, -2.39848, 0.0438816, 2.66136, 0.767585}};
+        break;
+
+       case 8 :
+        std::cout << "Selected q_aside as goal" << std::endl;
+        q_goal = {{-0.0136879, 0.404691, 0.128166, -2.3741, 0.0412096, 2.72549, 0.866567}};
         break;
     }
   

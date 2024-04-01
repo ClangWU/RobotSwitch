@@ -28,6 +28,7 @@ ${INCLUDE_DIR}/rs_common/filter_math.h
 ${INCLUDE_DIR}/rs_common/biquad_filter.h
 ${INCLUDE_DIR}/rs_common/common_data.h
 ${INCLUDE_DIR}/rs_common/serial_node.h
+${INCLUDE_DIR}/autobot.h
 )
 
 include_directories(
@@ -104,6 +105,9 @@ add_executable(imu_mcu_node
               src/imu_mcu/imu_mcu_serial_node.cpp
               src/imu_mcu/imu_mcu_control.cpp)
 target_link_libraries(imu_mcu_node ${catkin_LIBRARIES})
+
+add_executable(autobot_node  src/autobot.cpp)
+target_link_libraries(autobot_node ${catkin_LIBRARIES})
 
 ## crc_table
 add_library(crc_table src/ahrs/crc_table.cpp)

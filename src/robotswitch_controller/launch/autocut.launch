@@ -1,0 +1,12 @@
+<launch>
+    <arg name="use_franka" default="true" />
+
+    <!-- 1 启动franka控制器 franka_interactive_bringup.launch -->
+    <group if="$(arg use_franka)">
+        <include file="$(find franka_interactive_controllers)/launch/franka_interactive_bringup.launch"/>
+    </group>
+
+    <!-- 使用launch-prefix属性在启动autobot_node前延迟3秒 -->
+    <node name="autobot_node" pkg="robotswitch_controller" type="autobot_node" respawn="false" output="screen">
+    </node>
+</launch>
