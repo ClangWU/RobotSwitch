@@ -33,7 +33,7 @@ int main(int argc, char **argv) {
     ros::Publisher robot_pose_publisher = nh.advertise<geometry_msgs::PoseStamped>("/cartesian_impedance_controller/desired_pose", 10);
     ros::Publisher autocut_publisher = nh.advertise<std_msgs::Float32MultiArray>("/autocut", 10);
     ros::Subscriber obs_sub = nh.subscribe("/observation", 10, ObsCallback);
-    ros::Rate loop_rate(50); // 设置循环频率
+    ros::Rate loop_rate(20); // 设置循环频率
     std_msgs::Float32MultiArray obs_array;
     double roll, pitch, yaw = 0.0;
     double cy, sy, cp, sp, cr, sr;

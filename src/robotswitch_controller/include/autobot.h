@@ -50,11 +50,12 @@ public:
     float fy_before_collide = 101.0;
     float fz_before_collide = 101.0;
     float theta_before_rotate = 101.0;
+    float posz_keep_going_threshold = 0.01;
     float posy_before_chop = 101.0;
     float posz_before_chop = 101.0;
     float posy_track = 0;
-    float rotate_delta = 0.1;
-    float fz_max = 8.0;            
+    float rotate_delta = 0.2;
+    float fz_max = 10.0;            
     float fy_gap = 4.0;                    
 
     short posy_add_times = 0;
@@ -62,6 +63,7 @@ public:
     short collide_count = 0;
     short collide_during_time = 0;
     short collide_during_time_max = 2;
+    bool from_chop_flag = false;
     bool posz_keep_going_flag = false;
     bool fz_max_flag = false;      // fz reach high value
     bool fz_keep_flag = false;     // fz keep same
@@ -106,9 +108,11 @@ public:
                 }
                 if (posz_before_chop > 100.0){
                     posz_before_chop = pos_zt;
+                    std::cout << "posz_before_chop" << posz_before_chop << std::endl;
                 }
-                if (posz_before_chop - pos_zt > 0.015)
+                if (posz_before_chop - pos_zt > posz_keep_going_threshold){
                     posz_keep_going_flag = true; // z keep going down
+                }
 
                 if (pos_zt - posd_zt > posz_maxgap) 
                     posz_maxgap_flag = true; // z gap reach max    
@@ -142,17 +146,19 @@ public:
                     currentState = State::TILT_COLLIDE; // change TILT_COLLIDE state
                 }
 
-                if (tilt_collide_flag && chop_anyway_flag)
-                {
+                if (tilt_collide_flag && chop_anyway_flag){
                     tilt_collide_flag = false;
-                    currentState = State::FINAL; // change TILT_COLLIDE state
+                    std::cout << "reach final" << std::endl;
+                    currentState = State::FINAL; // change TILT_COLLIDE state 
                 }
                 
-                if (rotate_count != 0 && posz_keep_going_flag)
-                {
-                    currentState = State::FINAL; // change TILT_COLLIDE state
-                }
-                
+                if (rotate_count != 0 && posz_keep_going_flag){
+                    std::cout << "keep going and retract" << std::endl;
+                    currentState = State::RETRACT; // change TILT_COLLIDE state
+                    from_chop_flag = true;
+                }else
+                    posz_keep_going_flag =  false;
+
                 break;
 
             case State::TILT_COLLIDE:
@@ -184,12 +190,17 @@ public:
             case State::RETRACT:
 
                 if (posz_retract_flag && posy_retract_flag){
-                    rotate_count++;
-                    posz_retract_flag = false;
-                    posy_retract_flag = false;
-                    posy_retract_point = 101.0;
-                    posz_retract_point = 101.0;
-                    currentState = State::ROTATE;
+                    if (!from_chop_flag){
+                        rotate_count++;
+                        posz_retract_flag = false;
+                        posy_retract_flag = false;
+                        posy_retract_point = 101.0;
+                        posz_retract_point = 101.0;
+                        currentState = State::ROTATE;              
+                    }else{
+                        from_chop_flag = false;
+                        currentState = State::FINAL;
+                    }
                 }
                 break;          
             case State::ROTATE:
@@ -325,13 +336,12 @@ private:
         }
         if (posz_retract_point > 100){
             posz_retract_point = pos_zt;
-            std::cout << posz_retract_point << std::endl;
         }
         
         if (!posz_retract_flag)
         {
             if (posd_zt < posz_retract_point + posz_retract_distance){
-                posd_zt = posd_zt + move_delta_z;
+                posd_zt = posd_zt + move_delta_z * 2 ;
                 // std::cout << posz_retract_point + posz_retract_distance << std::endl;
             }else
                 posz_retract_flag = true;
@@ -339,10 +349,15 @@ private:
         
         if (!posy_retract_flag)
         {
-            if (posd_yt < posy_retract_point + posy_retract_distance)
-                posd_yt = posd_yt + move_delta_y;
-            else
-                posy_retract_flag = true;
+            if (!from_chop_flag)
+            {
+                if (posd_yt < posy_retract_point + posy_retract_distance)
+                    posd_yt = posd_yt + move_delta_y * 2;
+                else
+                    posy_retract_flag = true;
+            }else{
+                    posy_retract_flag = true;
+            }
         }
         act[0] = posd_yt;
         act[1] = posd_zt;
