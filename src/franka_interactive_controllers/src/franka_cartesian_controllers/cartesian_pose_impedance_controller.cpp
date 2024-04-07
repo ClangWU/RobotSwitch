@@ -186,12 +186,12 @@ void CartesianPoseImpedanceController::starting(const ros::Time& /*time*/) {
   franka::RobotState initial_state = state_handle_->getRobotState();
   Eigen::Map<Eigen::Matrix<double, 7, 1>> q_initial(initial_state.q.data());
   
-  _Gravity<< 0.0, 0.0, -2.18;
+  _Gravity<< 0.0, 0.0, -3.5;
   roll_degrees = 0.0;
   _update_counter = 0;
   _action_counter = -100;
   _episode_counter = 0;
-  _print_flag = true;
+  _print_flag = false;
 
   std::string record_txt = "/home/yzc/project/robotswitch/src/franka_interactive_controllers/doc/record_data5.txt";
   matlab_file = std::ofstream(record_txt, std::ios::out);
@@ -278,15 +278,15 @@ double roll = std::atan2(2.0 * (w * x + y * z), 1.0 - 2.0 * (x * x + y * y));
 double roll1 = std::atan2(2.0 * (w1 * x1 + y1 * z1), 1.0 - 2.0 * (x1 * x1 + y1 * y1));
 
   roll_degrees = roll * 180.0 / M_PI + 180.0; 
- double roll_degrees1 = roll1 * 180.0 / M_PI + 180.0;
+ double roll_degreesd = roll1 * 180.0 / M_PI + 180.0;
 
   if(roll_degrees > 180.0)
     roll_degrees = roll_degrees - 360.0;
 
-  if(roll_degrees1 > 180.0)
-    roll_degrees1 = roll_degrees1 - 360.0;
+  if(roll_degreesd > 180.0)
+    roll_degreesd = roll_degreesd - 360.0;
 
-// printf("roll_degrees: %f\n", roll_degrees1);
+// printf("roll_degrees: %f\n", roll_degreesd);
 if (position(2) < 0.13)
 {
   if(_print_flag)
@@ -294,9 +294,9 @@ if (position(2) < 0.13)
       if (_action_counter >= 0 && _action_counter % 100 == 0)
       {
           action_file << "\"[";
-          action_file  << position(1) - position_init_(1)<< ", "
-                        << position(2) - position_init_(2)<< ", "
-                        << roll_degrees << "]\"" << std::endl;
+          action_file  << position_d_(1) - position_init_(1)<< ", "
+                        << position_d_(2) - position_init_(2)<< ", "
+                        << roll_degreesd << "]\"" << std::endl;
         // episode end record
         if (position(2) < 0.03){// cutting to end threshold = 0.035
           episode_end_file << _episode_counter/100 << std::endl;
@@ -308,34 +308,38 @@ if (position(2) < 0.13)
 
   if(_print_flag)
   {
-      // logData = new double[12];
-      // logData[0] = (position(1) - position_init_(1));
-      // logData[1] = (position(2) - position_init_(2));
-      // logData[2] = (position_d_(1) - position_init_(1));
-      // logData[3] = (position_d_(2) - position_init_(2));
-      // logData[4] = (position(1) - position_d_(1));
-      // logData[5] = (position(2) - position_d_(2));
-      // logData[6] = position(1);
-      // logData[7] = position(2);
-      // logData[8] = compensated_force[1];
-      // logData[9] = compensated_force[2];
-      // logData[10] = roll_degrees;
-      // logData[11] = roll_degrees1;
-      // matlab_file << ros::Time::now() << " ";
-      // for (int i = 0; i < 12; i++)
-      // {
-      //   matlab_file << logData[i] << " ";
-      // }
-      // matlab_file << std::endl;
+      logData = new double[12];
+      logData[0] = (position(1) - position_init_(1));
+      logData[1] = (position(2) - position_init_(2));
+      logData[2] = (position_d_(1) - position_init_(1));
+      logData[3] = (position_d_(2) - position_init_(2));
+      logData[4] = (position(1) - position_d_(1));
+      logData[5] = (position(2) - position_d_(2));
+      logData[6] = position(1);
+      logData[7] = position(2);
+      logData[8] = compensated_force[1];
+      logData[9] = compensated_force[2];
+      logData[10] = roll_degrees;
+      logData[11] = roll_degreesd;
+      matlab_file << ros::Time::now() << " ";
+      for (int i = 0; i < 12; i++)
+      {
+        matlab_file << logData[i] << " ";
+      }
+      matlab_file << std::endl;
 
       // 10Hz记录一次
       if (_update_counter % 100 == 0)
       {
         // state record
                     state_file << "\"[";
-          state_file << position(1) - position_init_(1)<< ", "
+          state_file << position(2) - 0.03 << ", "
+                     << position(1) - position_init_(1)<< ", "
+                     << position_d_(1) - position_init_(1) << ", "
                      << position(2) - position_init_(2)<< ", "
+                     << position_d_(2) - position_init_(2) << ", "
                      << roll_degrees << ", "
+                     << roll_degreesd << ", "
                      << compensated_force[1] << ", " 
                      << compensated_force[2] << "]\"";
                      
@@ -351,10 +355,10 @@ if (position(2) < 0.13)
     obs_array.data.clear();
     obs_array.data.push_back((position(1) - position_init_(1)));
     obs_array.data.push_back((position(2) - position_init_(2)));
-    // obs_array.data.push_back(position(2));
     obs_array.data.push_back(compensated_force[1]);
     obs_array.data.push_back(compensated_force[2]);
     obs_array.data.push_back(roll_degrees);
+    obs_array.data.push_back(position(2));
     pub_observation.publish(obs_array);
 
       //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -517,7 +521,7 @@ PLUGINLIB_EXPORT_CLASS(franka_interactive_controllers::CartesianPoseImpedanceCon
 
 // double yaw_degrees1 = yaw1 * 180.0 / M_PI;
 // double pitch_degrees1 = pitch1 * 180.0 / M_PI;
-// double roll_degrees1 = roll1 * 180.0 / M_PI;
+// double roll_degreesd = roll1 * 180.0 / M_PI;
 
 // 打印结果
 // std::cout << "Yaw (in degrees): " << yaw_degrees << std::endl;
@@ -525,7 +529,7 @@ PLUGINLIB_EXPORT_CLASS(franka_interactive_controllers::CartesianPoseImpedanceCon
 // std::cout << "Roll (in degrees): " << roll_degrees << std::endl;
 // std::cout << "Yaw1 (in degrees): " << yaw_degrees1 << std::endl;
 // std::cout << "Pitch1 (in degrees): " << pitch_degrees1 << std::endl;
-// std::cout << "Roll1 (in degrees): " << roll_degrees1 << std::endl;
+// std::cout << "Roll1 (in degrees): " << roll_degreesd << std::endl;
 
 
 // 打印两个四元数，每个元素wxyz并列对比一下

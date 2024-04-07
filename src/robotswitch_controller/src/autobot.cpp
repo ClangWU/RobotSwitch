@@ -33,8 +33,9 @@ int main(int argc, char **argv) {
     ros::Publisher robot_pose_publisher = nh.advertise<geometry_msgs::PoseStamped>("/cartesian_impedance_controller/desired_pose", 10);
     ros::Publisher autocut_publisher = nh.advertise<std_msgs::Float32MultiArray>("/autocut", 10);
     ros::Subscriber obs_sub = nh.subscribe("/observation", 10, ObsCallback);
-    ros::Rate loop_rate(20); // 设置循环频率
+    ros::Rate loop_rate(50); // 设置循环频率
     std_msgs::Float32MultiArray obs_array;
+
     double roll, pitch, yaw = 0.0;
     double cy, sy, cp, sp, cr, sr;
     while (ros::ok()) {            
@@ -43,6 +44,8 @@ int main(int argc, char **argv) {
         obj.update(state, act);
 
         roll = (act[2] - 180.0) * M_PI / 180.0;
+        // roll = (0 - 180.0) * M_PI / 180.0;
+
         pitch = 20 / 180.0;
         yaw = 0.0;
         cy = cos(yaw * 0.5);
@@ -55,6 +58,8 @@ int main(int argc, char **argv) {
         cut_pose.pose.position.x = 0;
         cut_pose.pose.position.y = act[0];
         cut_pose.pose.position.z = act[1];
+        // cut_pose.pose.position.y = 0;
+        // cut_pose.pose.position.z = 0;
         cut_pose.pose.orientation.w = cr * cp * cy + sr * sp * sy;
         cut_pose.pose.orientation.x = sr * cp * cy - cr * sp * sy;
         cut_pose.pose.orientation.y = cr * sp * cy + sr * cp * sy;
@@ -66,7 +71,7 @@ int main(int argc, char **argv) {
         obs_array.data.push_back(act[0]*100);
         obs_array.data.push_back(act[1]*100);
         obs_array.data.push_back(act[2]);
-        if (state.size() < 5) {
+        if (state.size() < 6) {
             std::cout << "obs size" << state.size() << std::endl;
             std::cerr << "Invalid observation data." << std::endl;} // 或者其他错误处理
         else{
