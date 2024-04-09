@@ -72,7 +72,7 @@ public:
     float rotate_delta = 0.2;
     float fz_max = 12.0;            
     float fy_gap = 3.0;                    
-    float fz_gap = 5.0;
+    float fz_gap = 3.0;
 
     float rotate_angle1 = 5.0;
     float rotate_angle2 = 10.0;
@@ -98,30 +98,30 @@ public:
     bool tilt_action_posdy_flag = false;
     bool tilt_action_therad_flag = false;
     bool print_cut_finish_flag = false;
-    bool posz_stuck_flag = false;  //curr z keep same
+    bool posz_stuck_flag = false;  //curr z keep same 
     bool posz_mingap_flag = false; // delta z reach low value    
     bool posz_maxgap_flag = false; // delta z reach high value
     bool posz_retract_flag = false; // z retract
     bool posy_retract_flag = false; // y retract
     bool rotate_done_flag = false; // rotate flag
     Autocut() : currentState(State::CHOP) {
-            std::string state_path = "/home/yzc/project/robotswitch/src/robotswitch_controller/data/50hz_obs_peach1.csv";
+            std::string state_path = "/home/yzc/project/robotswitch/src/robotswitch_controller/data/50hz_obs_t26.csv";
             state_file = std::ofstream(state_path, std::ios::out);
             state_file << "observation" << std::endl;
-            std::string act_path = "/home/yzc/project/robotswitch/src/robotswitch_controller/data/50hz_act_peach1.csv";
+            std::string act_path = "/home/yzc/project/robotswitch/src/robotswitch_controller/data/50hz_act_t26.csv";
             act_file = std::ofstream(act_path, std::ios::out);
             act_file << "action" << std::endl;
-            std::string epi_path = "/home/yzc/project/robotswitch/src/robotswitch_controller/data/50hz_episode_peach1.csv";
+            std::string epi_path = "/home/yzc/project/robotswitch/src/robotswitch_controller/data/50hz_episode_t26.csv";
             epi_file = std::ofstream(epi_path, std::ios::out);
             epi_file << "episode_ends" << std::endl;
             
-            std::string _state_path = "/home/yzc/project/robotswitch/src/robotswitch_controller/data/10hz_obs_peach1.csv";
+            std::string _state_path = "/home/yzc/project/robotswitch/src/robotswitch_controller/data/10hz_obs_t26.csv";
             _state_file = std::ofstream(_state_path, std::ios::out);
             _state_file << "observation" << std::endl;
-            std::string _act_path = "/home/yzc/project/robotswitch/src/robotswitch_controller/data/10hz_act_peach1.csv";
+            std::string _act_path = "/home/yzc/project/robotswitch/src/robotswitch_controller/data/10hz_act_t26.csv";
             _act_file = std::ofstream(_act_path, std::ios::out);
             _act_file << "action" << std::endl;
-            std::string _epi_path = "/home/yzc/project/robotswitch/src/robotswitch_controller/data/10hz_episode_peach1.csv";
+            std::string _epi_path = "/home/yzc/project/robotswitch/src/robotswitch_controller/data/10hz_episode_t26.csv";
             _epi_file = std::ofstream(_epi_path, std::ios::out);
             _epi_file << "episode_ends" << std::endl;
     }
@@ -214,7 +214,7 @@ public:
                     currentState = State::COLLIDE; // change COLLIDE state
                 }
 
-                if (fy_gap_flag){
+                if (fy_gap_flag && fz_gap_flag){
                     fy_gap_flag = false;
                     fz_gap_flag = false;
                     fy_before_collide = 101.0;
