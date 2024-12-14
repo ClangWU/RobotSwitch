@@ -1,0 +1,10 @@
+<launch>
+        <node name = "imu_mcu_node" pkg = "robotswitch_controller" type = "imu_mcu_node" respawn="false" output="screen" >
+                <param name="IMU_port_"  value="/dev/ttyUSB0"/>
+                <param name="IMU_baud_"  value="115200"/>
+        </node>
+        <node pkg="robotswitch_controller" name="rs_tf_test" type="rs_tf_test" output="screen" >
+        </node>
+
+        <node name="rviz" pkg="rviz" type="rviz" args="-d  $(find robotswitch_controller)/data/imu_test.rviz" required="true" launch-prefix="bash -c 'sleep 1; $0 $@'"/>
+</launch>

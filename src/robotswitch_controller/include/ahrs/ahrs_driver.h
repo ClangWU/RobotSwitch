@@ -1,0 +1,162 @@
+#ifndef BASE_DRIVER_H_
+#define BASE_DRIVER_H_
+
+#include <ros/ros.h>
+#include <tf/transform_broadcaster.h>
+#include <iostream>
+#include <serial/serial.h> //ROS的串口包 http://wjwwood.io/serial/doc/1.1.0/index.html
+
+#include <geometry_msgs/Twist.h>
+#include <nav_msgs/Odometry.h>
+
+#include <math.h>
+#include <fstream>
+#include <ahrs/fdilink_data_struct.h>
+#include <sensor_msgs/Imu.h>
+#include <sensor_msgs/NavSatFix.h>
+#include <geometry_msgs/Pose2D.h>
+#include <boost/thread.hpp>
+#include <string>
+#include <ros/package.h>
+#include <ahrs/crc_table.h>
+#include <Eigen/Eigen>
+#include <rs_common/math_utils.hpp>
+#include <rs_common/biquad_filter.h>
+
+using namespace std;
+namespace RobotSwitch
+{
+#define FRAME_HEAD 0xfc
+#define FRAME_END 0xfd
+#define TYPE_IMU 0x40
+#define TYPE_AHRS 0x41
+#define TYPE_INSGPS 0x42
+#define TYPE_GEODETIC_POS 0x5c
+#define TYPE_GROUND 0xf0
+
+#define IMU_LEN  0x38   //56
+#define AHRS_LEN 0x30   //48
+#define INSGPS_LEN 0x48 //80
+#define GEODETIC_POS_LEN 0x20 //32
+#define PI 3.141592653589793
+#define DEG_TO_RAD 0.017453292519943295
+
+struct ForceData
+{
+    float _force;    //HX711 data
+} __attribute__((packed));
+
+struct MoveData
+{
+    int x_;    //move data
+    int z_;
+} __attribute__((packed));
+
+struct InteractData
+{
+    int y_;    //interact data
+} __attribute__((packed));
+
+class RobotSwitchBringup
+{
+public:
+  RobotSwitchBringup();
+  ~RobotSwitchBringup();
+  void processLoop();
+  void calibration(int times);
+  // LPF
+  void Update_Acc(bool flag);
+  void Update_X();
+  void Update_Y();
+  void Update_Z();
+  void InitFilter(float _imuUpdateRate, float _accFreq);
+
+  bool ahrs_checkCS8(int len);
+  bool ahrs_checkCS16(int len);
+  void ahrs_checkSN(int type);
+  void ahrs_magCalculateYaw(double roll, double pitch, double &magyaw, double magx, double magy, double magz);
+  void serial_init(serial::Serial *serial_, std::string _port_, int _baud_, int _timeout_);
+  ros::NodeHandle nh_;
+
+private:
+  Eigen::Quaterniond calibration_quaternion;
+  // HPF
+  HighPassFilter vel_filter;
+  HighPassFilter pos_filter;
+  // LPF
+  BiquadFilter_t accFilterLPF[3];
+  
+  Eigen::Vector3d real_acc;
+  Eigen::Vector3d acc_ft;
+  Eigen::Vector3d acc_pre;
+  Eigen::Vector3d real_vel;
+  Eigen::Vector3d vel_ft;
+  Eigen::Vector3d real_pos;
+  Eigen::Vector3d pos_ft;
+  Eigen::Vector3d g_calibration;
+
+  std::ofstream matlab_file;
+  std::string matlab_path;
+  int calibration_times;
+  double *logData;
+  bool print_flag_;
+  bool first_flag_ = true;
+  int filter_order_;
+  float acc_filter_cutoff_;
+  float vel_filter_cutoff_;
+  float pos_filter_cutoff_;
+
+  bool if_filter;
+  bool if_debug_;
+  //sum info
+  int sn_lost_ = 0;
+  int crc_error_ = 0;
+  uint8_t read_sn_ = 0;
+  bool frist_sn_;
+  int device_type_ = 1;
+
+  //imu
+  serial::Serial ahrs_serial_; //声明串口对象
+  std::string ahrs_serial_port_;
+  int ahrs_serial_baud_;
+  int ahrs_serial_timeout_;
+
+  //data
+  sensor_msgs::Imu imu_data;
+  FDILink::imu_frame_read  imu_frame_;
+  FDILink::ahrs_frame_read ahrs_frame_;
+  FDILink::insgps_frame_read insgps_frame_;
+  //FDILink::lanlon_frame_read latlon_frame_;
+  FDILink::Geodetic_Position_frame_read Geodetic_Position_frame_;
+  //frame name
+  string imu_frame_id_;
+  string insgps_frame_id_;
+  string latlon_frame_id_;
+  //topic
+  string imu_topic_, mag_pose_2d_topic_;
+  string latlon_topic_;
+  string Euler_angles_topic_,Magnetic_topic_;
+  string gps_topic_,twist_topic_,NED_odom_topic_;
+
+  //Publisher
+  ros::Publisher imu_pub_;
+  ros::Publisher gps_pub_;
+  ros::Publisher mag_pose_pub_;
+  ros::Publisher Euler_angles_pub_;
+  ros::Publisher Magnetic_pub_;
+  ros::Publisher twist_pub_;
+  ros::Publisher NED_odom_pub_;
+
+  ros::Publisher imu_velocity_publisher;
+  ros::Publisher qtn_publisher;
+
+  ForceData     _force_handle;
+  MoveData        _move_handle;
+  InteractData _interact_handle;
+
+  }; //RobotSwitchBringup
+} // namespace RobotSwitch
+
+
+
+#endif

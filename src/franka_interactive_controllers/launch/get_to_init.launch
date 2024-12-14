@@ -1,0 +1,9 @@
+<launch>
+    <!-- 启动 libfranka_joint_goal_motion_generator 节点，并传递参数 -->
+    <node name="libfranka_joint_goal_motion_generator"
+          pkg="franka_interactive_controllers"
+          type="libfranka_joint_goal_motion_generator"
+          args="1"
+          output="screen">
+    </node>
+</launch>

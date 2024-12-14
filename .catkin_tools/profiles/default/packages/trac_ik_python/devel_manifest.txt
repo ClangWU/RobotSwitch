@@ -1,0 +1,8 @@
+trac_ik/trac_ik_python
+/home/yzc/project/robotswitch/devel/.private/trac_ik_python/cmake.lock /home/yzc/project/robotswitch/devel/./cmake.lock
+/home/yzc/project/robotswitch/devel/.private/trac_ik_python/share/trac_ik_python/cmake/trac_ik_pythonConfig.cmake /home/yzc/project/robotswitch/devel/share/trac_ik_python/cmake/trac_ik_pythonConfig.cmake
+/home/yzc/project/robotswitch/devel/.private/trac_ik_python/share/trac_ik_python/cmake/trac_ik_pythonConfig-version.cmake /home/yzc/project/robotswitch/devel/share/trac_ik_python/cmake/trac_ik_pythonConfig-version.cmake
+/home/yzc/project/robotswitch/devel/.private/trac_ik_python/lib/pkgconfig/trac_ik_python.pc /home/yzc/project/robotswitch/devel/lib/pkgconfig/trac_ik_python.pc
+/home/yzc/project/robotswitch/devel/.private/trac_ik_python/lib/python2.7/dist-packages/trac_ik_python/_trac_ik_wrap.so /home/yzc/project/robotswitch/devel/lib/python2.7/dist-packages/trac_ik_python/_trac_ik_wrap.so
+/home/yzc/project/robotswitch/devel/.private/trac_ik_python/lib/python2.7/dist-packages/trac_ik_python/__init__.py /home/yzc/project/robotswitch/devel/lib/python2.7/dist-packages/trac_ik_python/__init__.py
+/home/yzc/project/robotswitch/devel/.private/trac_ik_python/lib/python2.7/dist-packages/trac_ik_python/trac_ik_wrap.py /home/yzc/project/robotswitch/devel/lib/python2.7/dist-packages/trac_ik_python/trac_ik_wrap.py

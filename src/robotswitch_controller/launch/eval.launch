@@ -1,0 +1,9 @@
+<launch>
+    <arg name="use_server" default="true" />
+
+    <!-- 2 与服务器交互，新终端中启动 -->
+    <group if="$(arg use_server)">
+        <node pkg="robotswitch_controller" name="zmq_test" type="zmq_test.py" 
+              output="screen" />
+    </group>
+</launch>
